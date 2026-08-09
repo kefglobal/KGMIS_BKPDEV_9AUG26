@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <meta charset="UTF-8">
+
+  <style>
+    :root {
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+      color: #1f2937;
+      background: #f3f4f6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(
+          145deg,
+          #f8fafc,
+          #e5e7eb
+        );
+    }
+
+    .verification-page {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .brand-subtitle {
+      margin: 6px 0 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .verification-card {
+      overflow: hidden;
+      border-radius: 22px;
+      background: #ffffff;
+      box-shadow:
+        0 18px 45px
+        rgba(15, 23, 42, 0.14);
+    }
+
+    .status-banner {
+      padding: 24px 20px;
+      text-align: center;
+      background: #f59e0b;
+      color: #ffffff;
+    }
+
+    .status-icon {
+      width: 62px;
+      height: 62px;
+      margin: 0 auto 12px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background:
+        rgba(255, 255, 255, 0.22);
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .status-title {
+      margin: 0;
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .status-message {
+      margin: 10px auto 0;
+      max-width: 390px;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .content {
+      padding: 22px 20px 26px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 13px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .detail-row:last-child {
+      border-bottom: 0;
+    }
+
+    .detail-label {
+      flex: 0 0 42%;
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .detail-value {
+      flex: 1;
+      text-align: right;
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      overflow-wrap: anywhere;
+    }
+
+    .footer-note {
+      margin: 18px 8px 0;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #6b7280;
+    }
+
+    .valid .status-banner {
+      background: #15803d;
+    }
+
+    .invalid .status-banner {
+      background: #b91c1c;
+    }
+
+    .pending .status-banner {
+      background: #d97706;
+    }
+
+    @media (max-width: 420px) {
+      .verification-page {
+        padding-top: 16px;
+      }
+
+      .detail-row {
+        display: block;
+      }
+
+      .detail-value {
+        margin-top: 5px;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <? const data = verificationData || {}; ?>
+
+  <? const statusClass =
+      data.success
+        ? 'valid'
+        : (
+            data.verificationStatus ===
+            'VERIFICATION PENDING'
+              ? 'pending'
+              : 'invalid'
+          );
+  ?>
+
+  <main class="verification-page">
+
+    <header class="brand">
+      <h1 class="brand-title">
+        KEF Global
+      </h1>
+
+      <p class="brand-subtitle">
+        Membership Verification
+      </p>
+    </header>
+
+    <section
+      class="verification-card <?= statusClass ?>"
+    >
+
+      <div class="status-banner">
+
+        <div class="status-icon">
+          <?=
+            data.success
+              ? '✓'
+              : (
+                  data.verificationStatus ===
+                  'VERIFICATION PENDING'
+                    ? '!'
+                    : '×'
+                )
+          ?>
+        </div>
+
+        <h2 class="status-title">
+          <?=
+            data.verificationStatus ||
+            'UNAVAILABLE'
+          ?>
+        </h2>
+
+        <p class="status-message">
+          <?=
+            data.verificationMessage ||
+            'Membership verification could not be completed.'
+          ?>
+        </p>
+
+      </div>
+
+      <div class="content">
+
+        <div class="detail-row">
+          <div class="detail-label">
+            Member ID
+          </div>
+
+          <div class="detail-value">
+            <?= data.kefgId || '—' ?>
+          </div>
+        </div>
+
+        <? if (data.memberName) { ?>
+          <div class="detail-row">
+            <div class="detail-label">
+              Member Name
+            </div>
+
+            <div class="detail-value">
+              <?= data.memberName ?>
+            </div>
+          </div>
+        <? } ?>
+
+        <? if (data.cardId) { ?>
+          <div class="detail-row">
+            <div class="detail-label">
+              Card Number
+            </div>
+
+            <div class="detail-value">
+              <?= data.cardId ?>
+            </div>
+          </div>
+        <? } ?>
+
+        <? if (data.membershipType) { ?>
+          <div class="detail-row">
+            <div class="detail-label">
+              Membership Type
+            </div>
+
+            <div class="detail-value">
+              <?= data.membershipType ?>
+            </div>
+          </div>
+        <? } ?>
+
+        <? if (data.membershipYear) { ?>
+          <div class="detail-row">
+            <div class="detail-label">
+              Membership Year
+            </div>
+
+            <div class="detail-value">
+              <?= data.membershipYear ?>
+            </div>
+          </div>
+        <? } ?>
+
+        <? if (data.validUntil) { ?>
+          <div class="detail-row">
+            <div class="detail-label">
+              Valid Until
+            </div>
+
+            <div class="detail-value">
+              <?= data.validUntil ?>
+            </div>
+          </div>
+        <? } ?>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            Verified At
+          </div>
+
+          <div class="detail-value">
+            <?= data.verifiedAt || '—' ?>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <p class="footer-note">
+      This page displays limited membership information
+      solely for card verification purposes.
+    </p>
+
+  </main>
+
+</body>
+</html>

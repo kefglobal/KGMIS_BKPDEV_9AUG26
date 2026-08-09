@@ -1,0 +1,3164 @@
+<!--
+============================================================
+KEF Global Membership Information System (KGMIS)
+Module        : Family Management
+File          : 39.00_KGMIS_Module_Family_Management.html
+Version       : Enterprise Edition 1.0
+Status        : Development
+Designed and Developed by: James Joseph Alenchery
+============================================================
+-->
+
+<div id="kgmisFamilyManagementModule">
+  <header class="fm-page-header">
+    <div>
+      <h2 class="fm-page-title">Family Management</h2>
+      <p class="fm-page-description">
+        Search, view and manage member, spouse and family-member records.
+      </p>
+    </div>
+    <span class="fm-module-badge">Administration</span>
+  </header>
+
+  <section class="fm-panel">
+    <div class="fm-section-header">
+      <div>
+        <h3 class="fm-section-title">1. Search Family</h3>
+        <p class="fm-section-description">
+          Search by Family ID, KEFG ID, member name, mobile number,
+          WhatsApp number or email address.
+        </p>
+      </div>
+    </div>
+
+    <div class="fm-search-controls">
+      
+
+      <div class="fm-field">
+        <label for="fmSearchText">Search Value</label>
+        <input
+          id="fmSearchText"
+          type="text"
+          autocomplete="off"
+          placeholder="Enter Family ID, KEFG ID, name, mobile, WhatsApp or email">
+      </div>
+
+      <div class="fm-search-button-wrap">
+        <button id="fmSearchButton" class="fm-primary-button" type="button">
+          🔍 Search
+        </button>
+      </div>
+    </div>
+
+    <div id="fmSearchStatus" class="fm-status" aria-live="polite"></div>
+  </section>
+
+  <section class="fm-panel">
+    <div class="fm-section-header">
+      <div>
+        <h3 class="fm-section-title">2. Search Results</h3>
+        <p class="fm-section-description">
+          Select a family to load the Primary Member, Spouse and family members.
+        </p>
+      </div>
+    </div>
+
+    <div id="fmSearchResults" class="fm-search-results">
+      <div class="fm-empty-state">Search results will appear here.</div>
+    </div>
+  </section>
+
+  <section id="fmSelectedFamilySection" class="fm-panel" hidden>
+    <div class="fm-section-header">
+      <div>
+        <h3 class="fm-section-title">3. Selected Family</h3>
+        <p class="fm-section-description">
+          Review the selected family before opening the profile sections.
+        </p>
+      </div>
+      <span id="fmSelectedFamilyIdBadge" class="fm-family-id-badge">FAMILY ID</span>
+    </div>
+
+    <div class="fm-family-summary-grid">
+      <article class="fm-summary-card">
+        <span class="fm-summary-label">Family ID</span>
+        <strong id="fmSelectedFamilyId" class="fm-summary-value">—</strong>
+      </article>
+
+      <article class="fm-summary-card">
+        <span class="fm-summary-label">Primary Member</span>
+        <strong id="fmSelectedPrimaryMember" class="fm-summary-value">—</strong>
+      </article>
+
+      <article class="fm-summary-card">
+        <span
+          id="fmSelectedSpouseLabel"
+          class="fm-summary-label">
+          SPOUSE
+        </span>
+
+        <strong
+          id="fmSelectedSpouse"
+          class="fm-summary-value">
+          —
+        </strong>
+      </article>
+
+      <article class="fm-summary-card">
+        <span class="fm-summary-label">Record Status</span>
+        <strong id="fmSelectedFamilyStatus" class="fm-summary-value">—</strong>
+      </article>
+    </div>
+  </section>
+
+  <section id="fmFamilyProfileSection" class="fm-panel" hidden>
+    <div class="fm-section-header">
+      <div>
+        <h3 class="fm-section-title">4. Member and Spouse Profile</h3>
+        <p class="fm-section-description">
+          View and update approved fields in KGMIS_MASTER_DATABASE_v1.0.
+        </p>
+      </div>
+      <button id="fmEditFamilyProfileButton" class="fm-secondary-button" type="button">
+        Edit Family Profile
+      </button>
+    </div>
+
+    <div class="fm-record-tabs" role="tablist">
+      <button class="fm-record-tab active" type="button"
+        role="tab" aria-selected="true" data-fm-record-tab="primary">
+        Primary Member
+      </button>
+
+      <button class="fm-record-tab" type="button"
+        role="tab" aria-selected="false" data-fm-record-tab="spouse">
+        Spouse
+      </button>
+    </div>
+
+    <div id="fmPrimaryMemberProfile" class="fm-record-panel active"
+      data-fm-record-panel="primary">
+      <div class="fm-empty-state">Primary Member information will appear here.</div>
+    </div>
+
+    <div id="fmSpouseProfile" class="fm-record-panel"
+      data-fm-record-panel="spouse">
+      <div class="fm-empty-state">Spouse information will appear here.</div>
+    </div>
+  </section>
+
+  <section id="fmFamilyMembersSection" class="fm-panel" hidden>
+    <div class="fm-section-header">
+      <div>
+        <h3 class="fm-section-title">5. Family Members</h3>
+        <p class="fm-section-description">
+          View, add and edit records stored in KEFG_FAMILY_MEMBERS.
+        </p>
+      </div>
+      <button id="fmAddFamilyMemberButton" class="fm-primary-button" type="button" disabled>
+        + Add Family Member
+      </button>
+    </div>
+
+    <div class="fm-table-wrap">
+      <table class="fm-table">
+        <thead>
+          <tr>
+            <th>Dependant ID</th>
+            <th>Full Name</th>
+            <th>Relation</th>
+            <th>Related KEFG ID</th>
+            <th>Mobile</th>
+            <th>Card Eligible</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="fmFamilyMembersTableBody">
+          <tr>
+            <td colspan="8">
+              <div class="fm-empty-state">Family-member records will appear here.</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+<!-- ======================================================
+     Edit Family Profile
+     ====================================================== -->
+
+<section
+  id="fmEditFamilyProfileSection"
+  class="fm-panel"
+  hidden>
+
+  <div class="fm-section-header">
+    <div>
+      <h3 class="fm-section-title">Edit Family Profile</h3>
+      <p class="fm-section-description">
+        Update the approved Primary Member and Spouse fields.
+      </p>
+    </div>
+
+    <div class="fm-edit-action-row">
+      <button
+        id="fmSaveFamilyProfileButton"
+        class="fm-primary-button"
+        type="button"
+        disabled>
+        Save Changes
+      </button>
+
+      <button
+        id="fmCancelFamilyProfileButton"
+        class="fm-secondary-button"
+        type="button">
+        Cancel
+      </button>
+    </div>
+  </div>
+
+<div
+  id="fmSaveFamilyProfileStatus"
+  class="fm-status"
+  aria-live="polite">
+</div>
+
+  <div id="fmEditFamilyProfileHost">
+    <form id="fmEditFamilyProfileForm">
+
+      <section
+        id="fmEditPrimarySection"
+        class="fm-edit-person-section">
+
+        <h4 class="fm-edit-section-title">
+          Primary Member
+        </h4>
+
+        <section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Identity & Status</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryKefgId">KEFG ID</label>
+    <input id="fmEditPrimaryKefgId" readonly="" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditFamilyId">Family ID</label>
+    <input id="fmEditFamilyId" readonly="" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryRelatedKefgId">Related Member KEFG ID</label>
+    <input id="fmEditPrimaryRelatedKefgId" readonly="" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryCategory">Member Category</label>
+    <select id="fmEditPrimaryCategory">
+    <option value=""></option>
+    <option value="PRIMARY MEMBER">PRIMARY MEMBER</option>
+    <option value="ALUMNI SPOUSE MEMBER">ALUMNI SPOUSE MEMBER</option>
+    <option value="NON-ALUMNI SPOUSE">NON-ALUMNI SPOUSE</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryRecordStatus">Record Status</label>
+    <select id="fmEditPrimaryRecordStatus">
+    <option value=""></option>
+    <option value="ACTIVE">ACTIVE</option>
+    <option value="INACTIVE">INACTIVE</option>
+    <option value="DECEASED">DECEASED</option>
+    <option value="ARCHIVED">ARCHIVED</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryMembershipType">Type of Membership</label>
+    <select id="fmEditPrimaryMembershipType">
+    <option value=""></option>
+    <option value="Primary Member">Primary Member</option>
+    <option value="Honorary Member">Honorary Member</option>
+    <option value="Life Member">Life Member</option>
+    </select>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Personal Details</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field fm-edit-field-span-2">
+    <label for="fmEditPrimaryName">Member Name</label>
+    <input id="fmEditPrimaryName" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryGender">Gender</label>
+    <select id="fmEditPrimaryGender">
+    <option value=""></option>
+    <option value="MALE">MALE</option>
+    <option value="FEMALE">FEMALE</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryBloodGroup">Blood Group</label>
+    <select id="fmEditPrimaryBloodGroup">
+    <option value=""></option>
+    <option value="A+">A+</option>
+    <option value="A-">A-</option>
+    <option value="B+">B+</option>
+    <option value="B-">B-</option>
+    <option value="AB+">AB+</option>
+    <option value="AB-">AB-</option>
+    <option value="O+">O+</option>
+    <option value="O-">O-</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryDobFull">Full Date of Birth</label>
+    <input id="fmEditPrimaryDobFull" type="date"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryProfileLastUpdated">Profile Last Updated</label>
+    <input id="fmEditPrimaryProfileLastUpdated" readonly="" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group fm-edit-group-two-columns">
+  <h5 class="fm-edit-group-title">Photos</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryPhoto">Photo</label>
+    <input id="fmEditPrimaryPhoto" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryFamilyPhoto">Family Photo</label>
+    <input id="fmEditPrimaryFamilyPhoto" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Alumni Details</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryAlumniAssociation">Alumni Association</label>
+    <select id="fmEditPrimaryAlumniAssociation">
+    <option value=""></option>
+    <option value="AECK">AECK</option>
+    <option value="CETA">CETA</option>
+    <option value="KEA">KEA</option>
+    <option value="MACE">MACE</option>
+    <option value="NIT">NIT</option>
+    <option value="NSS">NSS</option>
+    <option value="TEC">TEC</option>
+    <option value="TKMCE">TKMCE</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryBranch">Branch</label>
+    <input id="fmEditPrimaryBranch" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryBatchYear">Batch Year</label>
+    <input id="fmEditPrimaryBatchYear" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Contact Details</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryMobile">Mobile</label>
+    <input id="fmEditPrimaryMobile" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryWhatsapp">WhatsApp</label>
+    <input id="fmEditPrimaryWhatsapp" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryEmail">Email</label>
+    <input id="fmEditPrimaryEmail" type="email"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryWhatsappGroup">WhatsApp Group Member</label>
+    <select id="fmEditPrimaryWhatsappGroup">
+    <option value=""></option>
+    <option value="SOCIAL GROUP">Social Group</option>
+    <option value="OFFICIAL GROUP">Official Group</option>
+    <option value="BOTH SOCIAL AND OFFICIAL GROUPS">Both Social and Official Groups</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryPreferredFamilyContact">Preferred Family Contact</label>
+    <input id="fmEditPrimaryPreferredFamilyContact" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryWillingToJoin">Willing to Join</label>
+    <input id="fmEditPrimaryWillingToJoin" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Location</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryCountry">Country</label>
+    <select id="fmEditPrimaryCountry">
+    <option value=""></option>
+    <option value="Afghanistan">Afghanistan</option>
+    <option value="Albania">Albania</option>
+    <option value="Algeria">Algeria</option>
+    <option value="Andorra">Andorra</option>
+    <option value="Angola">Angola</option>
+    <option value="Antigua and Barbuda">Antigua and Barbuda</option>
+    <option value="Argentina">Argentina</option>
+    <option value="Armenia">Armenia</option>
+    <option value="Australia">Australia</option>
+    <option value="Austria">Austria</option>
+    <option value="Azerbaijan">Azerbaijan</option>
+    <option value="Bahamas">Bahamas</option>
+    <option value="Bahrain">Bahrain</option>
+    <option value="Bangladesh">Bangladesh</option>
+    <option value="Barbados">Barbados</option>
+    <option value="Belarus">Belarus</option>
+    <option value="Belgium">Belgium</option>
+    <option value="Belize">Belize</option>
+    <option value="Benin">Benin</option>
+    <option value="Bhutan">Bhutan</option>
+    <option value="Bolivia">Bolivia</option>
+    <option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
+    <option value="Botswana">Botswana</option>
+    <option value="Brazil">Brazil</option>
+    <option value="Brunei">Brunei</option>
+    <option value="Bulgaria">Bulgaria</option>
+    <option value="Burkina Faso">Burkina Faso</option>
+    <option value="Burundi">Burundi</option>
+    <option value="Cabo Verde">Cabo Verde</option>
+    <option value="Cambodia">Cambodia</option>
+    <option value="Cameroon">Cameroon</option>
+    <option value="Canada">Canada</option>
+    <option value="Central African Republic">Central African Republic</option>
+    <option value="Chad">Chad</option>
+    <option value="Chile">Chile</option>
+    <option value="China">China</option>
+    <option value="Colombia">Colombia</option>
+    <option value="Comoros">Comoros</option>
+    <option value="Congo">Congo</option>
+    <option value="Costa Rica">Costa Rica</option>
+    <option value="Croatia">Croatia</option>
+    <option value="Cuba">Cuba</option>
+    <option value="Cyprus">Cyprus</option>
+    <option value="Czech Republic">Czech Republic</option>
+    <option value="Democratic Republic of the Congo">Democratic Republic of the Congo</option>
+    <option value="Denmark">Denmark</option>
+    <option value="Djibouti">Djibouti</option>
+    <option value="Dominica">Dominica</option>
+    <option value="Dominican Republic">Dominican Republic</option>
+    <option value="Ecuador">Ecuador</option>
+    <option value="Egypt">Egypt</option>
+    <option value="El Salvador">El Salvador</option>
+    <option value="Equatorial Guinea">Equatorial Guinea</option>
+    <option value="Eritrea">Eritrea</option>
+    <option value="Estonia">Estonia</option>
+    <option value="Eswatini">Eswatini</option>
+    <option value="Ethiopia">Ethiopia</option>
+    <option value="Fiji">Fiji</option>
+    <option value="Finland">Finland</option>
+    <option value="France">France</option>
+    <option value="Gabon">Gabon</option>
+    <option value="Gambia">Gambia</option>
+    <option value="Georgia">Georgia</option>
+    <option value="Germany">Germany</option>
+    <option value="Ghana">Ghana</option>
+    <option value="Greece">Greece</option>
+    <option value="Grenada">Grenada</option>
+    <option value="Guatemala">Guatemala</option>
+    <option value="Guinea">Guinea</option>
+    <option value="Guinea-Bissau">Guinea-Bissau</option>
+    <option value="Guyana">Guyana</option>
+    <option value="Haiti">Haiti</option>
+    <option value="Honduras">Honduras</option>
+    <option value="Hungary">Hungary</option>
+    <option value="Iceland">Iceland</option>
+    <option value="India">India</option>
+    <option value="Indonesia">Indonesia</option>
+    <option value="Iran">Iran</option>
+    <option value="Iraq">Iraq</option>
+    <option value="Ireland">Ireland</option>
+    <option value="Israel">Israel</option>
+    <option value="Italy">Italy</option>
+    <option value="Ivory Coast">Ivory Coast</option>
+    <option value="Jamaica">Jamaica</option>
+    <option value="Japan">Japan</option>
+    <option value="Jordan">Jordan</option>
+    <option value="Kazakhstan">Kazakhstan</option>
+    <option value="Kenya">Kenya</option>
+    <option value="Kiribati">Kiribati</option>
+    <option value="Kuwait">Kuwait</option>
+    <option value="Kyrgyzstan">Kyrgyzstan</option>
+    <option value="Laos">Laos</option>
+    <option value="Latvia">Latvia</option>
+    <option value="Lebanon">Lebanon</option>
+    <option value="Lesotho">Lesotho</option>
+    <option value="Liberia">Liberia</option>
+    <option value="Libya">Libya</option>
+    <option value="Liechtenstein">Liechtenstein</option>
+    <option value="Lithuania">Lithuania</option>
+    <option value="Luxembourg">Luxembourg</option>
+    <option value="Madagascar">Madagascar</option>
+    <option value="Malawi">Malawi</option>
+    <option value="Malaysia">Malaysia</option>
+    <option value="Maldives">Maldives</option>
+    <option value="Mali">Mali</option>
+    <option value="Malta">Malta</option>
+    <option value="Marshall Islands">Marshall Islands</option>
+    <option value="Mauritania">Mauritania</option>
+    <option value="Mauritius">Mauritius</option>
+    <option value="Mexico">Mexico</option>
+    <option value="Micronesia">Micronesia</option>
+    <option value="Moldova">Moldova</option>
+    <option value="Monaco">Monaco</option>
+    <option value="Mongolia">Mongolia</option>
+    <option value="Montenegro">Montenegro</option>
+    <option value="Morocco">Morocco</option>
+    <option value="Mozambique">Mozambique</option>
+    <option value="Myanmar">Myanmar</option>
+    <option value="Namibia">Namibia</option>
+    <option value="Nauru">Nauru</option>
+    <option value="Nepal">Nepal</option>
+    <option value="Netherlands">Netherlands</option>
+    <option value="New Zealand">New Zealand</option>
+    <option value="Nicaragua">Nicaragua</option>
+    <option value="Niger">Niger</option>
+    <option value="Nigeria">Nigeria</option>
+    <option value="North Korea">North Korea</option>
+    <option value="North Macedonia">North Macedonia</option>
+    <option value="Norway">Norway</option>
+    <option value="Oman">Oman</option>
+    <option value="Pakistan">Pakistan</option>
+    <option value="Palau">Palau</option>
+    <option value="Palestine">Palestine</option>
+    <option value="Panama">Panama</option>
+    <option value="Papua New Guinea">Papua New Guinea</option>
+    <option value="Paraguay">Paraguay</option>
+    <option value="Peru">Peru</option>
+    <option value="Philippines">Philippines</option>
+    <option value="Poland">Poland</option>
+    <option value="Portugal">Portugal</option>
+    <option value="Qatar">Qatar</option>
+    <option value="Romania">Romania</option>
+    <option value="Russia">Russia</option>
+    <option value="Rwanda">Rwanda</option>
+    <option value="Saint Kitts and Nevis">Saint Kitts and Nevis</option>
+    <option value="Saint Lucia">Saint Lucia</option>
+    <option value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</option>
+    <option value="Samoa">Samoa</option>
+    <option value="San Marino">San Marino</option>
+    <option value="Sao Tome and Principe">Sao Tome and Principe</option>
+    <option value="Saudi Arabia">Saudi Arabia</option>
+    <option value="Senegal">Senegal</option>
+    <option value="Serbia">Serbia</option>
+    <option value="Seychelles">Seychelles</option>
+    <option value="Sierra Leone">Sierra Leone</option>
+    <option value="Singapore">Singapore</option>
+    <option value="Slovakia">Slovakia</option>
+    <option value="Slovenia">Slovenia</option>
+    <option value="Solomon Islands">Solomon Islands</option>
+    <option value="Somalia">Somalia</option>
+    <option value="South Africa">South Africa</option>
+    <option value="South Korea">South Korea</option>
+    <option value="South Sudan">South Sudan</option>
+    <option value="Spain">Spain</option>
+    <option value="Sri Lanka">Sri Lanka</option>
+    <option value="Sudan">Sudan</option>
+    <option value="Suriname">Suriname</option>
+    <option value="Sweden">Sweden</option>
+    <option value="Switzerland">Switzerland</option>
+    <option value="Syria">Syria</option>
+    <option value="Taiwan">Taiwan</option>
+    <option value="Tajikistan">Tajikistan</option>
+    <option value="Tanzania">Tanzania</option>
+    <option value="Thailand">Thailand</option>
+    <option value="Timor-Leste">Timor-Leste</option>
+    <option value="Togo">Togo</option>
+    <option value="Tonga">Tonga</option>
+    <option value="Trinidad and Tobago">Trinidad and Tobago</option>
+    <option value="Tunisia">Tunisia</option>
+    <option value="Turkey">Turkey</option>
+    <option value="Turkmenistan">Turkmenistan</option>
+    <option value="Tuvalu">Tuvalu</option>
+    <option value="Uganda">Uganda</option>
+    <option value="Ukraine">Ukraine</option>
+    <option value="United Arab Emirates">United Arab Emirates</option>
+    <option value="United Kingdom">United Kingdom</option>
+    <option value="United States">United States</option>
+    <option value="Uruguay">Uruguay</option>
+    <option value="Uzbekistan">Uzbekistan</option>
+    <option value="Vanuatu">Vanuatu</option>
+    <option value="Vatican City">Vatican City</option>
+    <option value="Venezuela">Venezuela</option>
+    <option value="Vietnam">Vietnam</option>
+    <option value="Yemen">Yemen</option>
+    <option value="Zambia">Zambia</option>
+    <option value="Zimbabwe">Zimbabwe</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryState">State</label>
+    <select id="fmEditPrimaryState">
+    <option value=""></option>
+    <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+    <option value="Andhra Pradesh">Andhra Pradesh</option>
+    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+    <option value="Assam">Assam</option>
+    <option value="Bihar">Bihar</option>
+    <option value="Chandigarh">Chandigarh</option>
+    <option value="Chhattisgarh">Chhattisgarh</option>
+    <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+    <option value="Delhi">Delhi</option>
+    <option value="Goa">Goa</option>
+    <option value="Gujarat">Gujarat</option>
+    <option value="Haryana">Haryana</option>
+    <option value="Himachal Pradesh">Himachal Pradesh</option>
+    <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+    <option value="Jharkhand">Jharkhand</option>
+    <option value="Karnataka">Karnataka</option>
+    <option value="Kerala">Kerala</option>
+    <option value="Ladakh">Ladakh</option>
+    <option value="Lakshadweep">Lakshadweep</option>
+    <option value="Madhya Pradesh">Madhya Pradesh</option>
+    <option value="Maharashtra">Maharashtra</option>
+    <option value="Manipur">Manipur</option>
+    <option value="Meghalaya">Meghalaya</option>
+    <option value="Mizoram">Mizoram</option>
+    <option value="Nagaland">Nagaland</option>
+    <option value="Odisha">Odisha</option>
+    <option value="Puducherry">Puducherry</option>
+    <option value="Punjab">Punjab</option>
+    <option value="Rajasthan">Rajasthan</option>
+    <option value="Sikkim">Sikkim</option>
+    <option value="Tamil Nadu">Tamil Nadu</option>
+    <option value="Telangana">Telangana</option>
+    <option value="Tripura">Tripura</option>
+    <option value="Uttar Pradesh">Uttar Pradesh</option>
+    <option value="Uttarakhand">Uttarakhand</option>
+    <option value="West Bengal">West Bengal</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryZone">Zone</label>
+    <input id="fmEditPrimaryZone" type="text"/>
+    </div>
+    <div class="fm-edit-field fm-edit-field-span-2">
+    <label for="fmEditPrimaryCity">City / District</label>
+    <input id="fmEditPrimaryCity" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryGoogleMap">Home Location Google Map</label>
+    <input id="fmEditPrimaryGoogleMap" type="text"/>
+    </div>
+    <div class="fm-edit-field fm-edit-field-full">
+    <label for="fmEditPrimaryAddress">Latest Address</label>
+    <textarea id="fmEditPrimaryAddress" rows="2"></textarea>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Professional & Community Details</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryActivities">Present Activities</label>
+    <textarea id="fmEditPrimaryActivities" rows="2"></textarea>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimarySkills">Profession / Skills</label>
+    <textarea id="fmEditPrimarySkills" rows="2"></textarea>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryContributions">KEF / KEF Global Contributions</label>
+    <textarea id="fmEditPrimaryContributions" rows="2"></textarea>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryVolunteer">Willing to Volunteer</label>
+    <select id="fmEditPrimaryVolunteer">
+    <option value=""></option>
+    <option value="YES">Yes</option>
+    <option value="NO">No</option>
+    <option value="SHALL DECIDE LATER">Shall Decide Later</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryDataConsent">Data Consent</label>
+    <input id="fmEditPrimaryDataConsent" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Family Information</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditPrimaryWeddingDateFull">Wedding Date — Full</label>
+    <input id="fmEditPrimaryWeddingDateFull" type="date"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group fm-edit-group-remarks">
+  <h5 class="fm-edit-group-title">Remarks</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field fm-edit-field-full">
+    <label for="fmEditPrimaryRemarks">Remarks</label>
+    <textarea id="fmEditPrimaryRemarks" rows="1"></textarea>
+    </div>
+  </div>
+</section>
+
+      </section>
+
+      <section
+        id="fmEditSpouseSection"
+        class="fm-edit-person-section">
+
+        <h4 class="fm-edit-section-title">
+          Spouse
+        </h4>
+
+        <section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Identity & Status</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseKefgId">KEFG ID</label>
+    <input id="fmEditSpouseKefgId" readonly="" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseFamilyId">Family ID</label>
+    <input id="fmEditSpouseFamilyId" readonly="" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseRelatedKefgId">Related Member KEFG ID</label>
+    <input id="fmEditSpouseRelatedKefgId" readonly="" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseCategory">Member Category</label>
+    <select id="fmEditSpouseCategory">
+    <option value=""></option>
+    <option value="PRIMARY MEMBER">PRIMARY MEMBER</option>
+    <option value="ALUMNI SPOUSE MEMBER">ALUMNI SPOUSE MEMBER</option>
+    <option value="NON-ALUMNI SPOUSE">NON-ALUMNI SPOUSE</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseRecordStatus">Record Status</label>
+    <select id="fmEditSpouseRecordStatus">
+    <option value=""></option>
+    <option value="ACTIVE">ACTIVE</option>
+    <option value="INACTIVE">INACTIVE</option>
+    <option value="DECEASED">DECEASED</option>
+    <option value="ARCHIVED">ARCHIVED</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseMembershipType">Type of Membership</label>
+    <select id="fmEditSpouseMembershipType">
+    <option value=""></option>
+    <option value="Primary Member">Primary Member</option>
+    <option value="Honorary Member">Honorary Member</option>
+    <option value="Life Member">Life Member</option>
+    </select>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Personal Details</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field fm-edit-field-span-2">
+    <label for="fmEditSpouseName">Member Name</label>
+    <input id="fmEditSpouseName" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseGender">Gender</label>
+    <select id="fmEditSpouseGender">
+    <option value=""></option>
+    <option value="MALE">MALE</option>
+    <option value="FEMALE">FEMALE</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseBloodGroup">Blood Group</label>
+    <select id="fmEditSpouseBloodGroup">
+    <option value=""></option>
+    <option value="A+">A+</option>
+    <option value="A-">A-</option>
+    <option value="B+">B+</option>
+    <option value="B-">B-</option>
+    <option value="AB+">AB+</option>
+    <option value="AB-">AB-</option>
+    <option value="O+">O+</option>
+    <option value="O-">O-</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseDobFull">Full Date of Birth</label>
+    <input id="fmEditSpouseDobFull" type="date"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseProfileLastUpdated">Profile Last Updated</label>
+    <input id="fmEditSpouseProfileLastUpdated" readonly="" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group fm-edit-group-two-columns">
+  <h5 class="fm-edit-group-title">Photos</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditSpousePhoto">Photo</label>
+    <input id="fmEditSpousePhoto" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseFamilyPhoto">Family Photo</label>
+    <input id="fmEditSpouseFamilyPhoto" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Alumni Details</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseAlumniAssociation">Alumni Association</label>
+    <select id="fmEditSpouseAlumniAssociation">
+    <option value=""></option>
+    <option value="AECK">AECK</option>
+    <option value="CETA">CETA</option>
+    <option value="KEA">KEA</option>
+    <option value="MACE">MACE</option>
+    <option value="NIT">NIT</option>
+    <option value="NSS">NSS</option>
+    <option value="TEC">TEC</option>
+    <option value="TKMCE">TKMCE</option>
+    <option value="NOT APPLICABLE">NOT APPLICABLE</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseBranch">Branch</label>
+    <input id="fmEditSpouseBranch" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseBatchYear">Batch Year</label>
+    <input id="fmEditSpouseBatchYear" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Contact Details</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseMobile">Mobile</label>
+    <input id="fmEditSpouseMobile" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseWhatsapp">WhatsApp</label>
+    <input id="fmEditSpouseWhatsapp" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseEmail">Email</label>
+    <input id="fmEditSpouseEmail" type="email"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseWhatsappGroup">WhatsApp Group Member</label>
+    <select id="fmEditSpouseWhatsappGroup">
+    <option value=""></option>
+    <option value="SOCIAL GROUP">Social Group</option>
+    <option value="OFFICIAL GROUP">Official Group</option>
+    <option value="BOTH SOCIAL AND OFFICIAL GROUPS">Both Social and Official Groups</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpousePreferredFamilyContact">Preferred Family Contact</label>
+    <input id="fmEditSpousePreferredFamilyContact" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseWillingToJoin">Willing to Join</label>
+    <input id="fmEditSpouseWillingToJoin" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Location</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseCountry">Country</label>
+    <select id="fmEditSpouseCountry">
+    <option value=""></option>
+    <option value="Afghanistan">Afghanistan</option>
+    <option value="Albania">Albania</option>
+    <option value="Algeria">Algeria</option>
+    <option value="Andorra">Andorra</option>
+    <option value="Angola">Angola</option>
+    <option value="Antigua and Barbuda">Antigua and Barbuda</option>
+    <option value="Argentina">Argentina</option>
+    <option value="Armenia">Armenia</option>
+    <option value="Australia">Australia</option>
+    <option value="Austria">Austria</option>
+    <option value="Azerbaijan">Azerbaijan</option>
+    <option value="Bahamas">Bahamas</option>
+    <option value="Bahrain">Bahrain</option>
+    <option value="Bangladesh">Bangladesh</option>
+    <option value="Barbados">Barbados</option>
+    <option value="Belarus">Belarus</option>
+    <option value="Belgium">Belgium</option>
+    <option value="Belize">Belize</option>
+    <option value="Benin">Benin</option>
+    <option value="Bhutan">Bhutan</option>
+    <option value="Bolivia">Bolivia</option>
+    <option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
+    <option value="Botswana">Botswana</option>
+    <option value="Brazil">Brazil</option>
+    <option value="Brunei">Brunei</option>
+    <option value="Bulgaria">Bulgaria</option>
+    <option value="Burkina Faso">Burkina Faso</option>
+    <option value="Burundi">Burundi</option>
+    <option value="Cabo Verde">Cabo Verde</option>
+    <option value="Cambodia">Cambodia</option>
+    <option value="Cameroon">Cameroon</option>
+    <option value="Canada">Canada</option>
+    <option value="Central African Republic">Central African Republic</option>
+    <option value="Chad">Chad</option>
+    <option value="Chile">Chile</option>
+    <option value="China">China</option>
+    <option value="Colombia">Colombia</option>
+    <option value="Comoros">Comoros</option>
+    <option value="Congo">Congo</option>
+    <option value="Costa Rica">Costa Rica</option>
+    <option value="Croatia">Croatia</option>
+    <option value="Cuba">Cuba</option>
+    <option value="Cyprus">Cyprus</option>
+    <option value="Czech Republic">Czech Republic</option>
+    <option value="Democratic Republic of the Congo">Democratic Republic of the Congo</option>
+    <option value="Denmark">Denmark</option>
+    <option value="Djibouti">Djibouti</option>
+    <option value="Dominica">Dominica</option>
+    <option value="Dominican Republic">Dominican Republic</option>
+    <option value="Ecuador">Ecuador</option>
+    <option value="Egypt">Egypt</option>
+    <option value="El Salvador">El Salvador</option>
+    <option value="Equatorial Guinea">Equatorial Guinea</option>
+    <option value="Eritrea">Eritrea</option>
+    <option value="Estonia">Estonia</option>
+    <option value="Eswatini">Eswatini</option>
+    <option value="Ethiopia">Ethiopia</option>
+    <option value="Fiji">Fiji</option>
+    <option value="Finland">Finland</option>
+    <option value="France">France</option>
+    <option value="Gabon">Gabon</option>
+    <option value="Gambia">Gambia</option>
+    <option value="Georgia">Georgia</option>
+    <option value="Germany">Germany</option>
+    <option value="Ghana">Ghana</option>
+    <option value="Greece">Greece</option>
+    <option value="Grenada">Grenada</option>
+    <option value="Guatemala">Guatemala</option>
+    <option value="Guinea">Guinea</option>
+    <option value="Guinea-Bissau">Guinea-Bissau</option>
+    <option value="Guyana">Guyana</option>
+    <option value="Haiti">Haiti</option>
+    <option value="Honduras">Honduras</option>
+    <option value="Hungary">Hungary</option>
+    <option value="Iceland">Iceland</option>
+    <option value="India">India</option>
+    <option value="Indonesia">Indonesia</option>
+    <option value="Iran">Iran</option>
+    <option value="Iraq">Iraq</option>
+    <option value="Ireland">Ireland</option>
+    <option value="Israel">Israel</option>
+    <option value="Italy">Italy</option>
+    <option value="Ivory Coast">Ivory Coast</option>
+    <option value="Jamaica">Jamaica</option>
+    <option value="Japan">Japan</option>
+    <option value="Jordan">Jordan</option>
+    <option value="Kazakhstan">Kazakhstan</option>
+    <option value="Kenya">Kenya</option>
+    <option value="Kiribati">Kiribati</option>
+    <option value="Kuwait">Kuwait</option>
+    <option value="Kyrgyzstan">Kyrgyzstan</option>
+    <option value="Laos">Laos</option>
+    <option value="Latvia">Latvia</option>
+    <option value="Lebanon">Lebanon</option>
+    <option value="Lesotho">Lesotho</option>
+    <option value="Liberia">Liberia</option>
+    <option value="Libya">Libya</option>
+    <option value="Liechtenstein">Liechtenstein</option>
+    <option value="Lithuania">Lithuania</option>
+    <option value="Luxembourg">Luxembourg</option>
+    <option value="Madagascar">Madagascar</option>
+    <option value="Malawi">Malawi</option>
+    <option value="Malaysia">Malaysia</option>
+    <option value="Maldives">Maldives</option>
+    <option value="Mali">Mali</option>
+    <option value="Malta">Malta</option>
+    <option value="Marshall Islands">Marshall Islands</option>
+    <option value="Mauritania">Mauritania</option>
+    <option value="Mauritius">Mauritius</option>
+    <option value="Mexico">Mexico</option>
+    <option value="Micronesia">Micronesia</option>
+    <option value="Moldova">Moldova</option>
+    <option value="Monaco">Monaco</option>
+    <option value="Mongolia">Mongolia</option>
+    <option value="Montenegro">Montenegro</option>
+    <option value="Morocco">Morocco</option>
+    <option value="Mozambique">Mozambique</option>
+    <option value="Myanmar">Myanmar</option>
+    <option value="Namibia">Namibia</option>
+    <option value="Nauru">Nauru</option>
+    <option value="Nepal">Nepal</option>
+    <option value="Netherlands">Netherlands</option>
+    <option value="New Zealand">New Zealand</option>
+    <option value="Nicaragua">Nicaragua</option>
+    <option value="Niger">Niger</option>
+    <option value="Nigeria">Nigeria</option>
+    <option value="North Korea">North Korea</option>
+    <option value="North Macedonia">North Macedonia</option>
+    <option value="Norway">Norway</option>
+    <option value="Oman">Oman</option>
+    <option value="Pakistan">Pakistan</option>
+    <option value="Palau">Palau</option>
+    <option value="Palestine">Palestine</option>
+    <option value="Panama">Panama</option>
+    <option value="Papua New Guinea">Papua New Guinea</option>
+    <option value="Paraguay">Paraguay</option>
+    <option value="Peru">Peru</option>
+    <option value="Philippines">Philippines</option>
+    <option value="Poland">Poland</option>
+    <option value="Portugal">Portugal</option>
+    <option value="Qatar">Qatar</option>
+    <option value="Romania">Romania</option>
+    <option value="Russia">Russia</option>
+    <option value="Rwanda">Rwanda</option>
+    <option value="Saint Kitts and Nevis">Saint Kitts and Nevis</option>
+    <option value="Saint Lucia">Saint Lucia</option>
+    <option value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</option>
+    <option value="Samoa">Samoa</option>
+    <option value="San Marino">San Marino</option>
+    <option value="Sao Tome and Principe">Sao Tome and Principe</option>
+    <option value="Saudi Arabia">Saudi Arabia</option>
+    <option value="Senegal">Senegal</option>
+    <option value="Serbia">Serbia</option>
+    <option value="Seychelles">Seychelles</option>
+    <option value="Sierra Leone">Sierra Leone</option>
+    <option value="Singapore">Singapore</option>
+    <option value="Slovakia">Slovakia</option>
+    <option value="Slovenia">Slovenia</option>
+    <option value="Solomon Islands">Solomon Islands</option>
+    <option value="Somalia">Somalia</option>
+    <option value="South Africa">South Africa</option>
+    <option value="South Korea">South Korea</option>
+    <option value="South Sudan">South Sudan</option>
+    <option value="Spain">Spain</option>
+    <option value="Sri Lanka">Sri Lanka</option>
+    <option value="Sudan">Sudan</option>
+    <option value="Suriname">Suriname</option>
+    <option value="Sweden">Sweden</option>
+    <option value="Switzerland">Switzerland</option>
+    <option value="Syria">Syria</option>
+    <option value="Taiwan">Taiwan</option>
+    <option value="Tajikistan">Tajikistan</option>
+    <option value="Tanzania">Tanzania</option>
+    <option value="Thailand">Thailand</option>
+    <option value="Timor-Leste">Timor-Leste</option>
+    <option value="Togo">Togo</option>
+    <option value="Tonga">Tonga</option>
+    <option value="Trinidad and Tobago">Trinidad and Tobago</option>
+    <option value="Tunisia">Tunisia</option>
+    <option value="Turkey">Turkey</option>
+    <option value="Turkmenistan">Turkmenistan</option>
+    <option value="Tuvalu">Tuvalu</option>
+    <option value="Uganda">Uganda</option>
+    <option value="Ukraine">Ukraine</option>
+    <option value="United Arab Emirates">United Arab Emirates</option>
+    <option value="United Kingdom">United Kingdom</option>
+    <option value="United States">United States</option>
+    <option value="Uruguay">Uruguay</option>
+    <option value="Uzbekistan">Uzbekistan</option>
+    <option value="Vanuatu">Vanuatu</option>
+    <option value="Vatican City">Vatican City</option>
+    <option value="Venezuela">Venezuela</option>
+    <option value="Vietnam">Vietnam</option>
+    <option value="Yemen">Yemen</option>
+    <option value="Zambia">Zambia</option>
+    <option value="Zimbabwe">Zimbabwe</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseState">State</label>
+    <select id="fmEditSpouseState">
+    <option value=""></option>
+    <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+    <option value="Andhra Pradesh">Andhra Pradesh</option>
+    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+    <option value="Assam">Assam</option>
+    <option value="Bihar">Bihar</option>
+    <option value="Chandigarh">Chandigarh</option>
+    <option value="Chhattisgarh">Chhattisgarh</option>
+    <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+    <option value="Delhi">Delhi</option>
+    <option value="Goa">Goa</option>
+    <option value="Gujarat">Gujarat</option>
+    <option value="Haryana">Haryana</option>
+    <option value="Himachal Pradesh">Himachal Pradesh</option>
+    <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+    <option value="Jharkhand">Jharkhand</option>
+    <option value="Karnataka">Karnataka</option>
+    <option value="Kerala">Kerala</option>
+    <option value="Ladakh">Ladakh</option>
+    <option value="Lakshadweep">Lakshadweep</option>
+    <option value="Madhya Pradesh">Madhya Pradesh</option>
+    <option value="Maharashtra">Maharashtra</option>
+    <option value="Manipur">Manipur</option>
+    <option value="Meghalaya">Meghalaya</option>
+    <option value="Mizoram">Mizoram</option>
+    <option value="Nagaland">Nagaland</option>
+    <option value="Odisha">Odisha</option>
+    <option value="Puducherry">Puducherry</option>
+    <option value="Punjab">Punjab</option>
+    <option value="Rajasthan">Rajasthan</option>
+    <option value="Sikkim">Sikkim</option>
+    <option value="Tamil Nadu">Tamil Nadu</option>
+    <option value="Telangana">Telangana</option>
+    <option value="Tripura">Tripura</option>
+    <option value="Uttar Pradesh">Uttar Pradesh</option>
+    <option value="Uttarakhand">Uttarakhand</option>
+    <option value="West Bengal">West Bengal</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseZone">Zone</label>
+    <input id="fmEditSpouseZone" type="text"/>
+    </div>
+    <div class="fm-edit-field fm-edit-field-span-2">
+    <label for="fmEditSpouseCity">City / District</label>
+    <input id="fmEditSpouseCity" type="text"/>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseGoogleMap">Home Location Google Map</label>
+    <input id="fmEditSpouseGoogleMap" type="text"/>
+    </div>
+    <div class="fm-edit-field fm-edit-field-full">
+    <label for="fmEditSpouseAddress">Latest Address</label>
+    <textarea id="fmEditSpouseAddress" rows="2"></textarea>
+    </div>
+  </div>
+</section><section class="fm-edit-group">
+  <h5 class="fm-edit-group-title">Professional & Community Details</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseActivities">Present Activities</label>
+    <textarea id="fmEditSpouseActivities" rows="2"></textarea>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseSkills">Profession / Skills</label>
+    <textarea id="fmEditSpouseSkills" rows="2"></textarea>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseContributions">KEF / KEF Global Contributions</label>
+    <textarea id="fmEditSpouseContributions" rows="2"></textarea>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseVolunteer">Willing to Volunteer</label>
+    <select id="fmEditSpouseVolunteer">
+    <option value=""></option>
+    <option value="YES">Yes</option>
+    <option value="NO">No</option>
+    <option value="SHALL DECIDE LATER">Shall Decide Later</option>
+    </select>
+    </div>
+    <div class="fm-edit-field">
+    <label for="fmEditSpouseDataConsent">Data Consent</label>
+    <input id="fmEditSpouseDataConsent" type="text"/>
+    </div>
+  </div>
+</section><section class="fm-edit-group fm-edit-group-remarks">
+  <h5 class="fm-edit-group-title">Remarks</h5>
+  <div class="fm-edit-grid">
+    <div class="fm-edit-field fm-edit-field-full">
+    <label for="fmEditSpouseRemarks">Remarks</label>
+    <textarea id="fmEditSpouseRemarks" rows="1"></textarea>
+    </div>
+  </div>
+</section>
+
+      </section>
+
+      <div class="fm-edit-bottom-actions">
+        <button
+          id="fmSaveFamilyProfileButtonBottom"
+          class="fm-primary-button"
+          type="button"
+          disabled>
+          Save Changes
+        </button>
+
+        <button
+          id="fmCancelFamilyProfileButtonBottom"
+          class="fm-secondary-button"
+          type="button">
+          Cancel
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</section>
+
+  <section id="fmFamilyMemberFormSection" class="fm-panel" hidden>
+    <div class="fm-section-header">
+      <div>
+        <h3 id="fmFamilyMemberFormTitle" class="fm-section-title">Add Family Member</h3>
+        <p class="fm-section-description">
+          The first DEPENDANT_ID starts from FAMILY_ID + 03.
+        </p>
+      </div>
+      <button id="fmCloseFamilyMemberFormButton" class="fm-secondary-button" type="button">
+        Close
+      </button>
+    </div>
+
+    <div id="fmFamilyMemberFormHost">
+      <div class="fm-empty-state">
+        The Add/Edit Family Member form will be connected in a later phase.
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+#kgmisFamilyManagementModule {
+  width: 100%;
+  min-width: 0;
+  color: #1f2937;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#kgmisFamilyManagementModule *,
+#kgmisFamilyManagementModule *::before,
+#kgmisFamilyManagementModule *::after {
+  box-sizing: border-box;
+}
+
+.fm-page-header,
+.fm-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.fm-page-header,
+.fm-panel {
+  margin-bottom: 18px;
+}
+
+.fm-section-header {
+  margin-bottom: 18px;
+}
+
+.fm-page-title,
+.fm-section-title {
+  margin: 0;
+  color: #0d4e70;
+}
+
+.fm-page-title {
+  font-size: 25px;
+  line-height: 1.15;
+}
+
+.fm-section-title {
+  font-size: 19px;
+}
+
+.fm-page-description,
+.fm-section-description {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.fm-module-badge,
+.fm-family-id-badge {
+  padding: 7px 11px;
+  border: 1px solid #b9d7e6;
+  border-radius: 999px;
+  color: #0d4e70;
+  background: #e7f4f9;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fm-panel {
+  width: 100%;
+  padding: 20px;
+  border: 1px solid #d5e0e8;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(15, 76, 105, 0.06);
+}
+
+.fm-panel[hidden] {
+  display: none;
+}
+
+.fm-search-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.fm-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fm-field input,
+.fm-field select {
+  width: 100%;
+  min-height: 43px;
+  padding: 9px 11px;
+  border: 1px solid #d5e0e8;
+  border-radius: 9px;
+  color: #1f2937;
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.fm-field input:focus,
+.fm-field select:focus {
+  border-color: #176c91;
+  box-shadow: 0 0 0 3px rgba(23, 108, 145, 0.12);
+}
+
+.fm-primary-button,
+.fm-secondary-button {
+  min-height: 41px;
+  padding: 9px 15px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.fm-primary-button {
+  border: 1px solid #176c91;
+  color: #ffffff;
+  background: #176c91;
+}
+
+.fm-secondary-button {
+  border: 1px solid #176c91;
+  color: #0d4e70;
+  background: #ffffff;
+}
+
+.fm-status {
+  min-height: 20px;
+  margin-top: 12px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.fm-status.error {
+  color: #b42318;
+}
+
+.fm-search-results {
+  display: grid;
+  gap: 12px;
+}
+
+.fm-empty-state {
+  padding: 20px;
+  border: 1px dashed #d5e0e8;
+  border-radius: 11px;
+  color: #64748b;
+  background: #fbfdfe;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.fm-family-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fm-summary-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #d5e0e8;
+  border-radius: 11px;
+  background: #fbfdfe;
+}
+
+.fm-summary-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.fm-summary-value {
+  display: block;
+  color: #0d4e70;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.fm-record-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #d5e0e8;
+}
+
+.fm-record-tab {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid #d5e0e8;
+  border-radius: 9px;
+  color: #0d4e70;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.fm-record-tab.active {
+  border-color: #176c91;
+  color: #ffffff;
+  background: #176c91;
+}
+
+.fm-record-panel {
+  display: none;
+}
+
+.fm-record-panel.active {
+  display: block;
+}
+
+.fm-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #d5e0e8;
+  border-radius: 11px;
+}
+
+.fm-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+.fm-table th,
+.fm-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e7edf2;
+  text-align: left;
+  vertical-align: top;
+  font-size: 12px;
+}
+
+.fm-table th {
+  color: #0d4e70;
+  background: #e7f4f9;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+
+/* Search Result Cards */
+.fm-result-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid #d5e0e8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.fm-result-title {
+  margin: 0;
+  color: #0d4e70;
+  font-size: 17px;
+}
+
+.fm-result-subtitle {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.fm-result-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 18px;
+  margin-top: 12px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.fm-result-details strong {
+  color: #1f2937;
+}
+
+.fm-result-action {
+  min-width: 130px;
+}
+
+/* Read-only Profile Display */
+.fm-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fm-profile-item {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #d5e0e8;
+  border-radius: 10px;
+  background: #fbfdfe;
+}
+
+.fm-profile-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.fm-profile-value {
+  display: block;
+  color: #1f2937;
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.fm-loading {
+  padding: 18px;
+  color: #64748b;
+  text-align: center;
+  font-size: 13px;
+}
+
+
+
+.fm-edit-person-section {
+  padding: 18px;
+  margin-bottom: 20px;
+  border: 1px solid #d5e0e8;
+  border-radius: 13px;
+  background: #fbfdfe;
+}
+
+.fm-edit-section-title {
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #b9d7e6;
+  color: #0d4e70;
+  font-size: 17px;
+}
+
+.fm-edit-group {
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid #e1e8ee;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.fm-edit-group:last-child {
+  margin-bottom: 0;
+}
+
+.fm-edit-group-title {
+  margin: 0 0 11px;
+  color: #0d4e70;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.fm-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px 12px;
+}
+
+.fm-edit-group-two-columns .fm-edit-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fm-edit-field {
+  min-width: 0;
+}
+
+.fm-edit-field-span-2 {
+  grid-column: span 2;
+}
+
+.fm-edit-field-full {
+  grid-column: 1 / -1;
+}
+
+.fm-edit-field label {
+  display: block;
+  margin-bottom: 5px;
+  color: #334155;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.fm-edit-field input,
+.fm-edit-field select,
+.fm-edit-field textarea {
+  width: 100%;
+  min-height: 39px;
+  padding: 8px 10px;
+  border: 1px solid #d5e0e8;
+  border-radius: 8px;
+  color: #1f2937;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.fm-edit-field textarea {
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.fm-edit-group-remarks textarea {
+  min-height: 39px;
+}
+
+.fm-edit-field input:focus,
+.fm-edit-field select:focus,
+.fm-edit-field textarea:focus {
+  border-color: #176c91;
+  box-shadow: 0 0 0 3px rgba(23, 108, 145, 0.12);
+}
+
+.fm-edit-field input[readonly] {
+  color: #64748b;
+  background: #f1f5f8;
+}
+
+.fm-edit-action-row,
+.fm-edit-bottom-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.fm-edit-bottom-actions {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #d5e0e8;
+}
+
+@media (max-width: 1000px) {
+  .fm-search-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fm-search-button-wrap {
+    grid-column: 1 / -1;
+  }
+
+  .fm-search-button-wrap .fm-primary-button {
+    width: 100%;
+  }
+
+  .fm-family-summary-grid,
+  .fm-profile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fm-edit-grid,
+  .fm-edit-group-two-columns .fm-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 650px) {
+  .fm-page-header,
+  .fm-section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fm-search-controls,
+  .fm-family-summary-grid,
+  .fm-profile-grid,
+  .fm-result-details {
+    grid-template-columns: 1fr;
+  }
+
+  .fm-edit-grid,
+  .fm-edit-group-two-columns .fm-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fm-edit-field-full,
+  .fm-edit-field-span-2 {
+    grid-column: auto;
+  }
+
+  .fm-edit-person-section,
+  .fm-edit-group {
+    padding: 12px;
+  }
+
+  .fm-result-card {
+    grid-template-columns: 1fr;
+  }
+
+  .fm-result-action {
+    width: 100%;
+  }
+
+  .fm-search-button-wrap {
+    grid-column: auto;
+  }
+
+  .fm-primary-button,
+  .fm-secondary-button {
+    width: 100%;
+  }
+
+  .fm-edit-bottom-actions {
+    flex-direction: column;
+  }
+
+  .fm-panel {
+    padding: 15px;
+  }
+}
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  const root =
+    document.getElementById(
+      'kgmisFamilyManagementModule'
+    );
+
+  if (!root) {
+    return;
+  }
+
+  let currentFamily = null;
+
+    const FAMILY_PROFILE_FIELDS = Object.freeze({
+
+    primary: Object.freeze({
+
+      readOnly: Object.freeze({
+
+        KEFG_ID:
+          'fmEditPrimaryKefgId',
+
+        FAMILY_ID:
+          'fmEditFamilyId',
+
+        RELATED_MEMBER_KEFG_ID:
+          'fmEditPrimaryRelatedKefgId',
+
+        PROFILE_LAST_UPDATED:
+          'fmEditPrimaryProfileLastUpdated'
+
+      }),
+
+      editable: Object.freeze({
+
+        MEMBER_CATEGORY:
+          'fmEditPrimaryCategory',
+
+        RECORD_STATUS:
+          'fmEditPrimaryRecordStatus',
+
+        MEMBER_NAME:
+          'fmEditPrimaryName',
+
+        PHOTO:
+          'fmEditPrimaryPhoto',
+
+        FAMILY_PHOTO:
+          'fmEditPrimaryFamilyPhoto',
+
+        GENDER:
+          'fmEditPrimaryGender',
+
+        BLOOD_GROUP:
+          'fmEditPrimaryBloodGroup',
+
+        ALUMNI_ASSOCIATION:
+          'fmEditPrimaryAlumniAssociation',
+
+        BRANCH:
+          'fmEditPrimaryBranch',
+
+        YEAR_BATCH:
+          'fmEditPrimaryBatchYear',
+
+        TYPE_OF_MEMBERSHIP:
+          'fmEditPrimaryMembershipType',
+
+        MEMBER_MOBILE:
+          'fmEditPrimaryMobile',
+
+        MEMBER_WHATSAPP:
+          'fmEditPrimaryWhatsapp',
+
+        MEMBER_EMAIL:
+          'fmEditPrimaryEmail',
+
+        WHATSAPP_GROUP_MEMBER:
+          'fmEditPrimaryWhatsappGroup',
+
+        CURRENT_LOCATION_COUNTRY:
+          'fmEditPrimaryCountry',
+
+        CURRENT_LOCATION_STATE:
+          'fmEditPrimaryState',
+
+        CURRENT_LOCATION_CITY_DISTRICT:
+          'fmEditPrimaryCity',
+
+        LATEST_ADDRESS:
+          'fmEditPrimaryAddress',
+
+        HOME_LOCATION_GOOGLE_MAP:
+          'fmEditPrimaryGoogleMap',
+
+        ZONE:
+          'fmEditPrimaryZone',
+
+        MEMBER_PRESENT_ACTIVITIES:
+          'fmEditPrimaryActivities',
+
+        MEMBER_PROFESSION_SKILLS:
+          'fmEditPrimarySkills',
+
+        KEF_KEFGLOBAL_CONTRIBUTIONS:
+          'fmEditPrimaryContributions',
+
+        MEMBER_WILLING_TO_VOLUNTEER:
+          'fmEditPrimaryVolunteer',
+
+        MEMBER_DOB_FULL:
+          'fmEditPrimaryDobFull',
+
+        WEDDING_DATE_FULL:
+          'fmEditPrimaryWeddingDateFull',
+
+        PREFERRED_FAMILY_CONTACT:
+          'fmEditPrimaryPreferredFamilyContact',
+
+        DATA_CONSENT:
+          'fmEditPrimaryDataConsent',
+
+        WILLING_TO_JOIN:
+          'fmEditPrimaryWillingToJoin',
+
+        REMARKS:
+          'fmEditPrimaryRemarks'
+
+      })
+
+    }),
+
+          spouse: Object.freeze({
+
+      readOnly: Object.freeze({
+
+        KEFG_ID:
+          'fmEditSpouseKefgId',
+
+        FAMILY_ID:
+          'fmEditSpouseFamilyId',
+
+        RELATED_MEMBER_KEFG_ID:
+          'fmEditSpouseRelatedKefgId',
+
+        PROFILE_LAST_UPDATED:
+          'fmEditSpouseProfileLastUpdated'
+
+      }),
+
+      editable: Object.freeze({
+
+        MEMBER_CATEGORY:
+          'fmEditSpouseCategory',
+
+        RECORD_STATUS:
+          'fmEditSpouseRecordStatus',
+
+        MEMBER_NAME:
+          'fmEditSpouseName',
+
+        PHOTO:
+          'fmEditSpousePhoto',
+
+        FAMILY_PHOTO:
+          'fmEditSpouseFamilyPhoto',
+
+        GENDER:
+          'fmEditSpouseGender',
+
+        BLOOD_GROUP:
+          'fmEditSpouseBloodGroup',
+
+        ALUMNI_ASSOCIATION:
+          'fmEditSpouseAlumniAssociation',
+
+        BRANCH:
+          'fmEditSpouseBranch',
+
+        YEAR_BATCH:
+          'fmEditSpouseBatchYear',
+
+        TYPE_OF_MEMBERSHIP:
+          'fmEditSpouseMembershipType',
+
+        MEMBER_MOBILE:
+          'fmEditSpouseMobile',
+
+        MEMBER_WHATSAPP:
+          'fmEditSpouseWhatsapp',
+
+        MEMBER_EMAIL:
+          'fmEditSpouseEmail',
+
+        WHATSAPP_GROUP_MEMBER:
+          'fmEditSpouseWhatsappGroup',
+
+        CURRENT_LOCATION_COUNTRY:
+          'fmEditSpouseCountry',
+
+        CURRENT_LOCATION_STATE:
+          'fmEditSpouseState',
+
+        CURRENT_LOCATION_CITY_DISTRICT:
+          'fmEditSpouseCity',
+
+        LATEST_ADDRESS:
+          'fmEditSpouseAddress',
+
+        HOME_LOCATION_GOOGLE_MAP:
+          'fmEditSpouseGoogleMap',
+
+        ZONE:
+          'fmEditSpouseZone',
+
+        MEMBER_PRESENT_ACTIVITIES:
+          'fmEditSpouseActivities',
+
+        MEMBER_PROFESSION_SKILLS:
+          'fmEditSpouseSkills',
+
+        KEF_KEFGLOBAL_CONTRIBUTIONS:
+          'fmEditSpouseContributions',
+
+        MEMBER_WILLING_TO_VOLUNTEER:
+          'fmEditSpouseVolunteer',
+
+        MEMBER_DOB_FULL:
+          'fmEditSpouseDobFull',
+
+        PREFERRED_FAMILY_CONTACT:
+          'fmEditSpousePreferredFamilyContact',
+
+        DATA_CONSENT:
+          'fmEditSpouseDataConsent',
+
+        WILLING_TO_JOIN:
+          'fmEditSpouseWillingToJoin',
+
+        REMARKS:
+          'fmEditSpouseRemarks'
+
+      })
+
+    })
+
+  });
+
+
+  const searchText = root.querySelector('#fmSearchText');
+  const searchButton = root.querySelector('#fmSearchButton');
+  const searchStatus = root.querySelector('#fmSearchStatus');
+  const searchResults = root.querySelector('#fmSearchResults');
+
+  const selectedFamilySection =
+    root.querySelector('#fmSelectedFamilySection');
+  const selectedFamilyIdBadge =
+    root.querySelector('#fmSelectedFamilyIdBadge');
+  const selectedFamilyId =
+    root.querySelector('#fmSelectedFamilyId');
+  const selectedPrimaryMember =
+    root.querySelector('#fmSelectedPrimaryMember');
+  const selectedSpouse =
+    root.querySelector('#fmSelectedSpouse');
+  const selectedSpouseLabel =
+    root.querySelector('#fmSelectedSpouseLabel');
+  const selectedFamilyStatus =
+    root.querySelector('#fmSelectedFamilyStatus');
+
+  const familyProfileSection =
+    root.querySelector('#fmFamilyProfileSection');
+  const primaryMemberProfile =
+    root.querySelector('#fmPrimaryMemberProfile');
+  const spouseProfile =
+    root.querySelector('#fmSpouseProfile');
+
+  const editFamilyProfileSection =
+    root.querySelector(
+    '#fmEditFamilyProfileSection'
+  );
+
+  const editFamilyProfileButton =
+    root.querySelector(
+    '#fmEditFamilyProfileButton'
+  );
+
+  const cancelFamilyProfileButton =
+    root.querySelector(
+    '#fmCancelFamilyProfileButton'
+  );
+
+  const cancelFamilyProfileButtonBottom =
+    root.querySelector(
+      '#fmCancelFamilyProfileButtonBottom'
+  );
+
+  const saveFamilyProfileButton =
+    root.querySelector(
+      '#fmSaveFamilyProfileButton'
+  );
+
+  const saveFamilyProfileButtonBottom =
+    root.querySelector(
+      '#fmSaveFamilyProfileButtonBottom'
+  );
+
+  const saveFamilyProfileStatus =
+  root.querySelector(
+    '#fmSaveFamilyProfileStatus'
+  );
+
+  const familyMembersSection =
+    root.querySelector('#fmFamilyMembersSection');
+  const familyMembersTableBody =
+    root.querySelector('#fmFamilyMembersTableBody');
+
+  const familyMemberFormSection =
+    root.querySelector('#fmFamilyMemberFormSection');
+  const closeFamilyMemberFormButton =
+    root.querySelector('#fmCloseFamilyMemberFormButton');
+
+  const recordTabs =
+    root.querySelectorAll('[data-fm-record-tab]');
+  const recordPanels =
+    root.querySelectorAll('[data-fm-record-panel]');
+
+
+  function escapeHtml(value) {
+    return String(
+      value === null || value === undefined
+        ? ''
+        : value
+    )
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+
+  function displayValue(value) {
+    const text = String(
+      value === null || value === undefined
+        ? ''
+        : value
+    ).trim();
+
+    return text || '—';
+  }
+
+
+  function setSearchStatus(message, isError) {
+    if (!searchStatus) {
+      return;
+    }
+
+    searchStatus.className =
+      'fm-status' +
+      (isError ? ' error' : '');
+
+    searchStatus.textContent =
+      String(message || '');
+  }
+
+  function setSaveStatus(
+    message,
+    isError
+    ) {
+    if (!saveFamilyProfileStatus) {
+    return;
+  }
+
+  saveFamilyProfileStatus.className =
+    'fm-status' +
+    (isError ? ' error' : '');
+
+  saveFamilyProfileStatus.textContent =
+    String(message || '');
+  }
+
+  function setSearchBusy(isBusy) {
+    const busy = Boolean(isBusy);
+
+    if (searchButton) {
+      searchButton.disabled = busy;
+      searchButton.textContent =
+        busy ? 'Searching…' : '🔍 Search';
+    }
+
+    if (searchText) {
+      searchText.disabled = busy;
+    }
+
+  }
+
+
+  function hideFamilyDetails() {
+    if (selectedFamilySection) {
+      selectedFamilySection.hidden = true;
+    }
+
+    if (familyProfileSection) {
+      familyProfileSection.hidden = true;
+    }
+
+    if (familyMembersSection) {
+      familyMembersSection.hidden = true;
+    }
+
+    if (familyMemberFormSection) {
+      familyMemberFormSection.hidden = true;
+    }
+  }
+
+
+  function searchFamilies() {
+    const value = String(
+      searchText ? searchText.value : ''
+    ).trim();
+
+    const type = 'ALL';
+
+    if (!value) {
+      setSearchStatus(
+        'Enter a search value.',
+        true
+      );
+
+      if (searchText) {
+        searchText.focus();
+      }
+
+      return;
+    }
+
+    if (value.length < 2) {
+      setSearchStatus(
+        'Enter at least two characters to search.',
+        true
+      );
+      return;
+    }
+
+    hideFamilyDetails();
+    setSearchBusy(true);
+    setSearchStatus('Searching KGMIS families…', false);
+
+    if (searchResults) {
+      searchResults.innerHTML =
+        '<div class="fm-loading">Searching…</div>';
+    }
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        setSearchBusy(false);
+
+        if (!response || response.success !== true) {
+          setSearchStatus(
+            response && response.message
+              ? response.message
+              : 'The family search could not be completed.',
+            true
+          );
+          renderSearchResults([]);
+          return;
+        }
+
+        setSearchStatus(
+          response.message || 'Search completed.',
+          false
+        );
+
+        renderSearchResults(response.results || []);
+      })
+      .withFailureHandler(function (error) {
+        setSearchBusy(false);
+        setSearchStatus(
+          error && error.message
+            ? error.message
+            : String(error || 'The family search failed.'),
+          true
+        );
+        renderSearchResults([]);
+      })
+      .KGMIS_FamilyManagement_SearchFamilies(
+        value,
+        type
+      );
+  }
+
+
+  function renderSearchResults(results) {
+    if (!searchResults) {
+      return;
+    }
+
+    const safeResults =
+      Array.isArray(results) ? results : [];
+
+    if (!safeResults.length) {
+      searchResults.innerHTML =
+        '<div class="fm-empty-state">' +
+          'No matching families were found.' +
+        '</div>';
+      return;
+    }
+
+    searchResults.innerHTML = safeResults
+      .map(function (result) {
+        const primary = result.primaryMember || {};
+        const spouse = result.spouse || {};
+
+        return (
+          '<article class="fm-result-card">' +
+            '<div>' +
+              '<h4 class="fm-result-title">' +
+                escapeHtml(result.familyId || 'Family') +
+              '</h4>' +
+              '<p class="fm-result-subtitle">' +
+                escapeHtml(primary.memberName || 'Primary Member not identified') +
+                (spouse.memberName
+                  ? ' &amp; ' + escapeHtml(spouse.memberName)
+                  : '') +
+              '</p>' +
+              '<div class="fm-result-details">' +
+                detailHtml('Primary KEFG ID', primary.kefgId) +
+                detailHtml('Spouse KEFG ID', spouse.kefgId) +
+                detailHtml('Primary Mobile', primary.mobile) +
+                detailHtml('Spouse Mobile', spouse.mobile) +
+                detailHtml('Zone', result.zone) +
+                detailHtml('Matched By', formatFieldName(result.matchedField)) +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<button type="button" ' +
+                'class="fm-primary-button fm-result-action" ' +
+                'data-fm-open-family="' +
+                escapeHtml(result.familyId || '') +
+                '">' +
+                'Open Family' +
+              '</button>' +
+            '</div>' +
+          '</article>'
+        );
+      })
+      .join('');
+  }
+
+
+  function detailHtml(label, value) {
+    const cleanValue = String(value || '').trim();
+
+    if (!cleanValue) {
+      return '';
+    }
+
+    return (
+      '<div><strong>' +
+      escapeHtml(label) +
+      ':</strong> ' +
+      escapeHtml(cleanValue) +
+      '</div>'
+    );
+  }
+
+
+  function formatFieldName(value) {
+    return String(value || '')
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, function (letter) {
+        return letter.toUpperCase();
+      });
+  }
+
+
+  function openFamily(familyId, button) {
+    const safeFamilyId = String(familyId || '')
+      .trim()
+      .toUpperCase();
+
+    if (!safeFamilyId) {
+      setSearchStatus(
+        'The selected FAMILY_ID is missing.',
+        true
+      );
+      return;
+    }
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Loading…';
+    }
+
+    setSearchStatus(
+      'Loading the complete family profile…',
+      false
+    );
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'Open Family';
+        }
+
+        if (
+          !response ||
+          response.success !== true ||
+          !response.family
+        ) {
+          setSearchStatus(
+            response && response.message
+              ? response.message
+              : 'The selected family could not be loaded.',
+            true
+          );
+          return;
+        }
+
+        renderFamily(response.family);
+
+        setSearchStatus(
+          response.message ||
+          'The selected family was loaded successfully.',
+          false
+        );
+      })
+      .withFailureHandler(function (error) {
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'Open Family';
+        }
+
+        setSearchStatus(
+          error && error.message
+            ? error.message
+            : String(error || 'The selected family could not be loaded.'),
+          true
+        );
+      })
+      .KGMIS_FamilyManagement_GetFamily(
+        safeFamilyId
+      );
+  }
+
+
+  function renderFamily(family) {
+    currentFamily = family;
+    const internal = family.internal || {};
+    const overview = family.overview || {};
+    const member = family.member || {};
+    const spouse = family.spouse || {};
+    const spouseCategory =
+      family.internal &&
+      family.internal.spouseKefgId &&
+      spouse.memberCategory
+        ? spouse.memberCategory
+        : 'SPOUSE';
+
+    if (selectedFamilyIdBadge) {
+      selectedFamilyIdBadge.textContent =
+        internal.familyId || 'FAMILY ID';
+    }
+
+    if (selectedFamilyId) {
+      selectedFamilyId.textContent =
+        displayValue(internal.familyId);
+    }
+
+    if (selectedPrimaryMember) {
+      selectedPrimaryMember.textContent =
+        displayValue(overview.primaryMemberName);
+    }
+
+    if (selectedSpouseLabel) {
+      selectedSpouseLabel.textContent =
+        displayValue(spouseCategory);
+}
+
+    if (selectedSpouse) {
+      selectedSpouse.textContent =
+        displayValue(overview.spouseName);
+    }
+
+    if (selectedFamilyStatus) {
+      selectedFamilyStatus.textContent =
+        displayValue(overview.recordStatus);
+    }
+
+    if (primaryMemberProfile) {
+      primaryMemberProfile.innerHTML =
+        buildPrimaryMemberProfile(family);
+    }
+
+    if (spouseProfile) {
+      spouseProfile.innerHTML =
+        buildSpouseProfile(family);
+    }
+
+    renderFamilyMembers(family.familyMembers || []);
+    
+    populateEditFamilyProfile(family);
+
+    if (selectedFamilySection) {
+      selectedFamilySection.hidden = false;
+    }
+
+    if (familyProfileSection) {
+      familyProfileSection.hidden = false;
+    }
+
+    if (familyMembersSection) {
+      familyMembersSection.hidden = false;
+    }
+
+    openRecordTab('primary');
+
+    if (selectedFamilySection) {
+      selectedFamilySection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }
+
+
+  function buildPrimaryMemberProfile(family) {
+    const internal = family.internal || {};
+    const overview = family.overview || {};
+    const member = family.member || {};
+    const personal = member.personal || {};
+    const alumni = member.alumni || {};
+    const contact = member.contact || {};
+    const location = member.location || {};
+    const professional = member.professional || {};
+    const familyInfo = family.family || {};
+    const familyPhoto = familyInfo.photo || {};
+    const weddingDate = familyInfo.weddingDate || {};
+    const communication = family.communication || {};
+
+    return buildProfileGrid([
+      ['KEFG ID', internal.primaryKefgId],
+      ['Family ID', internal.familyId],
+      ['Related Member KEFG ID', internal.relatedMemberKefgId],
+      ['Member Category', member.memberCategory],
+      ['Record Status', member.recordStatus || overview.recordStatus],
+      ['Member Name', member.fullName],
+      ['Photo', member.photo],
+      ['Family Photo', member.familyPhoto || familyPhoto.existingValue],
+      ['Gender', personal.gender],
+      ['Blood Group', personal.bloodGroup],
+      ['Full Date of Birth', personal.dateOfBirthDisplay],
+      ['Alumni Association', alumni.association],
+      ['Branch', alumni.branch],
+      ['Batch Year', alumni.batchYear],
+      ['Type of Membership', member.membershipType],
+      ['Mobile', contact.mobile],
+      ['WhatsApp', contact.whatsapp],
+      ['Email', contact.email],
+      ['WhatsApp Group Member', contact.whatsappGroupMember],
+      ['Country', location.country],
+      ['State', location.state],
+      ['City / District', location.cityDistrict],
+      ['Latest Address', location.address],
+      ['Home Location Google Map', location.googleMapLink],
+      ['Zone', location.zone || overview.zone],
+      ['Present Activities', professional.presentActivities],
+      ['Profession / Skills', professional.professionSkills],
+      ['KEF / KEF Global Contributions', professional.contributions],
+      ['Willing to Volunteer', professional.willingToVolunteer],
+      ['Wedding Date', weddingDate.display],
+      ['Preferred Family Contact', communication.preferredFamilyContact],
+      ['Data Consent', communication.dataConsent],
+      ['Willing to Join', communication.willingToJoin],
+      ['Profile Last Updated', member.profileLastUpdated || overview.profileLastUpdated],
+      ['Remarks', member.remarks || communication.remarks]
+    ]);
+  }
+
+
+  function buildSpouseProfile(family) {
+    const internal = family.internal || {};
+    const overview = family.overview || {};
+    const spouse = family.spouse || {};
+
+    if (!spouse || spouse.exists !== true) {
+      return (
+        '<div class="fm-empty-state">' +
+          'No spouse profile was found for this family.' +
+        '</div>'
+      );
+    }
+
+    const personal = spouse.personal || {};
+    const alumni = spouse.alumni || {};
+    const contact = spouse.contact || {};
+    const location = spouse.location || {};
+    const professional = spouse.professional || {};
+    const familyInfo = family.family || {};
+    const familyPhoto = familyInfo.photo || {};
+    const communication = family.communication || {};
+
+    return buildProfileGrid([
+      ['KEFG ID', internal.spouseKefgId],
+      ['Family ID', internal.familyId],
+      ['Related Member KEFG ID', internal.primaryKefgId],
+      ['Member Category', spouse.memberCategory],
+      ['Record Status', spouse.recordStatus],
+      ['Member Name', spouse.fullName],
+      ['Photo', spouse.photo],
+      ['Family Photo', spouse.familyPhoto || familyPhoto.existingValue],
+      ['Gender', personal.gender],
+      ['Blood Group', personal.bloodGroup],
+      ['Full Date of Birth', personal.dateOfBirthDisplay],
+      ['Alumni Association', alumni.association],
+      ['Branch', alumni.branch],
+      ['Batch Year', alumni.batchYear],
+      ['Type of Membership', spouse.membershipType],
+      ['Mobile', contact.mobile],
+      ['WhatsApp', contact.whatsapp],
+      ['Email', contact.email],
+      ['WhatsApp Group Member', contact.whatsappGroupMember],
+      ['Country', location.country],
+      ['State', location.state],
+      ['City / District', location.cityDistrict],
+      ['Latest Address', location.address],
+      ['Home Location Google Map', location.googleMapLink],
+      ['Zone', location.zone || overview.zone],
+      ['Present Activities', professional.presentActivities],
+      ['Profession / Skills', professional.professionSkills],
+      ['KEF / KEF Global Contributions', professional.contributions],
+      ['Willing to Volunteer', professional.willingToVolunteer],
+      ['Preferred Family Contact', communication.preferredFamilyContact],
+      ['Data Consent', communication.dataConsent],
+      ['Willing to Join', communication.willingToJoin],
+      ['Profile Last Updated', spouse.profileLastUpdated || overview.profileLastUpdated],
+      ['Remarks', spouse.remarks]
+    ]);
+  }
+
+
+  function buildProfileGrid(items) {
+    return (
+      '<div class="fm-profile-grid">' +
+      items.map(function (item) {
+        return (
+          '<div class="fm-profile-item">' +
+            '<span class="fm-profile-label">' +
+              escapeHtml(item[0]) +
+            '</span>' +
+            '<span class="fm-profile-value">' +
+              escapeHtml(displayValue(item[1])) +
+            '</span>' +
+          '</div>'
+        );
+      }).join('') +
+      '</div>'
+    );
+  }
+
+
+  function renderFamilyMembers(records) {
+    if (!familyMembersTableBody) {
+      return;
+    }
+
+    const safeRecords =
+      Array.isArray(records) ? records : [];
+
+    if (!safeRecords.length) {
+      familyMembersTableBody.innerHTML =
+        '<tr><td colspan="8">' +
+          '<div class="fm-empty-state">' +
+            'No family-member records were found.' +
+          '</div>' +
+        '</td></tr>';
+      return;
+    }
+
+    familyMembersTableBody.innerHTML = safeRecords
+      .map(function (record) {
+        return (
+          '<tr>' +
+            '<td>' + escapeHtml(displayValue(record.DEPENDANT_ID)) + '</td>' +
+            '<td><strong>' + escapeHtml(displayValue(record.FULL_NAME)) + '</strong></td>' +
+            '<td>' + escapeHtml(displayValue(record.FAMILY_RELATION)) + '</td>' +
+            '<td>' + escapeHtml(displayValue(record.RELATED_KEFG_ID)) + '</td>' +
+            '<td>' + escapeHtml(displayValue(record.MOBILE)) + '</td>' +
+            '<td>' + escapeHtml(displayValue(record.CARD_ELIGIBLE)) + '</td>' +
+            '<td>' + escapeHtml(displayValue(record.RECORD_STATUS)) + '</td>' +
+            '<td><button type="button" class="fm-secondary-button" disabled>Edit</button></td>' +
+          '</tr>'
+        );
+      })
+      .join('');
+  }
+
+  function setEditFieldValue(
+  elementId,
+  value
+) {
+
+  const field =
+    root.querySelector(
+      '#' + elementId
+    );
+
+  if (!field) {
+    return;
+  }
+
+  field.value =
+    value === null ||
+    value === undefined
+      ? ''
+      : String(value);
+
+}
+
+  function collectFamilyProfileData() {
+
+    function collectFields(fieldMap) {
+      const collected = {};
+
+      Object.keys(fieldMap).forEach(function (databaseField) {
+        const elementId = fieldMap[databaseField];
+
+        const field =
+          root.querySelector(
+            '#' + elementId
+          );
+
+        if (!field) {
+          throw new Error(
+            'Edit field not found: ' +
+            elementId
+          );
+        }
+
+        collected[databaseField] =
+          String(
+            field.value === null ||
+            field.value === undefined
+              ? ''
+              : field.value
+          ).trim();
+      });
+
+      return collected;
+    }
+
+
+    const primaryReadOnly =
+      collectFields(
+        FAMILY_PROFILE_FIELDS
+          .primary
+          .readOnly
+      );
+
+    const primaryEditable =
+      collectFields(
+        FAMILY_PROFILE_FIELDS
+          .primary
+          .editable
+      );
+
+    const spouseReadOnly =
+      collectFields(
+        FAMILY_PROFILE_FIELDS
+          .spouse
+          .readOnly
+      );
+
+    const spouseEditable =
+      collectFields(
+        FAMILY_PROFILE_FIELDS
+          .spouse
+          .editable
+      );
+
+
+    return {
+      familyId:
+        primaryReadOnly.FAMILY_ID,
+
+      primary: {
+        identifiers: {
+          KEFG_ID:
+            primaryReadOnly.KEFG_ID,
+
+          FAMILY_ID:
+            primaryReadOnly.FAMILY_ID,
+
+          RELATED_MEMBER_KEFG_ID:
+            primaryReadOnly.RELATED_MEMBER_KEFG_ID
+        },
+
+        fields:
+          primaryEditable
+      },
+
+      spouse: {
+        exists:
+          Boolean(
+            spouseReadOnly.KEFG_ID ||
+            spouseEditable.MEMBER_NAME
+          ),
+
+        identifiers: {
+          KEFG_ID:
+            spouseReadOnly.KEFG_ID,
+
+          FAMILY_ID:
+            spouseReadOnly.FAMILY_ID,
+
+          RELATED_MEMBER_KEFG_ID:
+            spouseReadOnly.RELATED_MEMBER_KEFG_ID
+        },
+
+        fields:
+          spouseEditable
+      }
+    };
+  }
+
+
+function populateEditFamilyProfile(
+  family
+) {
+
+  const internal = family.internal || {};
+  const overview = family.overview || {};
+  const member = family.member || {};
+  const memberPersonal = member.personal || {};
+  const memberAlumni = member.alumni || {};
+  const memberContact = member.contact || {};
+  const memberLocation = member.location || {};
+  const memberProfessional = member.professional || {};
+
+  const familyInfo = family.family || {};
+  const familyPhoto = familyInfo.photo || {};
+  const weddingDate = familyInfo.weddingDate || {};
+  const communication = family.communication || {};
+
+  const spouse = family.spouse || {};
+  const spousePersonal = spouse.personal || {};
+  const spouseAlumni = spouse.alumni || {};
+  const spouseContact = spouse.contact || {};
+  const spouseLocation = spouse.location || {};
+  const spouseProfessional = spouse.professional || {};
+
+  setEditFieldValue('fmEditPrimaryKefgId', internal.primaryKefgId);
+  setEditFieldValue('fmEditFamilyId', internal.familyId);
+  setEditFieldValue('fmEditPrimaryRelatedKefgId', internal.relatedMemberKefgId);
+  setEditFieldValue('fmEditPrimaryCategory', member.memberCategory);
+  setEditFieldValue('fmEditPrimaryRecordStatus', member.recordStatus || overview.recordStatus);
+  setEditFieldValue('fmEditPrimaryName', member.fullName);
+  setEditFieldValue('fmEditPrimaryPhoto', member.photo);
+  setEditFieldValue('fmEditPrimaryFamilyPhoto', member.familyPhoto || familyPhoto.existingValue);
+  setEditFieldValue('fmEditPrimaryGender', memberPersonal.gender);
+  setEditFieldValue('fmEditPrimaryBloodGroup', memberPersonal.bloodGroup);
+  setEditFieldValue('fmEditPrimaryAlumniAssociation', memberAlumni.association);
+  setEditFieldValue('fmEditPrimaryBranch', memberAlumni.branch);
+  setEditFieldValue('fmEditPrimaryBatchYear', memberAlumni.batchYear);
+  setEditFieldValue('fmEditPrimaryMembershipType', member.membershipType);
+  setEditFieldValue('fmEditPrimaryMobile', memberContact.mobile);
+  setEditFieldValue('fmEditPrimaryWhatsapp', memberContact.whatsapp);
+  setEditFieldValue('fmEditPrimaryEmail', memberContact.email);
+  setEditFieldValue('fmEditPrimaryWhatsappGroup', memberContact.whatsappGroupMember);
+  setEditFieldValue('fmEditPrimaryCountry', memberLocation.country);
+  setEditFieldValue('fmEditPrimaryState', memberLocation.state);
+  setEditFieldValue('fmEditPrimaryCity', memberLocation.cityDistrict);
+  setEditFieldValue('fmEditPrimaryAddress', memberLocation.address);
+  setEditFieldValue('fmEditPrimaryGoogleMap', memberLocation.googleMapLink);
+  setEditFieldValue('fmEditPrimaryZone', overview.zone || memberLocation.zone);
+  setEditFieldValue('fmEditPrimaryActivities', memberProfessional.presentActivities);
+  setEditFieldValue('fmEditPrimarySkills', memberProfessional.professionSkills);
+  setEditFieldValue('fmEditPrimaryContributions', memberProfessional.contributions);
+  setEditFieldValue('fmEditPrimaryVolunteer', memberProfessional.willingToVolunteer);
+  setEditFieldValue('fmEditPrimaryRemarks', member.remarks || communication.remarks);
+  setEditFieldValue(
+    'fmEditPrimaryDobFull',
+    member.dobFull || (member.personal || {}).dateOfBirthIso
+  );
+  setEditFieldValue(
+    'fmEditPrimaryWeddingDateFull',
+    weddingDate.iso
+  );
+  setEditFieldValue(
+    'fmEditPrimaryPreferredFamilyContact',
+    communication.preferredFamilyContact
+  );
+  setEditFieldValue(
+    'fmEditPrimaryDataConsent',
+    communication.dataConsent
+  );
+  setEditFieldValue(
+    'fmEditPrimaryWillingToJoin',
+    communication.willingToJoin
+  );
+  setEditFieldValue(
+    'fmEditPrimaryProfileLastUpdated',
+    member.profileLastUpdated || overview.profileLastUpdated
+  );
+
+  setEditFieldValue('fmEditSpouseKefgId', internal.spouseKefgId);
+  setEditFieldValue('fmEditSpouseFamilyId', internal.familyId);
+  setEditFieldValue('fmEditSpouseRelatedKefgId', internal.primaryKefgId);
+  setEditFieldValue('fmEditSpouseCategory', spouse.memberCategory);
+  setEditFieldValue('fmEditSpouseRecordStatus', spouse.recordStatus);
+  setEditFieldValue('fmEditSpouseName', spouse.fullName);
+  setEditFieldValue('fmEditSpousePhoto', spouse.photo);
+  setEditFieldValue('fmEditSpouseFamilyPhoto', spouse.familyPhoto || familyPhoto.existingValue);
+  setEditFieldValue('fmEditSpouseGender', spousePersonal.gender);
+  setEditFieldValue('fmEditSpouseBloodGroup', spousePersonal.bloodGroup);
+  setEditFieldValue('fmEditSpouseAlumniAssociation', spouseAlumni.association);
+  setEditFieldValue('fmEditSpouseBranch', spouseAlumni.branch);
+  setEditFieldValue('fmEditSpouseBatchYear', spouseAlumni.batchYear);
+  setEditFieldValue('fmEditSpouseMembershipType', spouse.membershipType);
+  setEditFieldValue('fmEditSpouseMobile', spouseContact.mobile);
+  setEditFieldValue('fmEditSpouseWhatsapp', spouseContact.whatsapp);
+  setEditFieldValue('fmEditSpouseEmail', spouseContact.email);
+  setEditFieldValue('fmEditSpouseWhatsappGroup', spouseContact.whatsappGroupMember);
+  setEditFieldValue('fmEditSpouseCountry', spouseLocation.country);
+  setEditFieldValue('fmEditSpouseState', spouseLocation.state);
+  setEditFieldValue('fmEditSpouseCity', spouseLocation.cityDistrict);
+  setEditFieldValue('fmEditSpouseAddress', spouseLocation.address);
+  setEditFieldValue('fmEditSpouseGoogleMap', spouseLocation.googleMapLink);
+  setEditFieldValue('fmEditSpouseZone', spouseLocation.zone || overview.zone);
+  setEditFieldValue('fmEditSpouseActivities', spouseProfessional.presentActivities);
+  setEditFieldValue('fmEditSpouseSkills', spouseProfessional.professionSkills);
+  setEditFieldValue('fmEditSpouseContributions', spouseProfessional.contributions);
+  setEditFieldValue('fmEditSpouseVolunteer', spouseProfessional.willingToVolunteer);
+  setEditFieldValue('fmEditSpouseRemarks', spouse.remarks);
+  setEditFieldValue(
+    'fmEditSpouseDobFull',
+    spouse.dobFull || (spouse.personal || {}).dateOfBirthIso
+  );
+  setEditFieldValue(
+    'fmEditSpousePreferredFamilyContact',
+    communication.preferredFamilyContact
+  );
+  setEditFieldValue(
+    'fmEditSpouseDataConsent',
+    communication.dataConsent
+  );
+  setEditFieldValue(
+    'fmEditSpouseWillingToJoin',
+    communication.willingToJoin
+  );
+  setEditFieldValue(
+    'fmEditSpouseProfileLastUpdated',
+    spouse.profileLastUpdated || overview.profileLastUpdated
+  );
+
+}
+
+  function openRecordTab(tabName) {
+    recordTabs.forEach(function (tab) {
+      const active =
+        tab.getAttribute('data-fm-record-tab') === tabName;
+
+      tab.classList.toggle('active', active);
+      tab.setAttribute(
+        'aria-selected',
+        active ? 'true' : 'false'
+      );
+    });
+
+    recordPanels.forEach(function (panel) {
+      panel.classList.toggle(
+        'active',
+        panel.getAttribute('data-fm-record-panel') === tabName
+      );
+    });
+  }
+
+
+  if (searchButton) {
+    searchButton.addEventListener(
+      'click',
+      searchFamilies
+    );
+  }
+
+  if (searchText) {
+    searchText.addEventListener(
+      'keydown',
+      function (event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          searchFamilies();
+        }
+      }
+    );
+  }
+
+  if (searchResults) {
+    searchResults.addEventListener(
+      'click',
+      function (event) {
+        const button =
+          event.target.closest('[data-fm-open-family]');
+
+        if (!button || button.disabled) {
+          return;
+        }
+
+        openFamily(
+          button.getAttribute('data-fm-open-family'),
+          button
+        );
+      }
+    );
+  }
+
+  recordTabs.forEach(function (tab) {
+    tab.addEventListener(
+      'click',
+      function () {
+        openRecordTab(
+          tab.getAttribute('data-fm-record-tab')
+        );
+      }
+    );
+  });
+
+  if (
+    closeFamilyMemberFormButton &&
+    familyMemberFormSection
+  ) {
+    closeFamilyMemberFormButton.addEventListener(
+      'click',
+      function () {
+        familyMemberFormSection.hidden = true;
+      }
+    );
+  }
+
+  if (
+    editFamilyProfileButton &&
+    editFamilyProfileSection
+  ) {
+    editFamilyProfileButton.addEventListener(
+      'click',
+      function () {
+        editFamilyProfileSection.hidden = false;
+        
+        saveFamilyProfileButton.disabled = false;
+        saveFamilyProfileButtonBottom.disabled = false;
+
+        const activeTab =
+          root.querySelector(
+            '[data-fm-record-tab].active'
+          );
+
+        const activeRecord =
+          activeTab
+            ? activeTab.getAttribute(
+                'data-fm-record-tab'
+              )
+            : 'primary';
+
+        const targetSection =
+          activeRecord === 'spouse'
+            ? root.querySelector(
+                '#fmEditSpouseSection'
+              )
+            : root.querySelector(
+                '#fmEditPrimarySection'
+              );
+
+        if (targetSection) {
+          targetSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+    );
+  }
+
+  if (
+    cancelFamilyProfileButton &&
+    editFamilyProfileSection
+  ) {
+    cancelFamilyProfileButton.addEventListener(
+      'click',
+      function () {
+        editFamilyProfileSection.hidden = true;
+      }
+
+    );
+  }
+
+  if (saveFamilyProfileButton) {
+    saveFamilyProfileButton.addEventListener(
+      'click',
+      function () {
+        let data;
+
+        try {
+          data =
+            collectFamilyProfileData();
+        } catch (error) {
+          setSaveStatus(
+            error && error.message
+              ? error.message
+              : 'Unable to collect the form data.',
+            true
+          );
+
+          return;
+        }
+
+        saveFamilyProfileButton.disabled = true;
+        saveFamilyProfileButton.textContent =
+          'Validating…';
+
+        if (saveFamilyProfileButtonBottom) {
+          saveFamilyProfileButtonBottom.disabled = true;
+          saveFamilyProfileButtonBottom.textContent =
+            'Validating…';
+        }
+
+        setSaveStatus(
+          'Validating Family Profile data…',
+          false
+        );
+
+        google.script.run
+          .withSuccessHandler(function (response) {
+            saveFamilyProfileButton.disabled = false;
+            saveFamilyProfileButton.textContent =
+              'Save Changes';
+
+            if (saveFamilyProfileButtonBottom) {
+              saveFamilyProfileButtonBottom.disabled = false;
+              saveFamilyProfileButtonBottom.textContent =
+                'Save Changes';
+            }
+
+            setSaveStatus(
+              response && response.message
+                ? response.message
+                : 'Validation completed.',
+              !response || response.success !== true
+            );
+          })
+          .withFailureHandler(function (error) {
+            saveFamilyProfileButton.disabled = false;
+            saveFamilyProfileButton.textContent =
+              'Save Changes';
+
+            if (saveFamilyProfileButtonBottom) {
+              saveFamilyProfileButtonBottom.disabled = false;
+              saveFamilyProfileButtonBottom.textContent =
+                'Save Changes';
+            }
+
+            setSaveStatus(
+              error && error.message
+                ? error.message
+                : String(
+                    error ||
+                    'Family Profile validation failed.'
+                  ),
+              true
+            );
+          })
+          .KMIS_FP_SaveFamilyProfile(
+            data
+          );
+      }
+    );
+  }
+  if (
+  saveFamilyProfileButtonBottom &&
+  saveFamilyProfileButton
+  ) {
+  saveFamilyProfileButtonBottom.addEventListener(
+    'click',
+    function () {
+      saveFamilyProfileButton.click();
+    }
+  );
+}
+  if (
+    cancelFamilyProfileButtonBottom &&
+    cancelFamilyProfileButton
+  ) {
+    cancelFamilyProfileButtonBottom.addEventListener(
+      'click',
+      function () {
+        cancelFamilyProfileButton.click();
+      }
+    );
+  }
+
+  hideFamilyDetails();
+})();
+</script>

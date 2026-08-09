@@ -1,0 +1,1256 @@
+<!--
+============================================================
+KEF Global Membership Information System (KGMIS)
+
+Module        : Add New Member
+File          : 38.00_KGMIS_Module_Add_New_Member.html
+Version       : Enterprise Edition 1.0
+Status        : Development
+Designed and Developed by: James Joseph Alenchery
+============================================================
+-->
+
+<div id="kgmisAddNewMemberModule">
+
+  <!-- ======================================================
+       Page Header
+       ====================================================== -->
+
+  <header class="anm-page-header">
+    <h2 class="anm-page-title">KEF Global New Member Registration</h2>
+    <p class="anm-page-subtitle">
+      Create a New KGMIS Member Record.
+    </p>
+  </header>
+
+
+  <!-- ======================================================
+       Progress Indicator
+       ====================================================== -->
+
+  <nav class="anm-progress" aria-label="Registration progress">
+    <button class="anm-progress-step active" type="button" data-anm-target="anmPrimarySection">
+      <span class="anm-progress-number">1</span>
+      <span class="anm-progress-label">Primary Member</span>
+    </button>
+
+    <span class="anm-progress-line" aria-hidden="true"></span>
+
+    <button class="anm-progress-step" type="button" data-anm-target="anmSpousePanel">
+      <span class="anm-progress-number">2</span>
+      <span class="anm-progress-label">Spouse</span>
+    </button>
+
+    <span class="anm-progress-line" aria-hidden="true"></span>
+
+    <button class="anm-progress-step" type="button" data-anm-target="anmReviewPanel">
+      <span class="anm-progress-number">3</span>
+      <span class="anm-progress-label">Review & Create</span>
+    </button>
+  </nav>
+
+
+  <!-- ======================================================
+       1. Primary Member
+       ====================================================== -->
+
+  <section id="anmPrimarySection" class="anm-panel">
+    <div class="anm-section-header">
+      <div>
+        <h3 class="anm-section-title">1. Primary Member Details</h3>
+        <p class="anm-section-description">
+          Enter the minimum information required to create the primary member record.
+        </p>
+      </div>
+
+      <span class="anm-category-badge">Primary Member</span>
+    </div>
+
+    <div id="anmPrimaryCard"></div>
+  </section>
+
+
+  <!-- ======================================================
+       2. Spouse
+       ====================================================== -->
+
+  <section id="anmSpousePanel" class="anm-panel">
+    <div class="anm-section-header">
+      <div>
+        <h3 class="anm-section-title">2. Spouse Details</h3>
+        <p class="anm-section-description">
+          Add the spouse under the same family registration.
+        </p>
+      </div>
+
+      <label class="anm-toggle-label">
+        <input id="anmIncludeSpouse" type="checkbox" checked>
+        Include Spouse
+      </label>
+    </div>
+
+    <div id="anmSpouseSection">
+      <div id="anmSpouseCard"></div>
+    </div>
+  </section>
+
+
+
+  <!-- ======================================================
+       3. Review and Create
+       ====================================================== -->
+
+  <section id="anmReviewPanel" class="anm-panel">
+    <div class="anm-section-header">
+      <div>
+        <h3 class="anm-section-title">3. Review and Create Family</h3>
+        <p class="anm-section-description">
+          Verify the registration details before creating the family record.
+        </p>
+      </div>
+    </div>
+
+    <div class="anm-review-grid">
+
+      <article class="anm-summary-card">
+        <div class="anm-summary-heading">Primary Member</div>
+        <div id="anmPrimarySummary" class="anm-summary-list"></div>
+      </article>
+
+      <article id="anmSpouseSummaryCard" class="anm-summary-card">
+        <div class="anm-summary-heading">Spouse</div>
+        <div id="anmSpouseSummary" class="anm-summary-list"></div>
+      </article>
+
+    </div>
+
+    <div class="anm-review-note">
+      The system will generate the next available Family ID and KEFG IDs, create
+      the primary member and spouse records in consecutive rows, and set the new
+      records as ACTIVE.
+    </div>
+
+    <div class="anm-field">
+      <label for="anmRemarks">Administrative Remarks</label>
+      <textarea id="anmRemarks" placeholder="Optional remarks"></textarea>
+    </div>
+  </section>
+
+
+  <!-- ======================================================
+       Created Family Confirmation
+       ====================================================== -->
+
+  <section
+    id="anmCreatedFamilyPanel"
+    class="anm-created-family"
+    hidden
+    aria-labelledby="anmCreatedFamilyTitle">
+
+    <div class="anm-created-family-header">
+      <div>
+        <h3 id="anmCreatedFamilyTitle" class="anm-created-family-title">
+          Family Created Successfully
+        </h3>
+
+        <p class="anm-created-family-description">
+          The following final IDs were assigned and saved in KGMIS.
+        </p>
+      </div>
+
+      <span class="anm-created-family-badge">
+        Created
+      </span>
+    </div>
+
+    <div class="anm-created-family-grid">
+
+      <div class="anm-created-family-item">
+        <span class="anm-created-family-label">
+          Family ID
+        </span>
+
+        <strong
+          id="anmCreatedFamilyId"
+          class="anm-created-family-value">
+          —
+        </strong>
+      </div>
+
+      <div class="anm-created-family-item">
+        <span class="anm-created-family-label">
+          Primary Member KEFG ID
+        </span>
+
+        <strong
+          id="anmCreatedPrimaryMemberId"
+          class="anm-created-family-value">
+          —
+        </strong>
+      </div>
+
+      <div
+        id="anmCreatedSpouseIdItem"
+        class="anm-created-family-item">
+
+        <span class="anm-created-family-label">
+          Spouse KEFG ID
+        </span>
+
+        <strong
+          id="anmCreatedSpouseId"
+          class="anm-created-family-value">
+          —
+        </strong>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ======================================================
+       Form Actions
+       ====================================================== -->
+
+  <div class="anm-actions">
+    <div id="anmFormStatus" class="anm-form-status" aria-live="polite"></div>
+
+    <div class="anm-action-buttons">
+      <button id="anmClearButton" class="anm-secondary-button" type="button">
+        Clear
+      </button>
+
+      <button id="anmSaveButton" class="anm-primary-button" type="button">
+        Create Family
+      </button>
+    </div>
+  </div>
+
+</div>
+
+
+<style>
+
+#kgmisAddNewMemberModule {
+  width: 100%;
+  min-width: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#kgmisAddNewMemberModule *,
+#kgmisAddNewMemberModule *::before,
+#kgmisAddNewMemberModule *::after {
+  box-sizing: border-box;
+}
+
+/* Page Header */
+
+.anm-page-header {
+  width: 100%;
+  margin: 0 0 18px;
+}
+
+.anm-page-title {
+  margin: 0;
+  color: #0d4e70;
+  font-size: 25px;
+  line-height: 1.15;
+}
+
+.anm-page-subtitle {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* Progress Indicator */
+
+.anm-progress {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  border: 1px solid #d5e0e8;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(15, 76, 105, 0.06);
+}
+
+.anm-progress-step {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: #64748b;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.anm-progress-number {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 2px solid #d5e0e8;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #64748b;
+}
+
+.anm-progress-step.active {
+  color: #0d4e70;
+}
+
+.anm-progress-step.active .anm-progress-number {
+  border-color: #0aa957;
+  color: #ffffff;
+  background: #0aa957;
+}
+
+.anm-progress-step.completed .anm-progress-number {
+  border-color: #176c91;
+  color: #ffffff;
+  background: #176c91;
+}
+
+.anm-progress-line {
+  height: 2px;
+  flex: 1;
+  min-width: 22px;
+  margin: 0 12px;
+  background: #d5e0e8;
+}
+
+/* Panels */
+
+.anm-panel {
+  width: 100%;
+  margin-bottom: 18px;
+  padding: 20px;
+  border: 1px solid #d5e0e8;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(15, 76, 105, 0.06);
+}
+
+.anm-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.anm-section-title {
+  margin: 0;
+  color: #0d4e70;
+  font-size: 19px;
+}
+
+.anm-section-description {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.anm-category-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #0d4e70;
+  background: #e7f4f9;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Reusable Person Card */
+
+.anm-person-card {
+  width: 100%;
+}
+
+.anm-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.anm-field {
+  min-width: 0;
+}
+
+.anm-span-2 {
+  grid-column: span 2;
+}
+
+.anm-field label {
+  display: block;
+  margin-bottom: 6px;
+  color: #1f2937;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.anm-field input,
+.anm-field select,
+.anm-field textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #d5e0e8;
+  border-radius: 9px;
+  color: #1f2937;
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.anm-field textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.anm-field input:focus,
+.anm-field select:focus,
+.anm-field textarea:focus {
+  border-color: #176c91;
+  box-shadow: 0 0 0 3px rgba(23, 108, 145, 0.12);
+}
+
+.anm-field-note {
+  margin-top: 5px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.anm-required {
+  color: #b42318;
+}
+
+.anm-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #0d4e70;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.anm-toggle-label input {
+  width: 17px;
+  height: 17px;
+}
+
+.anm-review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.anm-summary-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d5e0e8;
+  border-radius: 11px;
+  background: #fbfdfe;
+}
+
+.anm-summary-heading {
+  padding: 10px 12px;
+  color: #0d4e70;
+  background: #e7f4f9;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.anm-summary-list {
+  padding: 4px 12px;
+}
+
+.anm-summary-row {
+  display: grid;
+  grid-template-columns: 145px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e7edf2;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.anm-summary-row:last-child {
+  border-bottom: 0;
+}
+
+.anm-summary-label {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.anm-summary-value {
+  min-width: 0;
+  color: #1f2937;
+  overflow-wrap: anywhere;
+}
+
+.anm-review-note {
+  margin-bottom: 16px;
+  padding: 13px 14px;
+  border: 1px solid #b9d7e6;
+  border-radius: 10px;
+  color: #155c7b;
+  background: #eff8fc;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Created Family Confirmation */
+
+.anm-created-family {
+  width: 100%;
+  margin-bottom: 18px;
+  padding: 20px;
+  border: 1px solid #9fd5b5;
+  border-radius: 14px;
+  background: #f0fbf4;
+  box-shadow: 0 5px 18px rgba(15, 76, 105, 0.06);
+}
+
+.anm-created-family[hidden] {
+  display: none;
+}
+
+.anm-created-family-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.anm-created-family-title {
+  margin: 0;
+  color: #166534;
+  font-size: 18px;
+}
+
+.anm-created-family-description {
+  margin: 5px 0 0;
+  color: #4b5563;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.anm-created-family-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #168447;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.anm-created-family-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.anm-created-family-item {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #b8dfc7;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.anm-created-family-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.anm-created-family-value {
+  display: block;
+  color: #166534;
+  font-size: 20px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* Actions */
+
+.anm-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid #d5e0e8;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.anm-form-status {
+  min-height: 20px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.anm-form-status.error {
+  color: #b42318;
+}
+
+.anm-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.anm-primary-button,
+.anm-secondary-button {
+  min-height: 40px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.anm-primary-button {
+  border: 1px solid #176c91;
+  color: #ffffff;
+  background: #176c91;
+}
+
+.anm-secondary-button {
+  border: 1px solid #176c91;
+  color: #0d4e70;
+  background: #ffffff;
+}
+
+.anm-primary-button:hover:not(:disabled),
+.anm-secondary-button:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+
+.anm-primary-button:disabled,
+.anm-secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+@media (max-width: 900px) {
+  .anm-progress-label {
+    display: none;
+  }
+
+  .anm-progress-line {
+    margin: 0 8px;
+  }
+
+  .anm-created-family-grid,
+  .anm-form-grid,
+  .anm-review-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .anm-progress {
+    padding: 12px;
+  }
+
+  .anm-progress-line {
+    min-width: 8px;
+    margin: 0 4px;
+  }
+
+  .anm-panel {
+    padding: 15px;
+  }
+
+  .anm-section-header,
+  .anm-actions,
+  .anm-created-family-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .anm-created-family-grid,
+  .anm-form-grid,
+  .anm-review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .anm-summary-row {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .anm-span-2 {
+    grid-column: span 1;
+  }
+
+  .anm-action-buttons {
+    flex-direction: column-reverse;
+  }
+
+  .anm-primary-button,
+  .anm-secondary-button {
+    width: 100%;
+  }
+}
+
+</style>
+
+
+<script>
+
+(function () {
+  'use strict';
+
+  const root = document.getElementById('kgmisAddNewMemberModule');
+
+  if (!root) {
+    return;
+  }
+
+  const includeSpouse = root.querySelector('#anmIncludeSpouse');
+  const spouseSection = root.querySelector('#anmSpouseSection');
+  const primaryCard = root.querySelector('#anmPrimaryCard');
+  const spouseCard = root.querySelector('#anmSpouseCard');
+  const clearButton = root.querySelector('#anmClearButton');
+  const saveButton = root.querySelector('#anmSaveButton');
+  const formStatus = root.querySelector('#anmFormStatus');
+  const progressSteps = root.querySelectorAll('.anm-progress-step');
+  const primarySummary = root.querySelector('#anmPrimarySummary');
+  const spouseSummary = root.querySelector('#anmSpouseSummary');
+  const spouseSummaryCard = root.querySelector('#anmSpouseSummaryCard');
+  const createdFamilyPanel =
+    root.querySelector('#anmCreatedFamilyPanel');
+  const createdFamilyId =
+    root.querySelector('#anmCreatedFamilyId');
+  const createdPrimaryMemberId =
+    root.querySelector('#anmCreatedPrimaryMemberId');
+  const createdSpouseId =
+    root.querySelector('#anmCreatedSpouseId');
+  const createdSpouseIdItem =
+    root.querySelector('#anmCreatedSpouseIdItem');
+
+  function personCardHtml(config) {
+    const prefix = config.prefix;
+    const isSpouse = Boolean(config.isSpouse);
+
+    return (
+      '<div class="anm-person-card">' +
+        '<div class="anm-form-grid">' +
+
+          '<div class="anm-field anm-span-2">' +
+            '<label for="' + prefix + 'Name">' +
+              'Full Name <span class="anm-required">*</span>' +
+            '</label>' +
+            '<input id="' + prefix + 'Name" type="text" ' +
+              'placeholder="Enter full name">' +
+          '</div>' +
+
+          '<div class="anm-field">' +
+            '<label for="' + prefix + 'Alumni">' +
+              'Alumni Association <span class="anm-required">*</span>' +
+            '</label>' +
+            '<select id="' + prefix + 'Alumni">' +
+              '<option value="">Select Association</option>' +
+              (isSpouse
+                ? '<option value="NOT APPLICABLE">Not Applicable</option>'
+                : '') +
+              '<option value="AECK">AECK</option>' +
+              '<option value="CETA">CETA</option>' +
+              '<option value="KEA">KEA</option>' +
+              '<option value="MACE">MACE</option>' +
+              '<option value="NIT">NIT</option>' +
+              '<option value="NSS">NSS</option>' +
+              '<option value="TEC">TEC</option>' +
+              '<option value="TKMCE">TKMCE</option>' +
+            '</select>' +
+          '</div>' +
+
+          '<div class="anm-field">' +
+            '<label for="' + prefix + 'Branch">Branch</label>' +
+            '<input id="' + prefix + 'Branch" type="text" ' +
+              'placeholder="Optional">' +
+          '</div>' +
+
+          '<div class="anm-field">' +
+            '<label for="' + prefix + 'Mobile">' +
+              'Mobile Number <span class="anm-required">*</span>' +
+            '</label>' +
+            '<input id="' + prefix + 'Mobile" type="tel" ' +
+              'placeholder="Enter mobile number">' +
+          '</div>' +
+
+          '<div class="anm-field">' +
+            '<label for="' + prefix + 'Whatsapp">' +
+              'WhatsApp Number <span class="anm-required">*</span>' +
+            '</label>' +
+            '<input id="' + prefix + 'Whatsapp" type="tel" ' +
+              'placeholder="Enter WhatsApp number">' +
+          '</div>' +
+
+          '<div class="anm-field">' +
+            '<label for="' + prefix + 'Email">Email Address</label>' +
+            '<input id="' + prefix + 'Email" type="email" ' +
+              'placeholder="Optional">' +
+            '<div class="anm-field-note">' +
+              'Optional during registration. It may be added and verified later.' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="anm-field">' +
+            '<label for="' + prefix + 'MembershipType">' +
+              'Membership Category <span class="anm-required">*</span>' +
+            '</label>' +
+            '<select id="' + prefix + 'MembershipType">' +
+              '<option value="">Select Membership Category</option>' +
+              '<option value="PRIMARY MEMBERSHIP">Primary Membership</option>' +
+              '<option value="LIFETIME MEMBERSHIP">Lifetime Membership</option>' +
+              '<option value="HONORARY MEMBERSHIP">Honorary Membership</option>' +
+              '<option value="TEMPORARY MEMBERSHIP">Temporary Membership</option>' +
+            '</select>' +
+          '</div>' +
+
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function getFieldValue(id) {
+    const field = root.querySelector('#' + id);
+
+    if (!field) {
+      return '';
+    }
+
+    if (field.tagName === 'SELECT') {
+      const option = field.options[field.selectedIndex];
+      return option && option.value ? option.textContent.trim() : '';
+    }
+
+    return String(field.value || '').trim();
+  }
+
+  function getRawFieldValue(id) {
+    const field = root.querySelector('#' + id);
+
+    if (!field) {
+      return '';
+    }
+
+    return String(field.value || '').trim();
+  }
+
+  function collectPersonData(prefix) {
+    return {
+      fullName:
+        getRawFieldValue(prefix + 'Name'),
+
+      alumniAssociation:
+        getRawFieldValue(prefix + 'Alumni'),
+
+      branch:
+        getRawFieldValue(prefix + 'Branch'),
+
+      mobile:
+        getRawFieldValue(prefix + 'Mobile'),
+
+      whatsapp:
+        getRawFieldValue(prefix + 'Whatsapp'),
+
+      email:
+        getRawFieldValue(prefix + 'Email'),
+
+      membershipType:
+        getRawFieldValue(prefix + 'MembershipType')
+    };
+  }
+
+  function buildRegistrationPayload() {
+    const spouseIncluded =
+      Boolean(
+        includeSpouse &&
+        includeSpouse.checked
+      );
+
+    return {
+      includeSpouse:
+        spouseIncluded,
+
+      primaryMember:
+        collectPersonData('anmMember'),
+
+      spouse:
+        spouseIncluded
+          ? collectPersonData('anmSpouse')
+          : null,
+
+      remarks:
+        getRawFieldValue('anmRemarks')
+    };
+  }
+
+  function summaryRow(label, value) {
+    return (
+      '<div class="anm-summary-row">' +
+        '<div class="anm-summary-label">' + escapeHtml(label) + '</div>' +
+        '<div class="anm-summary-value">' + escapeHtml(value || '—') + '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderSummary(prefix, container) {
+    if (!container) {
+      return;
+    }
+
+    container.innerHTML =
+      summaryRow('Full Name', getFieldValue(prefix + 'Name')) +
+      summaryRow('Alumni Association', getFieldValue(prefix + 'Alumni')) +
+      summaryRow('Branch', getFieldValue(prefix + 'Branch')) +
+      summaryRow('Mobile Number', getFieldValue(prefix + 'Mobile')) +
+      summaryRow('WhatsApp Number', getFieldValue(prefix + 'Whatsapp')) +
+      summaryRow('Email Address', getFieldValue(prefix + 'Email')) +
+      summaryRow('Membership Category', getFieldValue(prefix + 'MembershipType'));
+  }
+
+  function updateReviewSummary() {
+    renderSummary('anmMember', primarySummary);
+
+    if (includeSpouse && includeSpouse.checked) {
+      if (spouseSummaryCard) {
+        spouseSummaryCard.style.display = '';
+      }
+
+      renderSummary('anmSpouse', spouseSummary);
+      return;
+    }
+
+    if (spouseSummaryCard) {
+      spouseSummaryCard.style.display = 'none';
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderPersonCards() {
+    primaryCard.innerHTML = personCardHtml({
+      prefix: 'anmMember',
+      isSpouse: false
+    });
+
+    spouseCard.innerHTML = personCardHtml({
+      prefix: 'anmSpouse',
+      isSpouse: true
+    });
+  }
+
+  function setProgress(activeIndex) {
+    progressSteps.forEach(function (step, index) {
+      step.classList.toggle('active', index === activeIndex);
+      step.classList.toggle('completed', index < activeIndex);
+    });
+  }
+
+  function validatePerson(prefix, label) {
+    const requiredIds = [
+      prefix + 'Name',
+      prefix + 'Alumni',
+      prefix + 'Mobile',
+      prefix + 'Whatsapp',
+      prefix + 'MembershipType'
+    ];
+
+    for (let i = 0; i < requiredIds.length; i += 1) {
+      const field = root.querySelector('#' + requiredIds[i]);
+
+      if (!field || !String(field.value || '').trim()) {
+        setStatus(label + ': please complete all required fields.', true);
+
+        if (field) {
+          field.focus();
+        }
+
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function setStatus(message, isError) {
+    formStatus.className = 'anm-form-status' + (isError ? ' error' : '');
+    formStatus.textContent = String(message || '');
+  }
+
+  function setCreationBusy(isBusy) {
+    const busy = Boolean(isBusy);
+
+    if (saveButton) {
+      saveButton.disabled = busy;
+      saveButton.textContent =
+        busy
+          ? 'Creating Family…'
+          : 'Create Family';
+    }
+
+    if (clearButton) {
+      clearButton.disabled = busy;
+    }
+  }
+
+  function hideCreatedFamilyResult() {
+    if (createdFamilyPanel) {
+      createdFamilyPanel.hidden = true;
+    }
+
+    if (createdFamilyId) {
+      createdFamilyId.textContent = '—';
+    }
+
+    if (createdPrimaryMemberId) {
+      createdPrimaryMemberId.textContent = '—';
+    }
+
+    if (createdSpouseId) {
+      createdSpouseId.textContent = '—';
+    }
+
+    if (createdSpouseIdItem) {
+      createdSpouseIdItem.hidden = false;
+    }
+  }
+
+  function showCreatedFamilyResult(response) {
+    if (!createdFamilyPanel) {
+      return;
+    }
+
+    if (createdFamilyId) {
+      createdFamilyId.textContent =
+        response.familyId || '—';
+    }
+
+    if (createdPrimaryMemberId) {
+      createdPrimaryMemberId.textContent =
+        response.primaryMemberKefgId || '—';
+    }
+
+    const hasSpouse =
+      Boolean(response.spouseKefgId);
+
+    if (createdSpouseIdItem) {
+      createdSpouseIdItem.hidden =
+        !hasSpouse;
+    }
+
+    if (createdSpouseId) {
+      createdSpouseId.textContent =
+        response.spouseKefgId || '—';
+    }
+
+    createdFamilyPanel.hidden = false;
+
+    createdFamilyPanel.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+  }
+
+  renderPersonCards();
+  updateReviewSummary();
+
+  root.addEventListener('input', updateReviewSummary);
+  root.addEventListener('change', updateReviewSummary);
+
+  if (includeSpouse && spouseSection) {
+    includeSpouse.addEventListener('change', function () {
+      spouseSection.style.display = includeSpouse.checked ? '' : 'none';
+      updateReviewSummary();
+    });
+  }
+
+  progressSteps.forEach(function (step, index) {
+    step.addEventListener('click', function () {
+      const targetId = step.getAttribute('data-anm-target');
+      const target = root.querySelector('#' + targetId);
+
+      setProgress(index);
+
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  if (clearButton) {
+    clearButton.addEventListener('click', function () {
+      root.querySelectorAll('input, select, textarea').forEach(function (field) {
+        if (field.type === 'checkbox') {
+          field.checked = field.id === 'anmIncludeSpouse';
+        } else {
+          field.value = '';
+        }
+      });
+
+      spouseSection.style.display = '';
+      setProgress(0);
+      setStatus('');
+      hideCreatedFamilyResult();
+      updateReviewSummary();
+    });
+  }
+
+  if (saveButton) {
+    saveButton.addEventListener('click', function () {
+      setStatus('');
+      hideCreatedFamilyResult();
+
+      if (!validatePerson('anmMember', 'Primary Member')) {
+        return;
+      }
+
+      if (
+        includeSpouse &&
+        includeSpouse.checked &&
+        !validatePerson('anmSpouse', 'Spouse')
+      ) {
+        return;
+      }
+
+      updateReviewSummary();
+      setProgress(2);
+
+      const registrationData =
+        buildRegistrationPayload();
+
+      const primaryName =
+        registrationData.primaryMember.fullName;
+
+      const spouseName =
+        registrationData.includeSpouse &&
+        registrationData.spouse
+          ? registrationData.spouse.fullName
+          : '';
+
+      const confirmationMessage =
+        registrationData.includeSpouse
+          ? (
+              'Create a new KGMIS family for:\n\n' +
+              'Primary Member: ' + primaryName + '\n' +
+              'Spouse: ' + spouseName + '\n\n' +
+              'This will write two new records to the Master Database.\n\n' +
+              'Continue?'
+            )
+          : (
+              'Create a new KGMIS family for:\n\n' +
+              'Primary Member: ' + primaryName + '\n\n' +
+              'This will write one new record to the Master Database.\n\n' +
+              'Continue?'
+            );
+
+      if (!window.confirm(confirmationMessage)) {
+        setStatus(
+          'Family creation was cancelled. No database values were changed.',
+          false
+        );
+
+        return;
+      }
+
+      setCreationBusy(true);
+
+      setStatus(
+        'Creating the new family in KGMIS…',
+        false
+      );
+
+      google.script.run
+        .withSuccessHandler(function (response) {
+          setCreationBusy(false);
+
+          if (
+            !response ||
+            response.success !== true
+          ) {
+            setStatus(
+              response && response.message
+                ? response.message
+                : 'The new family could not be created.',
+              true
+            );
+
+            return;
+          }
+
+          showCreatedFamilyResult(response);
+
+          setStatus(
+            response.message ||
+            'The new family was created successfully.',
+            false
+          );
+
+          if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.textContent = 'Family Created';
+          }
+        })
+        .withFailureHandler(function (error) {
+          setCreationBusy(false);
+
+          setStatus(
+            error && error.message
+              ? error.message
+              : String(
+                  error ||
+                  'The new family could not be created.'
+                ),
+            true
+          );
+        })
+        .KGMIS_AddNewMember_CreateFamily(
+          registrationData
+        );
+    });
+  }
+
+})();
+
+</script>

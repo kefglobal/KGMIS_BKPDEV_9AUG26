@@ -1,0 +1,3583 @@
+<!--
+============================================================
+KEF Global Membership Information System (KGMIS)
+Module    : Treasurer Financial Summary
+File Name : 94.00_KGMIS_Module_Treasurer_Financial_Summary.html
+Version   : 1.2
+Status    : Development
+Designed & Developed by: James Joseph Alenchery
+============================================================
+
+PURPOSE
+-------
+Read-only consolidated Treasurer financial reporting UI.
+
+Backend expected:
+  KGMIS_FinancialSummary_GetSetup(sessionToken)
+  KGMIS_FinancialSummary_GetReport(sessionToken, filters)
+
+Accounting rules:
+  Receipts = SUCCESSFUL + ACTIVE
+  Expenses = PAID + ACTIVE
+  Net Position = Total Receipts - Total Expenses
+============================================================
+-->
+
+<style>
+
+  .fs1-shell {
+    width: 100%;
+  }
+
+  .fs1-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .fs1-heading {
+    margin: 0;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .fs1-subheading {
+    margin: 5px 0 0;
+    color: var(--tr3-muted, #667085);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .fs1-year-badge {
+    min-width: 132px;
+    padding: 8px 12px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 10px;
+    background: #ffffff;
+    text-align: center;
+  }
+
+  .fs1-year-label {
+    display: block;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .fs1-year-value {
+    display: block;
+    margin-top: 3px;
+    color: var(--tr3-primary, #1c5d99);
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .fs1-panel {
+    margin-bottom: 14px;
+    padding: 16px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .fs1-panel-title {
+    margin: 0 0 3px;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .fs1-panel-note,
+  .fs1-meta {
+    margin: 0 0 13px;
+    color: var(--tr3-muted, #667085);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .fs1-message {
+    display: none;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  .fs1-message.info {
+    display: block;
+    background: #eef7ff;
+    color: #174b78;
+  }
+
+  .fs1-message.error {
+    display: block;
+    background: #fff2f2;
+    color: #b42318;
+  }
+
+  .fs1-filters {
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(130px, 1fr));
+    gap: 10px;
+    align-items: end;
+  }
+
+  .fs1-label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .fs1-input,
+  .fs1-select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 8px;
+    background: #ffffff;
+    font: inherit;
+    font-size: 12px;
+  }
+
+  .fs1-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 13px;
+  }
+
+  .fs1-button {
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 8px;
+    background: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .fs1-button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+
+  .fs1-primary {
+    border-color: var(--tr3-primary, #1c5d99);
+    background: var(--tr3-primary, #1c5d99);
+    color: #ffffff;
+  }
+
+  .fs1-report {
+    border-color: #157347;
+    background: #157347;
+    color: #ffffff;
+  }
+
+  .fs1-summary {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .fs1-summary-card {
+    padding: 15px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 10px;
+    background: #f8fbff;
+  }
+
+  .fs1-summary-card.positive {
+    background: #effaf3;
+  }
+
+  .fs1-summary-card.negative {
+    background: #fff2f2;
+  }
+
+  .fs1-summary-value {
+    display: block;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  .fs1-summary-label {
+    display: block;
+    margin-top: 4px;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .fs1-breakdowns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .fs1-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 10px;
+  }
+
+  .fs1-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+  }
+
+  .fs1-table th,
+  .fs1-table td {
+    padding: 9px 10px;
+    border-right: 1px solid var(--tr3-border, #dbe3ec);
+    border-bottom: 1px solid var(--tr3-border, #dbe3ec);
+    text-align: left;
+    vertical-align: top;
+    font-size: 11px;
+  }
+
+  .fs1-table th {
+    background: var(--tr3-primary-dark, #123a63);
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .fs1-number {
+    text-align: right !important;
+    white-space: nowrap;
+    font-weight: 700;
+  }
+
+  .fs1-empty {
+    padding: 24px !important;
+    text-align: center !important;
+    color: var(--tr3-muted, #667085);
+  }
+
+  .fs1-detail-table {
+    min-width: 1100px;
+  }
+
+  .fs1-detail-table.expenses {
+    min-width: 1250px;
+  }
+
+
+  /* =========================================================
+     APPROVED KGMIS PRINT LAYOUT
+     ========================================================= */
+
+  #fs1PrintReport {
+    display: none;
+  }
+
+  @media print {
+
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+
+    html,
+    body {
+      height: auto !important;
+      min-height: 0 !important;
+      overflow: visible !important;
+    }
+
+    body > * {
+      visibility: hidden !important;
+    }
+
+    #fs1Root,
+    #fs1Root * {
+      visibility: visible !important;
+    }
+
+    #fs1Root {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    #fs1Root > *:not(#fs1PrintReport) {
+      display: none !important;
+    }
+
+    #fs1PrintReport {
+      display: block !important;
+      width: 100% !important;
+      background: #ffffff;
+      color: #1f2937;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8px;
+    }
+
+    #fs1PrintReport .fs1-print-header {
+      position: relative;
+      height: 46px;
+      margin-bottom: 7px;
+      padding: 0 82px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #fs1PrintReport .fs1-print-logo {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 70px;
+      height: 46px;
+      object-fit: contain;
+      object-position: left top;
+    }
+
+    #fs1PrintReport .fs1-print-org {
+      color: #0d4e70;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    #fs1PrintReport .fs1-print-title {
+      margin-top: 2px;
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    #fs1PrintReport .fs1-print-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px 16px;
+      margin: 6px 0 7px;
+      padding: 6px 8px;
+      border: 1px solid #cbd5e1;
+    }
+
+    #fs1PrintReport .fs1-print-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin: 7px 0;
+    }
+
+    #fs1PrintReport .fs1-print-card {
+      padding: 6px;
+      border: 1px solid #cbd5e1;
+      text-align: center;
+    }
+
+    #fs1PrintReport .fs1-print-value {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    #fs1PrintReport .fs1-print-label {
+      margin-top: 2px;
+      font-size: 7px;
+      text-transform: uppercase;
+    }
+
+    #fs1PrintReport .fs1-print-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    #fs1PrintReport .fs1-print-heading {
+      margin: 8px 0 4px;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    #fs1PrintReport table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #fs1PrintReport thead {
+      display: table-header-group;
+    }
+
+    #fs1PrintReport tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    #fs1PrintReport th,
+    #fs1PrintReport td {
+      padding: 3px;
+      border: 1px solid #cbd5e1;
+      text-align: left;
+      vertical-align: top;
+      font-size: 7px;
+    }
+
+    #fs1PrintReport th {
+      background: #0d4e70 !important;
+      color: #ffffff;
+      text-transform: uppercase;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    #fs1PrintReport .fs1-print-number {
+      text-align: right;
+      white-space: nowrap;
+    }
+  }
+
+
+  @media (max-width: 900px) {
+
+    .fs1-filters {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .fs1-breakdowns {
+      grid-template-columns: 1fr;
+    }
+
+  }
+
+
+  @media (max-width: 620px) {
+
+    .fs1-topbar {
+      display: block;
+    }
+
+    .fs1-year-badge {
+      margin-top: 10px;
+    }
+
+    .fs1-filters,
+    .fs1-summary {
+      grid-template-columns: 1fr;
+    }
+
+  }
+
+</style>
+
+
+<div
+  id="fs1Root"
+  class="fs1-shell"
+>
+
+  <div
+    id="fs1PrintReport"
+    aria-hidden="true"
+  ></div>
+
+
+  <div class="fs1-topbar">
+
+    <div>
+
+      <h2 class="fs1-heading">
+        Treasurer Financial Summary
+      </h2>
+
+      <p class="fs1-subheading">
+        Consolidated receipts, expenses and net financial
+        position for the selected reporting period.
+      </p>
+
+    </div>
+
+
+    <div class="fs1-year-badge">
+
+      <span class="fs1-year-label">
+        Selected Financial Year
+      </span>
+
+      <span
+        id="fs1SelectedYearDisplay"
+        class="fs1-year-value"
+      >
+        —
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="fs1Message"
+    class="fs1-message"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
+  <section class="fs1-panel">
+
+    <h3 class="fs1-panel-title">
+      Reporting Period
+    </h3>
+
+    <p class="fs1-panel-note">
+      Select a standard reporting period or enter a custom
+      From Date and To Date.
+    </p>
+
+
+    <div class="fs1-filters">
+
+      <div>
+
+        <label
+          class="fs1-label"
+          for="fs1FinancialYear"
+        >
+          Financial Year
+        </label>
+
+        <select
+          id="fs1FinancialYear"
+          class="fs1-select"
+        >
+          <option value="">
+            Loading…
+          </option>
+        </select>
+
+      </div>
+
+
+      <div>
+
+        <label
+          class="fs1-label"
+          for="fs1ReportPeriod"
+        >
+          Report Period
+        </label>
+
+        <select
+          id="fs1ReportPeriod"
+          class="fs1-select"
+        >
+          <option value="FULL_FINANCIAL_YEAR">
+            Full Financial Year
+          </option>
+
+          <option value="THIS_WEEK">
+            This Week
+          </option>
+
+          <option value="LAST_WEEK">
+            Last Week
+          </option>
+
+          <option value="THIS_MONTH">
+            This Month
+          </option>
+
+          <option value="LAST_MONTH">
+            Last Month
+          </option>
+
+          <option value="CUSTOM">
+            Custom Period
+          </option>
+        </select>
+
+      </div>
+
+
+      <div>
+
+        <label
+          class="fs1-label"
+          for="fs1FromDate"
+        >
+          From Date
+        </label>
+
+        <input
+          id="fs1FromDate"
+          class="fs1-input"
+          type="date"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label
+          class="fs1-label"
+          for="fs1ToDate"
+        >
+          To Date
+        </label>
+
+        <input
+          id="fs1ToDate"
+          class="fs1-input"
+          type="date"
+        >
+
+      </div>
+
+    </div>
+
+
+    <div class="fs1-actions">
+
+      <button
+        id="fs1ClearButton"
+        class="fs1-button"
+        type="button"
+      >
+        Clear
+      </button>
+
+      <button
+        id="fs1RefreshButton"
+        class="fs1-button"
+        type="button"
+      >
+        ↻ Refresh
+      </button>
+
+      <button
+        id="fs1DownloadCsvButton"
+        class="fs1-button fs1-report"
+        type="button"
+      >
+        Download CSV
+      </button>
+
+      <button
+        id="fs1PrintButton"
+        class="fs1-button fs1-report"
+        type="button"
+      >
+        Print Report
+      </button>
+
+      <button
+        id="fs1ApplyButton"
+        class="fs1-button fs1-primary"
+        type="button"
+      >
+        Generate Summary
+      </button>
+
+    </div>
+
+  </section>
+
+    <div class="fs1-summary">
+
+    <div class="fs1-summary-card">
+
+      <span
+        id="fs1TotalReceipts"
+        class="fs1-summary-value"
+      >
+        ₹0.00
+      </span>
+
+      <span class="fs1-summary-label">
+        Total Receipts
+      </span>
+
+    </div>
+
+
+    <div class="fs1-summary-card">
+
+      <span
+        id="fs1TotalExpenses"
+        class="fs1-summary-value"
+      >
+        ₹0.00
+      </span>
+
+      <span class="fs1-summary-label">
+        Total Expenses
+      </span>
+
+    </div>
+
+
+    <div
+      id="fs1NetCard"
+      class="fs1-summary-card"
+    >
+
+      <span
+        id="fs1NetPosition"
+        class="fs1-summary-value"
+      >
+        ₹0.00
+      </span>
+
+      <span
+        id="fs1NetLabel"
+        class="fs1-summary-label"
+      >
+        Net Surplus / (Deficit)
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <div class="fs1-breakdowns">
+
+
+    <section class="fs1-panel">
+
+      <h3 class="fs1-panel-title">
+        Receipts by Category
+      </h3>
+
+      <p class="fs1-meta">
+        Successful and active receipt transactions only.
+      </p>
+
+      <div class="fs1-table-wrap">
+
+        <table class="fs1-table">
+
+          <thead>
+
+            <tr>
+              <th>Receipt Category</th>
+              <th class="fs1-number">Transactions</th>
+              <th class="fs1-number">Amount</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="fs1ReceiptCategoryBody">
+
+            <tr>
+              <td
+                colspan="3"
+                class="fs1-empty"
+              >
+                No data loaded.
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+
+    <section class="fs1-panel">
+
+      <h3 class="fs1-panel-title">
+        Expenses by Category
+      </h3>
+
+      <p class="fs1-meta">
+        Paid and active expense transactions only.
+      </p>
+
+      <div class="fs1-table-wrap">
+
+        <table class="fs1-table">
+
+          <thead>
+
+            <tr>
+              <th>Expense Category</th>
+              <th class="fs1-number">Transactions</th>
+              <th class="fs1-number">Amount</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="fs1ExpenseCategoryBody">
+
+            <tr>
+              <td
+                colspan="3"
+                class="fs1-empty"
+              >
+                No data loaded.
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <section class="fs1-panel">
+
+    <h3 class="fs1-panel-title">
+      Receipt Details
+    </h3>
+
+    <p
+      id="fs1ReceiptMeta"
+      class="fs1-meta"
+    >
+      No receipt records loaded.
+    </p>
+
+    <div class="fs1-table-wrap">
+
+      <table class="fs1-table fs1-detail-table">
+
+        <thead>
+
+          <tr>
+            <th>Date</th>
+            <th>Receipt No.</th>
+            <th>Payer</th>
+            <th>Purpose</th>
+            <th>Payment Mode</th>
+            <th>Reference</th>
+            <th class="fs1-number">Amount</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="fs1ReceiptBody">
+
+          <tr>
+            <td
+              colspan="7"
+              class="fs1-empty"
+            >
+              No data loaded.
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+  <section class="fs1-panel">
+
+    <h3 class="fs1-panel-title">
+      Expense Details
+    </h3>
+
+    <p
+      id="fs1ExpenseMeta"
+      class="fs1-meta"
+    >
+      No expense records loaded.
+    </p>
+
+    <div class="fs1-table-wrap">
+
+      <table
+        class="fs1-table fs1-detail-table expenses"
+      >
+
+        <thead>
+
+          <tr>
+            <th>Date</th>
+            <th>Voucher No.</th>
+            <th>Payee</th>
+            <th>Purpose</th>
+            <th>Category</th>
+            <th>Event / Project</th>
+            <th>Expense Mode</th>
+            <th>Reference</th>
+            <th class="fs1-number">Amount</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="fs1ExpenseBody">
+
+          <tr>
+            <td
+              colspan="9"
+              class="fs1-empty"
+            >
+              No data loaded.
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<script>
+
+(function () {
+
+  'use strict';
+
+
+  const state = {
+
+    initialised:
+      false,
+
+    sessionToken:
+      '',
+
+    currentFinancialYear:
+      '',
+
+    generatedBy:
+      '',
+
+    report:
+      null
+
+  };
+
+
+  const el = {};
+
+
+  function clean(
+    value
+  ) {
+
+    return String(
+      value === null ||
+      value === undefined
+        ? ''
+        : value
+    ).trim();
+
+  }
+
+
+  function formatAmount(
+    value
+  ) {
+
+    return Number(
+      value || 0
+    ).toLocaleString(
+      'en-IN',
+      {
+        minimumFractionDigits:
+          2,
+
+        maximumFractionDigits:
+          2
+      }
+    );
+
+  }
+
+
+  function cacheElements() {
+
+    [
+      'fs1SelectedYearDisplay',
+      'fs1Message',
+
+      'fs1FinancialYear',
+      'fs1ReportPeriod',
+      'fs1FromDate',
+      'fs1ToDate',
+
+      'fs1ClearButton',
+      'fs1RefreshButton',
+      'fs1DownloadCsvButton',
+      'fs1PrintButton',
+      'fs1ApplyButton',
+
+      'fs1TotalReceipts',
+      'fs1TotalExpenses',
+      'fs1NetPosition',
+      'fs1NetCard',
+      'fs1NetLabel',
+
+      'fs1ReceiptCategoryBody',
+      'fs1ExpenseCategoryBody',
+
+      'fs1ReceiptMeta',
+      'fs1ExpenseMeta',
+      'fs1ReceiptBody',
+      'fs1ExpenseBody',
+
+      'fs1PrintReport'
+
+    ].forEach(
+      function (id) {
+
+        el[id] =
+          document.getElementById(id);
+
+      }
+    );
+
+  }
+
+
+  function bindEvents() {
+
+    el.fs1ApplyButton
+      .addEventListener(
+        'click',
+        loadReport
+      );
+
+
+    el.fs1RefreshButton
+      .addEventListener(
+        'click',
+        function () {
+
+          loadSetup(
+            true
+          );
+
+        }
+      );
+
+
+    el.fs1ClearButton
+      .addEventListener(
+        'click',
+        clearPeriod
+      );
+
+
+    el.fs1DownloadCsvButton
+      .addEventListener(
+        'click',
+        downloadCsv
+      );
+
+
+    el.fs1PrintButton
+      .addEventListener(
+        'click',
+        printReport
+      );
+
+
+    el.fs1FinancialYear
+      .addEventListener(
+        'change',
+        function () {
+
+          updateSelectedYear();
+
+          el.fs1ReportPeriod.value =
+            'FULL_FINANCIAL_YEAR';
+
+          applyReportPeriod(
+            false
+          );
+
+          loadReport();
+
+        }
+      );
+
+
+    el.fs1ReportPeriod
+      .addEventListener(
+        'change',
+        function () {
+
+          applyReportPeriod(
+            true
+          );
+
+        }
+      );
+
+
+    [
+      el.fs1FromDate,
+      el.fs1ToDate
+
+    ].forEach(
+      function (control) {
+
+        control.addEventListener(
+          'change',
+          function () {
+
+            if (
+              el.fs1ReportPeriod.value !==
+                'CUSTOM'
+            ) {
+
+              el.fs1ReportPeriod.value =
+                'CUSTOM';
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+  }
+
+
+  function activate(
+    context
+  ) {
+
+    const safe =
+      context &&
+      typeof context === 'object'
+        ? context
+        : {};
+
+
+    if (!state.initialised) {
+
+      cacheElements();
+
+      bindEvents();
+
+      state.initialised =
+        true;
+
+    }
+
+
+    state.sessionToken =
+      clean(
+        safe.sessionToken
+      );
+
+
+    state.currentFinancialYear =
+      clean(
+        safe.financialYear
+      );
+
+
+    state.generatedBy =
+      clean(
+        safe.userName ||
+        (
+          safe.user &&
+          safe.user.userName
+        ) ||
+        safe.email ||
+        (
+          safe.user &&
+          safe.user.email
+        )
+      );
+
+
+    if (!state.sessionToken) {
+
+      showMessage(
+        'The Treasurer session is missing. Please sign out and sign in again.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    loadSetup(
+      false
+    );
+
+  }
+
+
+  function loadSetup(
+    preservePeriod
+  ) {
+
+    showMessage(
+      'Loading Financial Summary…',
+      'info'
+    );
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          if (
+            !response ||
+            response.success !== true
+          ) {
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'Financial Summary setup could not be loaded.',
+              'error'
+            );
+
+            return;
+
+          }
+
+
+          state.currentFinancialYear =
+            clean(
+              response.currentFinancialYear
+            );
+
+
+          const previousYear =
+            preservePeriod
+              ? clean(
+                  el.fs1FinancialYear.value
+                )
+              : '';
+
+
+          populateFinancialYears(
+            response.financialYears || [],
+            previousYear ||
+            state.currentFinancialYear
+          );
+
+
+          if (!preservePeriod) {
+
+            el.fs1ReportPeriod.value =
+              'FULL_FINANCIAL_YEAR';
+
+            el.fs1FromDate.value =
+              '';
+
+            el.fs1ToDate.value =
+              '';
+
+          }
+
+
+          updateSelectedYear();
+
+          showMessage(
+            '',
+            ''
+          );
+
+
+          loadReport();
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          showMessage(
+            getErrorMessage(
+              error
+            ),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_FinancialSummary_GetSetup(
+        state.sessionToken
+      );
+
+  }
+
+
+  function populateFinancialYears(
+    years,
+    selectedYear
+  ) {
+
+    el.fs1FinancialYear.innerHTML =
+      '';
+
+
+    (
+      Array.isArray(years)
+        ? years
+        : []
+    ).forEach(
+      function (year) {
+
+        const value =
+          typeof year === 'string'
+            ? clean(year)
+            : clean(
+                year.financialYear
+              );
+
+
+        if (!value) {
+
+          return;
+
+        }
+
+
+        const option =
+          document.createElement(
+            'option'
+          );
+
+
+        option.value =
+          value;
+
+
+        option.textContent =
+          value;
+
+
+        option.selected =
+          value ===
+          selectedYear;
+
+
+        el.fs1FinancialYear
+          .appendChild(
+            option
+          );
+
+      }
+    );
+
+  }
+
+    function updateSelectedYear() {
+
+    el.fs1SelectedYearDisplay.textContent =
+      clean(
+        el.fs1FinancialYear.value
+      ) ||
+      state.currentFinancialYear ||
+      '—';
+
+  }
+
+
+  function applyReportPeriod(
+    reload
+  ) {
+
+    const period =
+      clean(
+        el.fs1ReportPeriod.value
+      ) ||
+      'FULL_FINANCIAL_YEAR';
+
+
+    const now =
+      new Date();
+
+
+    const today =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+
+
+    let fromDate = '';
+    let toDate = '';
+
+
+    if (
+      period ===
+        'THIS_WEEK'
+    ) {
+
+      const monday =
+        new Date(
+          today
+        );
+
+
+      monday.setDate(
+        monday.getDate() -
+        (
+          (
+            monday.getDay() +
+            6
+          ) %
+          7
+        )
+      );
+
+
+      fromDate =
+        formatIsoDate(
+          monday
+        );
+
+
+      toDate =
+        formatIsoDate(
+          today
+        );
+
+    } else if (
+      period ===
+        'LAST_WEEK'
+    ) {
+
+      const thisMonday =
+        new Date(
+          today
+        );
+
+
+      thisMonday.setDate(
+        thisMonday.getDate() -
+        (
+          (
+            thisMonday.getDay() +
+            6
+          ) %
+          7
+        )
+      );
+
+
+      const lastMonday =
+        new Date(
+          thisMonday
+        );
+
+
+      lastMonday.setDate(
+        lastMonday.getDate() -
+        7
+      );
+
+
+      const lastSunday =
+        new Date(
+          thisMonday
+        );
+
+
+      lastSunday.setDate(
+        lastSunday.getDate() -
+        1
+      );
+
+
+      fromDate =
+        formatIsoDate(
+          lastMonday
+        );
+
+
+      toDate =
+        formatIsoDate(
+          lastSunday
+        );
+
+    } else if (
+      period ===
+        'THIS_MONTH'
+    ) {
+
+      fromDate =
+        formatIsoDate(
+          new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            1
+          )
+        );
+
+
+      toDate =
+        formatIsoDate(
+          today
+        );
+
+    } else if (
+      period ===
+        'LAST_MONTH'
+    ) {
+
+      fromDate =
+        formatIsoDate(
+          new Date(
+            today.getFullYear(),
+            today.getMonth() - 1,
+            1
+          )
+        );
+
+
+      toDate =
+        formatIsoDate(
+          new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            0
+          )
+        );
+
+    } else if (
+      period ===
+        'CUSTOM'
+    ) {
+
+      if (reload) {
+
+        loadReport();
+
+      }
+
+
+      return;
+
+    }
+
+
+    el.fs1FromDate.value =
+      fromDate;
+
+
+    el.fs1ToDate.value =
+      toDate;
+
+
+    if (reload) {
+
+      loadReport();
+
+    }
+
+  }
+
+
+  function formatIsoDate(
+    date
+  ) {
+
+    return (
+      date.getFullYear() +
+      '-' +
+      String(
+        date.getMonth() + 1
+      ).padStart(
+        2,
+        '0'
+      ) +
+      '-' +
+      String(
+        date.getDate()
+      ).padStart(
+        2,
+        '0'
+      )
+    );
+
+  }
+
+
+  function getFilters() {
+
+    return {
+
+      financialYear:
+        clean(
+          el.fs1FinancialYear.value
+        ),
+
+
+      fromDate:
+        clean(
+          el.fs1FromDate.value
+        ),
+
+
+      toDate:
+        clean(
+          el.fs1ToDate.value
+        )
+
+    };
+
+  }
+
+
+  function clearPeriod() {
+
+    el.fs1ReportPeriod.value =
+      'FULL_FINANCIAL_YEAR';
+
+
+    el.fs1FromDate.value =
+      '';
+
+
+    el.fs1ToDate.value =
+      '';
+
+
+    if (
+      state.currentFinancialYear
+    ) {
+
+      el.fs1FinancialYear.value =
+        state.currentFinancialYear;
+
+    }
+
+
+    updateSelectedYear();
+
+    loadReport();
+
+  }
+
+
+  function loadReport() {
+
+    const filters =
+      getFilters();
+
+
+    if (
+      filters.fromDate &&
+      filters.toDate &&
+      filters.fromDate >
+        filters.toDate
+    ) {
+
+      showMessage(
+        'From Date cannot be later than To Date.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    setLoading(
+      true
+    );
+
+
+    showMessage(
+      'Generating Financial Summary…',
+      'info'
+    );
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          setLoading(
+            false
+          );
+
+
+          if (
+            !response ||
+            response.success !== true
+          ) {
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'Financial Summary could not be generated.',
+              'error'
+            );
+
+            return;
+
+          }
+
+
+          state.report =
+            response;
+
+
+          renderReport(
+            response
+          );
+
+
+          showMessage(
+            '',
+            ''
+          );
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          setLoading(
+            false
+          );
+
+
+          showMessage(
+            getErrorMessage(
+              error
+            ),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_FinancialSummary_GetReport(
+        state.sessionToken,
+        filters
+      );
+
+  }
+
+
+  function renderReport(
+    response
+  ) {
+
+    const summary =
+      response.summary || {};
+
+
+    const totalReceipts =
+      Number(
+        summary.totalReceipts ||
+        0
+      );
+
+
+    const totalExpenses =
+      Number(
+        summary.totalExpenses ||
+        0
+      );
+
+
+    const netPosition =
+      Number(
+        summary.netPosition ||
+        (
+          totalReceipts -
+          totalExpenses
+        )
+      );
+
+
+    el.fs1TotalReceipts.textContent =
+      '₹' +
+      formatAmount(
+        totalReceipts
+      );
+
+
+    el.fs1TotalExpenses.textContent =
+      '₹' +
+      formatAmount(
+        totalExpenses
+      );
+
+
+    if (
+      netPosition < 0
+    ) {
+
+      el.fs1NetPosition.textContent =
+        '(₹' +
+        formatAmount(
+          Math.abs(
+            netPosition
+          )
+        ) +
+        ')';
+
+
+      el.fs1NetLabel.textContent =
+        'Net Deficit';
+
+
+      el.fs1NetCard.className =
+        'fs1-summary-card negative';
+
+    } else {
+
+      el.fs1NetPosition.textContent =
+        '₹' +
+        formatAmount(
+          netPosition
+        );
+
+
+      el.fs1NetLabel.textContent =
+        'Net Surplus';
+
+
+      el.fs1NetCard.className =
+        'fs1-summary-card positive';
+
+    }
+
+
+    renderBreakdown(
+      el.fs1ReceiptCategoryBody,
+      response.receiptsByCategory,
+      'receiptCategory'
+    );
+
+
+    renderBreakdown(
+      el.fs1ExpenseCategoryBody,
+      response.expensesByCategory,
+      'expenseCategory'
+    );
+
+
+    renderReceiptDetails(
+      response.receipts
+    );
+
+
+    renderExpenseDetails(
+      response.expenses
+    );
+
+  }
+
+
+  function renderBreakdown(
+    body,
+    rows,
+    key
+  ) {
+
+    body.innerHTML =
+      '';
+
+
+    const safeRows =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+
+    if (!safeRows.length) {
+
+      body.innerHTML =
+        '<tr>' +
+        '<td colspan="3" class="fs1-empty">' +
+        'No transactions for the selected period.' +
+        '</td>' +
+        '</tr>';
+
+      return;
+
+    }
+
+
+    let transactionTotal =
+      0;
+
+
+    let amountTotal =
+      0;
+
+
+    safeRows.forEach(
+      function (row) {
+
+        transactionTotal +=
+          Number(
+            row.transactionCount ||
+            0
+          );
+
+
+        amountTotal +=
+          Number(
+            row.amount ||
+            0
+          );
+
+
+        const tr =
+          document.createElement(
+            'tr'
+          );
+
+
+        appendCell(
+          tr,
+          row[key] ||
+          'UNSPECIFIED'
+        );
+
+
+        appendCell(
+          tr,
+          Number(
+            row.transactionCount ||
+            0
+          ).toLocaleString(
+            'en-IN'
+          ),
+          'fs1-number'
+        );
+
+
+        appendCell(
+          tr,
+          '₹' +
+          formatAmount(
+            row.amount
+          ),
+          'fs1-number'
+        );
+
+
+        body.appendChild(
+          tr
+        );
+
+      }
+    );
+
+
+    const totalRow =
+      document.createElement(
+        'tr'
+      );
+
+
+    appendCell(
+      totalRow,
+      'TOTAL'
+    );
+
+
+    appendCell(
+      totalRow,
+      transactionTotal.toLocaleString(
+        'en-IN'
+      ),
+      'fs1-number'
+    );
+
+
+    appendCell(
+      totalRow,
+      '₹' +
+      formatAmount(
+        amountTotal
+      ),
+      'fs1-number'
+    );
+
+
+    totalRow.style.fontWeight =
+      '800';
+
+
+    body.appendChild(
+      totalRow
+    );
+
+  }
+
+
+  function renderReceiptDetails(
+    rows
+  ) {
+
+    const safeRows =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+
+    el.fs1ReceiptBody.innerHTML =
+      '';
+
+
+    el.fs1ReceiptMeta.textContent =
+      safeRows.length +
+      ' receipt transaction(s).';
+
+
+    if (!safeRows.length) {
+
+      el.fs1ReceiptBody.innerHTML =
+        '<tr>' +
+        '<td colspan="7" class="fs1-empty">' +
+        'No receipt transactions.' +
+        '</td>' +
+        '</tr>';
+
+      return;
+
+    }
+
+
+    safeRows.forEach(
+      function (row) {
+
+        const tr =
+          document.createElement(
+            'tr'
+          );
+
+
+        appendCell(
+          tr,
+          row.dateDisplay ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.receiptNumber ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.payerName ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.purpose ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.paymentMode ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.reference ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          '₹' +
+          formatAmount(
+            row.amount
+          ),
+          'fs1-number'
+        );
+
+
+        el.fs1ReceiptBody
+          .appendChild(
+            tr
+          );
+
+      }
+    );
+
+  }
+
+
+  function renderExpenseDetails(
+    rows
+  ) {
+
+    const safeRows =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+
+    el.fs1ExpenseBody.innerHTML =
+      '';
+
+
+    el.fs1ExpenseMeta.textContent =
+      safeRows.length +
+      ' expense transaction(s).';
+
+
+    if (!safeRows.length) {
+
+      el.fs1ExpenseBody.innerHTML =
+        '<tr>' +
+        '<td colspan="9" class="fs1-empty">' +
+        'No expense transactions.' +
+        '</td>' +
+        '</tr>';
+
+      return;
+
+    }
+
+
+    safeRows.forEach(
+      function (row) {
+
+        const tr =
+          document.createElement(
+            'tr'
+          );
+
+
+        appendCell(
+          tr,
+          row.dateDisplay ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.voucherNumber ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.payeeName ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.purpose ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.category ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.eventProject ||
+          row.eventCode ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.paymentMode ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          row.reference ||
+          ''
+        );
+
+
+        appendCell(
+          tr,
+          '₹' +
+          formatAmount(
+            row.amount
+          ),
+          'fs1-number'
+        );
+
+
+        el.fs1ExpenseBody
+          .appendChild(
+            tr
+          );
+
+      }
+    );
+
+  }
+
+
+  function appendCell(
+    row,
+    value,
+    className
+  ) {
+
+    const td =
+      document.createElement(
+        'td'
+      );
+
+
+    if (className) {
+
+      td.className =
+        className;
+
+    }
+
+
+    td.textContent =
+      value === null ||
+      value === undefined
+        ? ''
+        : String(
+            value
+          );
+
+
+    row.appendChild(
+      td
+    );
+
+  }
+
+    function getReportPeriodLabel() {
+
+    const labels = {
+
+      FULL_FINANCIAL_YEAR:
+        'Full Financial Year',
+
+      THIS_WEEK:
+        'This Week',
+
+      LAST_WEEK:
+        'Last Week',
+
+      THIS_MONTH:
+        'This Month',
+
+      LAST_MONTH:
+        'Last Month',
+
+      CUSTOM:
+        'Custom Period'
+
+    };
+
+
+    return (
+      labels[
+        clean(
+          el.fs1ReportPeriod.value
+        )
+      ] ||
+      'Selected Period'
+    );
+
+  }
+
+
+  function getReportPeriodDescription() {
+
+    const from =
+      clean(
+        el.fs1FromDate.value
+      );
+
+
+    const to =
+      clean(
+        el.fs1ToDate.value
+      );
+
+
+    if (
+      from &&
+      to
+    ) {
+
+      return (
+        formatReportDate(
+          from
+        ) +
+        ' to ' +
+        formatReportDate(
+          to
+        )
+      );
+
+    }
+
+
+    return getReportPeriodLabel();
+
+  }
+
+
+  function formatReportDate(
+    value
+  ) {
+
+    const match =
+      clean(
+        value
+      ).match(
+        /^(\d{4})-(\d{2})-(\d{2})$/
+      );
+
+
+    if (!match) {
+
+      return clean(
+        value
+      );
+
+    }
+
+
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+
+
+    return (
+      match[3] +
+      '-' +
+      months[
+        Number(
+          match[2]
+        ) -
+        1
+      ] +
+      '-' +
+      match[1]
+    );
+
+  }
+
+
+  function formatGeneratedOn() {
+
+    return new Date()
+      .toLocaleString(
+        'en-IN',
+        {
+          day:
+            '2-digit',
+
+          month:
+            'short',
+
+          year:
+            'numeric',
+
+          hour:
+            '2-digit',
+
+          minute:
+            '2-digit',
+
+          hour12:
+            true
+        }
+      );
+
+  }
+
+
+  function findLogoSource() {
+
+    const images =
+      Array.from(
+        document.images ||
+        []
+      );
+
+
+    const preferred =
+      images.find(
+        function (image) {
+
+          const description =
+            [
+              image.id || '',
+              image.className || '',
+              image.alt || '',
+              image.title || ''
+            ]
+              .join(' ')
+              .toLowerCase();
+
+
+          return (
+            (
+              description.includes(
+                'kef'
+              ) ||
+              description.includes(
+                'global'
+              ) ||
+              description.includes(
+                'logo'
+              )
+            ) &&
+            clean(
+              image.src
+            )
+          );
+
+        }
+      );
+
+
+    if (preferred) {
+
+      return preferred.src;
+
+    }
+
+
+    const usable =
+      images.find(
+        function (image) {
+
+          return (
+            clean(
+              image.src
+            ) &&
+            image.naturalWidth > 0 &&
+            image.naturalHeight > 0
+          );
+
+        }
+      );
+
+
+    return usable
+      ? usable.src
+      : '';
+
+  }
+
+
+  function printReport() {
+
+    if (
+      !state.report
+    ) {
+
+      showMessage(
+        'Generate the Financial Summary before printing.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    const summary =
+      state.report.summary ||
+      {};
+
+
+    const logoSource =
+      findLogoSource();
+
+
+    const logoHtml =
+      logoSource
+        ? (
+            '<img ' +
+            'class="fs1-print-logo" ' +
+            'src="' +
+            escapeHtml(
+              logoSource
+            ) +
+            '" ' +
+            'alt="KEF Global">'
+          )
+        : '';
+
+
+    const net =
+      Number(
+        summary.netPosition ||
+        0
+      );
+
+
+    const netDisplay =
+      net < 0
+        ? (
+            '(₹' +
+            formatAmount(
+              Math.abs(
+                net
+              )
+            ) +
+            ')'
+          )
+        : (
+            '₹' +
+            formatAmount(
+              net
+            )
+          );
+
+
+    const receiptBreakdown =
+      buildPrintBreakdownTable(
+        state.report.receiptsByCategory,
+        'receiptCategory',
+        'Receipt Category'
+      );
+
+
+    const expenseBreakdown =
+      buildPrintBreakdownTable(
+        state.report.expensesByCategory,
+        'expenseCategory',
+        'Expense Category'
+      );
+
+
+    const receiptDetails =
+      buildPrintReceiptDetails(
+        state.report.receipts
+      );
+
+
+    const expenseDetails =
+      buildPrintExpenseDetails(
+        state.report.expenses
+      );
+
+
+    el.fs1PrintReport.innerHTML =
+      '<div class="fs1-print-header">' +
+
+        logoHtml +
+
+        '<div class="fs1-print-org">' +
+          'KEF GLOBAL' +
+        '</div>' +
+
+        '<div class="fs1-print-title">' +
+          'Treasurer Financial Summary' +
+        '</div>' +
+
+      '</div>' +
+
+
+      '<div class="fs1-print-meta">' +
+
+        '<div>' +
+          '<strong>Financial Year:</strong> ' +
+          escapeHtml(
+            el.fs1FinancialYear.value
+          ) +
+        '</div>' +
+
+        '<div>' +
+          '<strong>Report Period:</strong> ' +
+          escapeHtml(
+            getReportPeriodDescription()
+          ) +
+        '</div>' +
+
+        '<div>' +
+          '<strong>Generated On:</strong> ' +
+          escapeHtml(
+            formatGeneratedOn()
+          ) +
+        '</div>' +
+
+        (
+          state.generatedBy
+            ? (
+                '<div>' +
+                  '<strong>Generated By:</strong> ' +
+                  escapeHtml(
+                    state.generatedBy
+                  ) +
+                '</div>'
+              )
+            : ''
+        ) +
+
+      '</div>' +
+
+
+      '<div class="fs1-print-cards">' +
+
+        '<div class="fs1-print-card">' +
+          '<div class="fs1-print-value">' +
+            '₹' +
+            escapeHtml(
+              formatAmount(
+                summary.totalReceipts
+              )
+            ) +
+          '</div>' +
+          '<div class="fs1-print-label">' +
+            'Total Receipts' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="fs1-print-card">' +
+          '<div class="fs1-print-value">' +
+            '₹' +
+            escapeHtml(
+              formatAmount(
+                summary.totalExpenses
+              )
+            ) +
+          '</div>' +
+          '<div class="fs1-print-label">' +
+            'Total Expenses' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="fs1-print-card">' +
+          '<div class="fs1-print-value">' +
+            escapeHtml(
+              netDisplay
+            ) +
+          '</div>' +
+          '<div class="fs1-print-label">' +
+            (
+              net < 0
+                ? 'Net Deficit'
+                : 'Net Surplus'
+            ) +
+          '</div>' +
+        '</div>' +
+
+      '</div>' +
+
+
+      '<div class="fs1-print-grid">' +
+
+        '<div>' +
+          '<div class="fs1-print-heading">' +
+            'Receipts by Category' +
+          '</div>' +
+          receiptBreakdown +
+        '</div>' +
+
+        '<div>' +
+          '<div class="fs1-print-heading">' +
+            'Expenses by Category' +
+          '</div>' +
+          expenseBreakdown +
+        '</div>' +
+
+      '</div>' +
+
+
+      '<div class="fs1-print-heading">' +
+        'Receipt Details' +
+      '</div>' +
+
+      receiptDetails +
+
+
+      '<div class="fs1-print-heading">' +
+        'Expense Details' +
+      '</div>' +
+
+      expenseDetails;
+
+
+    window.print();
+
+  }
+
+
+  function buildPrintBreakdownTable(
+    rows,
+    key,
+    heading
+  ) {
+
+    const safeRows =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+
+    let transactionTotal =
+      0;
+
+
+    let amountTotal =
+      0;
+
+
+    const body =
+      safeRows.map(
+        function (row) {
+
+          transactionTotal +=
+            Number(
+              row.transactionCount ||
+              0
+            );
+
+
+          amountTotal +=
+            Number(
+              row.amount ||
+              0
+            );
+
+
+          return (
+            '<tr>' +
+              '<td>' +
+                escapeHtml(
+                  row[key] ||
+                  'UNSPECIFIED'
+                ) +
+              '</td>' +
+              '<td class="fs1-print-number">' +
+                escapeHtml(
+                  Number(
+                    row.transactionCount ||
+                    0
+                  ).toLocaleString(
+                    'en-IN'
+                  )
+                ) +
+              '</td>' +
+              '<td class="fs1-print-number">' +
+                '₹' +
+                escapeHtml(
+                  formatAmount(
+                    row.amount
+                  )
+                ) +
+              '</td>' +
+            '</tr>'
+          );
+
+        }
+      ).join('');
+
+
+    const totalRow =
+      '<tr style="font-weight:800;">' +
+        '<td>TOTAL</td>' +
+        '<td class="fs1-print-number">' +
+          escapeHtml(
+            transactionTotal.toLocaleString(
+              'en-IN'
+            )
+          ) +
+        '</td>' +
+        '<td class="fs1-print-number">' +
+          '₹' +
+          escapeHtml(
+            formatAmount(
+              amountTotal
+            )
+          ) +
+        '</td>' +
+      '</tr>';
+
+
+    return (
+      '<table>' +
+        '<thead>' +
+          '<tr>' +
+            '<th>' +
+              escapeHtml(
+                heading
+              ) +
+            '</th>' +
+            '<th>Transactions</th>' +
+            '<th>Amount</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>' +
+          body +
+          totalRow +
+        '</tbody>' +
+      '</table>'
+    );
+
+  }
+
+
+  function buildPrintReceiptDetails(
+    rows
+  ) {
+
+    const safeRows =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+
+    const body =
+      safeRows.map(
+        function (row) {
+
+          return (
+            '<tr>' +
+              '<td>' +
+                escapeHtml(
+                  row.dateDisplay
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.receiptNumber
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.payerName
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.purpose
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.paymentMode
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.reference
+                ) +
+              '</td>' +
+              '<td class="fs1-print-number">' +
+                '₹' +
+                escapeHtml(
+                  formatAmount(
+                    row.amount
+                  )
+                ) +
+              '</td>' +
+            '</tr>'
+          );
+
+        }
+      ).join('');
+
+
+    return (
+      '<table>' +
+        '<thead>' +
+          '<tr>' +
+            '<th>Date</th>' +
+            '<th>Receipt No.</th>' +
+            '<th>Payer</th>' +
+            '<th>Purpose</th>' +
+            '<th>Mode</th>' +
+            '<th>Reference</th>' +
+            '<th>Amount</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>' +
+          body +
+        '</tbody>' +
+      '</table>'
+    );
+
+  }
+
+
+  function buildPrintExpenseDetails(
+    rows
+  ) {
+
+    const safeRows =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+
+    const body =
+      safeRows.map(
+        function (row) {
+
+          return (
+            '<tr>' +
+              '<td>' +
+                escapeHtml(
+                  row.dateDisplay
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.voucherNumber
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.payeeName
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.purpose
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.category
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.eventProject ||
+                  row.eventCode
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.paymentMode
+                ) +
+              '</td>' +
+              '<td>' +
+                escapeHtml(
+                  row.reference
+                ) +
+              '</td>' +
+              '<td class="fs1-print-number">' +
+                '₹' +
+                escapeHtml(
+                  formatAmount(
+                    row.amount
+                  )
+                ) +
+              '</td>' +
+            '</tr>'
+          );
+
+        }
+      ).join('');
+
+
+    return (
+      '<table>' +
+        '<thead>' +
+          '<tr>' +
+            '<th>Date</th>' +
+            '<th>Voucher No.</th>' +
+            '<th>Payee</th>' +
+            '<th>Purpose</th>' +
+            '<th>Category</th>' +
+            '<th>Event / Project</th>' +
+            '<th>Mode</th>' +
+            '<th>Reference</th>' +
+            '<th>Amount</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>' +
+          body +
+        '</tbody>' +
+      '</table>'
+    );
+
+  }
+
+
+  function downloadCsv() {
+
+    if (
+      !state.report
+    ) {
+
+      showMessage(
+        'Generate the Financial Summary before downloading CSV.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    const summary =
+      state.report.summary ||
+      {};
+
+
+    const rows = [
+
+      [
+        'FINANCIAL_YEAR',
+        el.fs1FinancialYear.value
+      ],
+
+      [
+        'REPORT_PERIOD',
+        getReportPeriodDescription()
+      ],
+
+      [
+        'TOTAL_RECEIPTS',
+        Number(
+          summary.totalReceipts ||
+          0
+        ).toFixed(2)
+      ],
+
+      [
+        'TOTAL_EXPENSES',
+        Number(
+          summary.totalExpenses ||
+          0
+        ).toFixed(2)
+      ],
+
+      [
+        'NET_POSITION',
+        Number(
+          summary.netPosition ||
+          0
+        ).toFixed(2)
+      ],
+
+      [],
+
+      [
+        'RECEIPTS_BY_CATEGORY',
+        'TRANSACTIONS',
+        'AMOUNT'
+      ]
+
+    ];
+
+
+    (
+      state.report.receiptsByCategory ||
+      []
+    ).forEach(
+      function (row) {
+
+        rows.push(
+          [
+            row.receiptCategory,
+            row.transactionCount,
+            Number(
+              row.amount ||
+              0
+            ).toFixed(2)
+          ]
+        );
+
+      }
+    );
+
+
+    rows.push(
+      [
+        'TOTAL',
+        Number(
+          summary.receiptCount ||
+          0
+        ),
+        Number(
+          summary.totalReceipts ||
+          0
+        ).toFixed(2)
+      ],
+      [],
+      [
+        'EXPENSES_BY_CATEGORY',
+        'TRANSACTIONS',
+        'AMOUNT'
+      ]
+    );
+
+
+    (
+      state.report.expensesByCategory ||
+      []
+    ).forEach(
+      function (row) {
+
+        rows.push(
+          [
+            row.expenseCategory,
+            row.transactionCount,
+            Number(
+              row.amount ||
+              0
+            ).toFixed(2)
+          ]
+        );
+
+      }
+    );
+
+
+    rows.push(
+      [
+        'TOTAL',
+        Number(
+          summary.expenseCount ||
+          0
+        ),
+        Number(
+          summary.totalExpenses ||
+          0
+        ).toFixed(2)
+      ],
+      [],
+      [
+        'RECEIPT_DETAILS'
+      ],
+      [
+        'DATE',
+        'RECEIPT_NUMBER',
+        'PAYER',
+        'PURPOSE',
+        'PAYMENT_MODE',
+        'REFERENCE',
+        'AMOUNT'
+      ]
+    );
+
+
+    (
+      state.report.receipts ||
+      []
+    ).forEach(
+      function (row) {
+
+        rows.push(
+          [
+            row.dateDisplay,
+            row.receiptNumber,
+            row.payerName,
+            row.purpose,
+            row.paymentMode,
+            row.reference,
+            Number(
+              row.amount ||
+              0
+            ).toFixed(2)
+          ]
+        );
+
+      }
+    );
+
+
+    rows.push(
+      [],
+      [
+        'EXPENSE_DETAILS'
+      ],
+      [
+        'DATE',
+        'VOUCHER_NUMBER',
+        'PAYEE',
+        'PURPOSE',
+        'CATEGORY',
+        'EVENT_PROJECT',
+        'EXPENSE_MODE',
+        'REFERENCE',
+        'AMOUNT'
+      ]
+    );
+
+
+    (
+      state.report.expenses ||
+      []
+    ).forEach(
+      function (row) {
+
+        rows.push(
+          [
+            row.dateDisplay,
+            row.voucherNumber,
+            row.payeeName,
+            row.purpose,
+            row.category,
+            row.eventProject ||
+            row.eventCode,
+            row.paymentMode,
+            row.reference,
+            Number(
+              row.amount ||
+              0
+            ).toFixed(2)
+          ]
+        );
+
+      }
+    );
+
+
+    const csv =
+      rows.map(
+        function (row) {
+
+          return row.map(
+            csvEscape
+          ).join(',');
+
+        }
+      ).join(
+        '\r\n'
+      );
+
+
+    const blob =
+      new Blob(
+        [
+          '\uFEFF' +
+          csv
+        ],
+        {
+          type:
+            'text/csv;charset=utf-8;'
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        'a'
+      );
+
+
+    link.href =
+      url;
+
+
+    link.download =
+      'KGMIS_Treasurer_Financial_Summary_' +
+      (
+        clean(
+          el.fs1FinancialYear.value
+        ) ||
+        'FY'
+      ) +
+      '_' +
+      getReportPeriodLabel()
+        .replace(
+          /\s+/g,
+          '_'
+        ) +
+      '_' +
+      formatIsoDate(
+        new Date()
+      ) +
+      '.csv';
+
+
+    document.body.appendChild(
+      link
+    );
+
+
+    link.click();
+
+
+    document.body.removeChild(
+      link
+    );
+
+
+    URL.revokeObjectURL(
+      url
+    );
+
+  }
+
+
+  function csvEscape(
+    value
+  ) {
+
+    const text =
+      String(
+        value === null ||
+        value === undefined
+          ? ''
+          : value
+      );
+
+
+    if (
+      /[,"\r\n]/.test(
+        text
+      )
+    ) {
+
+      return (
+        '"' +
+        text.replace(
+          /"/g,
+          '""'
+        ) +
+        '"'
+      );
+
+    }
+
+
+    return text;
+
+  }
+
+
+  function escapeHtml(
+    value
+  ) {
+
+    return String(
+      value === null ||
+      value === undefined
+        ? ''
+        : value
+    )
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      )
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+      .replace(
+        /'/g,
+        '&#039;'
+      );
+
+  }
+
+
+  function setLoading(
+    loading
+  ) {
+
+    el.fs1ApplyButton.disabled =
+      Boolean(
+        loading
+      );
+
+
+    el.fs1RefreshButton.disabled =
+      Boolean(
+        loading
+      );
+
+
+    el.fs1PrintButton.disabled =
+      Boolean(
+        loading
+      );
+
+
+    el.fs1DownloadCsvButton.disabled =
+      Boolean(
+        loading
+      );
+
+
+    el.fs1ApplyButton.textContent =
+      loading
+        ? 'Generating…'
+        : 'Generate Summary';
+
+  }
+
+
+  function showMessage(
+    message,
+    type
+  ) {
+
+    const text =
+      clean(
+        message
+      );
+
+
+    el.fs1Message.className =
+      'fs1-message';
+
+
+    el.fs1Message.textContent =
+      text;
+
+
+    if (!text) {
+
+      return;
+
+    }
+
+
+    el.fs1Message.classList.add(
+      type ||
+      'info'
+    );
+
+  }
+
+
+  function getErrorMessage(
+    error
+  ) {
+
+    return (
+      error &&
+      error.message
+        ? error.message
+        : String(
+            error ||
+            'An unexpected Financial Summary error occurred.'
+          )
+    );
+
+  }
+
+
+  window.KGMIS_FinancialSummary = {
+
+    activate:
+      activate,
+
+    refresh:
+      function () {
+
+        loadSetup(
+          true
+        );
+
+      },
+
+    reload:
+      loadReport,
+
+    printReport:
+      printReport,
+
+    downloadCsv:
+      downloadCsv
+
+  };
+
+
+})();
+
+</script>

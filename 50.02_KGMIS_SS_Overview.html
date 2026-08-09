@@ -1,0 +1,252 @@
+<!--
+==============================================================================
+KEFG Membership Information System (KGMIS)
+
+Module        : Self-Service Portal
+Section       : Overview
+File          : 50.02_KGMIS_SS_Overview.html
+Version       : 1.0
+Status        : Development
+
+Designed and Developed by:
+James Joseph Alenchery
+==============================================================================
+-->
+
+<section
+    id="sspOverviewPage"
+    class="ssp-page">
+
+    <!-- =====================================================
+         Page Header
+         ===================================================== -->
+
+    <div class="ssp-page-header">
+
+        <h3>Family Overview</h3>
+
+        <p>
+            Please verify that the following information belongs to
+            your family before continuing.
+        </p>
+
+    </div>
+
+    <!-- =====================================================
+         Overview Grid
+         ===================================================== -->
+
+    <div class="ssp-overview-grid">
+
+        <div class="ssp-overview-card">
+
+            <span>Family ID</span>
+
+            <strong id="sspFamilyId">
+                —
+            </strong>
+
+        </div>
+
+        <div class="ssp-overview-card">
+
+            <span>Primary Member</span>
+
+            <strong id="sspPrimaryMember">
+                —
+            </strong>
+
+        </div>
+
+        <div class="ssp-overview-card">
+
+            <span>Spouse</span>
+
+            <strong id="sspSpouse">
+                —
+            </strong>
+
+        </div>
+
+        <div class="ssp-overview-card">
+
+            <span>Relationship Status</span>
+
+            <strong id="sspRelationshipStatus">
+                —
+            </strong>
+
+        </div>
+
+        <div class="ssp-overview-card">
+
+            <span>Profile Completeness</span>
+
+            <strong id="sspCompleteness">
+                —
+            </strong>
+
+        </div>
+
+        <div class="ssp-overview-card">
+
+            <span>Subscription Status</span>
+
+            <strong id="sspSubscriptionStatus">
+                —
+            </strong>
+
+        </div>
+
+        <div class="ssp-overview-card">
+
+            <span>Family Members</span>
+
+            <strong id="sspFamilyMemberCount">
+                —
+            </strong>
+
+        </div>
+
+        <div class="ssp-overview-card">
+
+            <span>Last Updated</span>
+
+            <strong id="sspLastUpdated">
+                —
+            </strong>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         Information
+         ===================================================== -->
+
+    <div class="ssp-info-box">
+
+        <strong>Please Note</strong>
+
+        <p>
+
+            The information shown above has been loaded directly
+            from the KGMIS database.
+
+            If everything belongs to your family, click
+            <strong>Next</strong> to continue.
+
+        </p>
+
+    </div>
+
+</section>
+
+<style>
+
+/* ==========================================================
+   Overview
+   ========================================================== */
+
+.ssp-page{
+    display:block;
+}
+
+.ssp-page-header{
+    margin-bottom:24px;
+}
+
+.ssp-page-header h3{
+    margin:0 0 6px;
+    color:var(--mf-primary-dark,#0d4e70);
+}
+
+.ssp-page-header p{
+    margin:0;
+    color:#64748b;
+}
+
+.ssp-overview-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap:16px;
+
+}
+
+.ssp-overview-card{
+
+    padding:18px;
+
+    border:1px solid #d5e0e8;
+
+    border-radius:12px;
+
+    background:#ffffff;
+
+}
+
+.ssp-overview-card span{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    letter-spacing:.05em;
+
+    text-transform:uppercase;
+
+    color:#64748b;
+
+}
+
+.ssp-overview-card strong{
+
+    display:block;
+
+    font-size:18px;
+
+    color:#0d4e70;
+
+}
+
+.ssp-info-box{
+
+    margin-top:24px;
+
+    padding:18px;
+
+    border:1px solid #b9d7e6;
+
+    border-radius:12px;
+
+    background:#eef8fc;
+
+}
+
+.ssp-info-box strong{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#0d4e70;
+
+}
+
+.ssp-info-box p{
+
+    margin:0;
+
+    line-height:1.6;
+
+}
+
+</style>

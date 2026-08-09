@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <style>
+    :root {
+      --primary: #176c91;
+      --primary-dark: #0d4e70;
+      --secondary: #47a6c4;
+      --accent: #0aa957;
+
+      --background: #f3f7fa;
+      --panel: #ffffff;
+      --border: #d5e0e8;
+
+      --text: #1f2937;
+      --muted: #64748b;
+
+      --success: #16723a;
+      --success-background: #ecfdf3;
+      --success-border: #a6e9bd;
+
+      --error: #b42318;
+      --error-background: #fef3f2;
+      --error-border: #fecdca;
+
+      --shadow:
+        0 5px 18px rgba(15, 76, 105, 0.08);
+    }
+
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+      color: var(--text);
+      background: var(--background);
+    }
+
+
+    button,
+    input,
+    select {
+      font-family: inherit;
+      font-size: 15px;
+    }
+
+
+    .container {
+      width: 100%;
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+
+    .header {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+      padding: 24px;
+      border-radius: 16px;
+      color: #ffffff;
+      text-align: center;
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary-dark),
+          var(--primary),
+          var(--secondary)
+        );
+      box-shadow: var(--shadow);
+    }
+
+
+    .header::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      right: -90px;
+      bottom: -145px;
+      border-radius: 50%;
+      background:
+        rgba(255, 255, 255, 0.08);
+    }
+
+
+    .header .logo-container {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 12px;
+    }
+
+
+    .header .kefg-logo {
+      width: 118px;
+      height: 118px;
+      padding: 5px;
+      object-fit: contain;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.18);
+    }
+
+
+    .header h1 {
+      position: relative;
+      z-index: 2;
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+
+    .header p {
+      position: relative;
+      z-index: 2;
+      margin: 0;
+      opacity: 0.94;
+    }
+
+
+    .portal-subtitle {
+      margin-top: 5px !important;
+      font-size: 14px;
+    }
+
+
+    .panel {
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+
+    .panel-title {
+      margin: 0 0 5px;
+      color: var(--primary-dark);
+      font-size: 21px;
+    }
+
+
+    .panel-description {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+
+    .field-label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid #b7c4cf;
+      border-radius: 8px;
+      color: var(--text);
+      background: #ffffff;
+      outline: none;
+    }
+
+
+    input:focus,
+    select:focus {
+      border-color: var(--secondary);
+      box-shadow:
+        0 0 0 3px rgba(71, 166, 196, 0.15);
+    }
+
+
+    button {
+      min-height: 44px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 8px;
+      color: #ffffff;
+      background: var(--primary);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+
+    button:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+
+    .secondary-button {
+      background: #526779;
+    }
+
+
+    .download-button {
+      background: var(--accent);
+    }
+
+
+    .search-row {
+      display: grid;
+      grid-template-columns:
+        minmax(250px, 1fr) auto auto;
+      gap: 10px;
+    }
+
+
+    .message {
+      display: none;
+      margin: 15px 0 0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      line-height: 1.45;
+    }
+
+
+    .message.success {
+      display: block;
+      color: var(--success);
+      background: var(--success-background);
+      border: 1px solid var(--success-border);
+    }
+
+
+    .message.error {
+      display: block;
+      color: var(--error);
+      background: var(--error-background);
+      border: 1px solid var(--error-border);
+    }
+
+
+    .loading {
+      display: none;
+      padding-top: 12px;
+      color: var(--muted);
+    }
+
+
+    .results {
+      display: grid;
+      gap: 16px;
+    }
+
+
+    .family-card {
+      padding: 19px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #ffffff;
+    }
+
+
+    .family-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 16px;
+    }
+
+
+    .family-title {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 20px;
+    }
+
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+
+    .status-badge-paid {
+      color: #166534;
+      background: #dcfce7;
+      border: 1px solid #86efac;
+    }
+
+
+    .status-badge-not-paid {
+      color: #991b1b;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+    }
+
+
+    .status-badge-pending {
+      color: #92400e;
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+    }
+
+
+    .status-badge-exempted {
+      color: #475569;
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+    }
+
+
+    .person-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+
+    .person-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #f8fbfd;
+    }
+
+
+    .person-name {
+      margin-bottom: 8px;
+      color: var(--primary-dark);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+
+    .person-detail {
+      margin-top: 7px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+
+    .person-alumni {
+      color: #334155;
+    }
+
+
+    .person-mobile {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+
+    .family-zone {
+      margin-top: 15px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: var(--primary-dark);
+      background: #e5f4fa;
+      font-weight: 700;
+    }
+
+
+    .status-area {
+      display: grid;
+      grid-template-columns:
+        minmax(200px, 1fr)
+        minmax(180px, 0.8fr)
+        auto;
+      align-items: end;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+
+    .empty {
+      padding: 26px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+
+    .summary-card {
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #f8fbfd;
+    }
+
+
+    .summary-card .number {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--primary-dark);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+
+    .summary-card .caption {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+
+    .report-filters {
+      display: grid;
+      grid-template-columns:
+        minmax(190px, 1fr)
+        minmax(180px, 1fr)
+        minmax(180px, 1fr)
+        auto
+        auto;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+
+    .report-meta {
+      margin: 10px 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+
+    table {
+      width: 100%;
+      min-width: 1120px;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+
+    th {
+      position: sticky;
+      top: 0;
+      color: #ffffff;
+      background: var(--primary-dark);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+
+    tbody tr:nth-child(even) {
+      background: #f8fbfd;
+    }
+
+
+    .status-paid {
+      color: #16723a;
+      font-weight: 700;
+    }
+
+
+    .status-not-paid {
+      color: #b42318;
+      font-weight: 700;
+    }
+
+
+    .status-pending {
+      color: #9a6700;
+      font-weight: 700;
+    }
+
+
+    .footer {
+      padding: 10px 0 20px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+
+    @media (max-width: 950px) {
+      .summary-grid {
+        grid-template-columns:
+          repeat(3, minmax(0, 1fr));
+      }
+
+
+      .report-filters {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+    }
+
+
+    @media (max-width: 720px) {
+      body {
+        padding: 12px;
+      }
+
+
+      .header {
+        padding: 20px 14px;
+      }
+
+
+      .header h1 {
+        font-size: 23px;
+      }
+
+
+      .search-row,
+      .status-area,
+      .report-filters {
+        grid-template-columns: 1fr;
+      }
+
+
+      .person-grid {
+        grid-template-columns: 1fr;
+      }
+
+
+      .summary-grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+
+      .family-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+  <div class="container">
+
+    <header class="header">
+      <?!= HtmlService
+            .createHtmlOutputFromFile('Logo')
+            .getContent(); ?>
+
+      <h1>KEFG Treasurer Portal</h1>
+
+      <p>
+        Subscription Management 2026–27
+      </p>
+
+      <p class="portal-subtitle">
+        KEF Global Membership Information System
+      </p>
+    </header>
+
+
+    <section class="panel">
+      <h2 class="panel-title">
+        Find a Family
+      </h2>
+
+      <p class="panel-description">
+        Search using Family ID, Zone, primary member or spouse name,
+        mobile number, alumni association, branch or batch.
+      </p>
+
+      <div class="search-row">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Enter Family ID, name, mobile, Zone or alumni detail"
+          autocomplete="off"
+        >
+
+        <button
+          id="searchButton"
+          type="button"
+          onclick="searchFamilies()"
+        >
+          Search
+        </button>
+
+        <button
+          class="secondary-button"
+          type="button"
+          onclick="openSubscriptionReport()"
+        >
+          Subscription Report
+        </button>
+      </div>
+
+      <div id="loading" class="loading">
+        Loading KMIS records…
+      </div>
+
+      <div id="message" class="message"></div>
+    </section>
+
+
+    <section
+      id="resultsPanel"
+      class="panel"
+      style="display:none;"
+    >
+      <h2 class="panel-title">
+        Search Results
+      </h2>
+
+      <div id="results" class="results"></div>
+    </section>
+
+
+    <section
+      id="reportPanel"
+      class="panel"
+      style="display:none;"
+    >
+      <h2 class="panel-title">
+        Subscription Report 2026–27
+      </h2>
+
+      <p class="panel-description">
+        Blank subscription statuses are counted and displayed as
+        NOT PAID.
+      </p>
+
+
+      <div class="summary-grid">
+
+        <div class="summary-card">
+          <span id="summaryTotal" class="number">
+            0
+          </span>
+
+          <span class="caption">
+            Total Families
+          </span>
+        </div>
+
+
+        <div class="summary-card">
+          <span id="summaryPaid" class="number">
+            0
+          </span>
+
+          <span class="caption">
+            Paid
+          </span>
+        </div>
+
+
+        <div class="summary-card">
+          <span id="summaryNotPaid" class="number">
+            0
+          </span>
+
+          <span class="caption">
+            Not Paid
+          </span>
+        </div>
+
+
+        <div class="summary-card">
+          <span id="summaryPending" class="number">
+            0
+          </span>
+
+          <span class="caption">
+            Pending
+          </span>
+        </div>
+
+
+        <div class="summary-card">
+          <span id="summaryExempted" class="number">
+            0
+          </span>
+
+          <span class="caption">
+            Exempted
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="report-filters">
+
+        <input
+          id="reportSearch"
+          type="text"
+          placeholder="Search within report"
+        >
+
+
+        <select id="reportZone">
+          <option value="">
+            All Zones
+          </option>
+        </select>
+
+
+        <select id="reportStatus">
+          <option value="">
+            All Statuses
+          </option>
+        </select>
+
+
+        <button
+          type="button"
+          onclick="loadSubscriptionReport()"
+        >
+          Apply Filters
+        </button>
+
+
+        <button
+          class="download-button"
+          type="button"
+          onclick="downloadSubscriptionReport()"
+        >
+          Download CSV
+        </button>
+
+      </div>
+
+
+      <div id="reportMeta" class="report-meta">
+        No report loaded.
+      </div>
+
+
+      <div class="table-wrapper">
+        <table id="reportTable">
+
+          <thead>
+            <tr>
+              <th>Family ID</th>
+              <th>Subscription Status</th>
+
+              <th>Primary Member</th>
+              <th>Member Mobile</th>
+              <th>Member Alumni</th>
+
+              <th>Spouse</th>
+              <th>Spouse Mobile</th>
+              <th>Spouse Alumni</th>
+
+              <th>Payment Date</th>
+              <th>Zone</th>
+            </tr>
+          </thead>
+
+          <tbody></tbody>
+
+        </table>
+      </div>
+    </section>
+
+
+    <footer class="footer">
+      KEFG Membership Information System · Treasurer Portal
+    </footer>
+
+  </div>
+
+
+  <script>
+    let statusOptions = [];
+    let availableZones = [];
+    let currentSubscriptionReport = [];
+
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      () => {
+        document
+          .getElementById('searchInput')
+          .addEventListener(
+            'keydown',
+            event => {
+              if (event.key === 'Enter') {
+                searchFamilies();
+              }
+            }
+          );
+
+
+        document
+          .getElementById('reportSearch')
+          .addEventListener(
+            'keydown',
+            event => {
+              if (event.key === 'Enter') {
+                loadSubscriptionReport();
+              }
+            }
+          );
+
+
+        loadPortalConfiguration();
+      }
+    );
+
+
+    function loadPortalConfiguration() {
+      google.script.run
+        .withSuccessHandler(configuration => {
+          statusOptions =
+            configuration.statusOptions || [];
+
+          availableZones =
+            configuration.zones || [];
+
+          populateReportStatusOptions();
+          populateZoneOptions();
+        })
+        .withFailureHandler(showError)
+        .getPortalConfiguration();
+    }
+
+
+    function populateReportStatusOptions() {
+      const select =
+        document.getElementById('reportStatus');
+
+      select.innerHTML =
+        '<option value="">All Statuses</option>';
+
+      statusOptions.forEach(status => {
+        const option =
+          document.createElement('option');
+
+        option.value = status;
+        option.textContent = status;
+
+        select.appendChild(option);
+      });
+    }
+
+
+    function populateZoneOptions() {
+      const select =
+        document.getElementById('reportZone');
+
+      select.innerHTML =
+        '<option value="">All Zones</option>';
+
+      availableZones.forEach(zone => {
+        const option =
+          document.createElement('option');
+
+        option.value = zone;
+        option.textContent = zone;
+
+        select.appendChild(option);
+      });
+    }
+
+
+    function searchFamilies() {
+      const searchInput =
+        document.getElementById('searchInput');
+
+      const searchButton =
+        document.getElementById('searchButton');
+
+      const query = searchInput.value.trim();
+
+      clearMessage();
+
+      if (!query) {
+        showError(
+          'Enter a Family ID, Zone, name, mobile number or alumni detail.'
+        );
+
+        searchInput.focus();
+        return;
+      }
+
+      setLoading(true);
+      searchButton.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(families => {
+          setLoading(false);
+          searchButton.disabled = false;
+
+          renderSearchResults(
+            families || []
+          );
+        })
+        .withFailureHandler(error => {
+          setLoading(false);
+          searchButton.disabled = false;
+
+          showError(error);
+        })
+        .searchFamilies(query);
+    }
+
+
+    function renderSearchResults(families) {
+      const panel =
+        document.getElementById('resultsPanel');
+
+      const results =
+        document.getElementById('results');
+
+      results.innerHTML = '';
+      panel.style.display = 'block';
+
+      if (!families.length) {
+        results.innerHTML =
+          '<div class="empty">' +
+          'No matching family was found.' +
+          '</div>';
+
+        panel.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+
+        return;
+      }
+
+      families.forEach(family => {
+        results.appendChild(
+          createFamilyCard(family)
+        );
+      });
+
+      panel.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+
+
+    function createFamilyCard(family) {
+      const card =
+        document.createElement('article');
+
+      card.className = 'family-card';
+
+
+      const cardHeader =
+        document.createElement('div');
+
+      cardHeader.className =
+        'family-card-header';
+
+
+      const title =
+        document.createElement('h3');
+
+      title.className = 'family-title';
+
+      title.textContent =
+        family.familyId || 'Family';
+
+
+      const effectiveStatus =
+        getEffectiveSubscriptionStatus(
+          family.subscriptionStatus
+        );
+
+
+      const statusBadge =
+        document.createElement('span');
+
+      statusBadge.className =
+        `status-badge ${
+          getStatusBadgeClass(effectiveStatus)
+        }`;
+
+      statusBadge.textContent =
+        `Subscription Status: ${effectiveStatus}`;
+
+
+      cardHeader.appendChild(title);
+      cardHeader.appendChild(statusBadge);
+
+      card.appendChild(cardHeader);
+
+
+      const peopleGrid =
+        document.createElement('div');
+
+      peopleGrid.className = 'person-grid';
+
+
+      peopleGrid.appendChild(
+        createPersonCard({
+          role: 'Primary Member',
+          name: family.memberName,
+          mobile: family.memberMobile,
+          association:
+            family.memberAlumniAssociation,
+          branch:
+            family.memberBranch,
+          batchYear:
+            family.memberBatchYear
+        })
+      );
+
+
+      if (
+        family.spouseName ||
+        family.spouseMobile ||
+        hasAlumniDetails(
+          family.spouseAlumniAssociation,
+          family.spouseBranch,
+          family.spouseBatchYear
+        )
+      ) {
+        peopleGrid.appendChild(
+          createPersonCard({
+            role: 'Spouse',
+            name: family.spouseName,
+            mobile: family.spouseMobile,
+            association:
+              family.spouseAlumniAssociation,
+            branch:
+              family.spouseBranch,
+            batchYear:
+              family.spouseBatchYear
+          })
+        );
+      }
+
+
+      card.appendChild(peopleGrid);
+
+
+      const zoneElement =
+        document.createElement('div');
+
+      zoneElement.className =
+        'family-zone';
+
+      zoneElement.textContent =
+        family.zone
+          ? `Zone: ${family.zone}`
+          : 'Zone: Not recorded';
+
+      card.appendChild(zoneElement);
+
+
+      const statusArea =
+        document.createElement('div');
+
+      statusArea.className =
+        'status-area';
+
+
+      const statusContainer =
+        document.createElement('div');
+
+
+      const statusLabel =
+        document.createElement('label');
+
+      statusLabel.className =
+        'field-label';
+
+      statusLabel.textContent =
+        'Subscription Status 2026–27';
+
+
+      const statusSelect =
+        document.createElement('select');
+
+      statusSelect.id =
+        `status-${family.familyId}`;
+
+
+      statusOptions.forEach(status => {
+        const option =
+          document.createElement('option');
+
+        option.value = status;
+        option.textContent = status;
+
+        option.selected =
+          status === effectiveStatus;
+
+        statusSelect.appendChild(option);
+      });
+
+
+      statusContainer.appendChild(
+        statusLabel
+      );
+
+      statusContainer.appendChild(
+        statusSelect
+      );
+
+
+      const dateContainer =
+        document.createElement('div');
+
+
+      const dateLabel =
+        document.createElement('label');
+
+      dateLabel.className =
+        'field-label';
+
+      dateLabel.textContent =
+        'Payment Date';
+
+
+      const dateInput =
+        document.createElement('input');
+
+      dateInput.type = 'date';
+
+      dateInput.id =
+        `payment-date-${family.familyId}`;
+
+      dateInput.value =
+        family.paymentDateIso || '';
+
+
+      dateContainer.appendChild(
+        dateLabel
+      );
+
+      dateContainer.appendChild(
+        dateInput
+      );
+
+
+      const saveButton =
+        document.createElement('button');
+
+      saveButton.type = 'button';
+
+      saveButton.textContent =
+        'Save Details';
+
+
+      saveButton.onclick = () => {
+        saveSubscriptionDetails(
+          family.familyId,
+          statusSelect.value,
+          dateInput.value,
+          saveButton
+        );
+      };
+
+
+      statusArea.appendChild(
+        statusContainer
+      );
+
+      statusArea.appendChild(
+        dateContainer
+      );
+
+      statusArea.appendChild(
+        saveButton
+      );
+
+
+      card.appendChild(statusArea);
+
+      return card;
+    }
+
+
+    function createPersonCard(person) {
+      const card =
+        document.createElement('div');
+
+      card.className = 'person-card';
+
+
+      const roleLabel =
+        document.createElement('span');
+
+      roleLabel.className =
+        'field-label';
+
+      roleLabel.textContent =
+        person.role;
+
+
+      const name =
+        document.createElement('div');
+
+      name.className =
+        'person-name';
+
+      name.textContent =
+        person.name || '—';
+
+
+      card.appendChild(roleLabel);
+      card.appendChild(name);
+
+
+      /*
+       * Alumni line appears only when alumni details exist.
+       * No negative or "not an alumni member" message is shown.
+       */
+      if (
+        hasAlumniDetails(
+          person.association,
+          person.branch,
+          person.batchYear
+        )
+      ) {
+        const alumni =
+          document.createElement('div');
+
+        alumni.className =
+          'person-detail person-alumni';
+
+        alumni.textContent =
+          `🎓 ${formatAlumni(
+            person.association,
+            person.branch,
+            person.batchYear
+          )}`;
+
+        card.appendChild(alumni);
+      }
+
+
+      /*
+       * Mobile is displayed below the person's alumni information.
+       */
+      if (person.mobile) {
+        const mobile =
+          document.createElement('div');
+
+        mobile.className =
+          'person-detail person-mobile';
+
+        mobile.textContent =
+          `📱 ${person.mobile}`;
+
+        card.appendChild(mobile);
+      }
+
+
+      return card;
+    }
+
+
+    function hasAlumniDetails(
+      association,
+      branch,
+      batchYear
+    ) {
+      return Boolean(
+        String(association || '').trim() ||
+        String(branch || '').trim() ||
+        String(batchYear || '').trim()
+      );
+    }
+
+
+    function formatAlumni(
+      association,
+      branch,
+      batchYear
+    ) {
+      return [
+        association,
+        branch,
+        batchYear
+      ]
+        .map(
+          value =>
+            String(value || '').trim()
+        )
+        .filter(Boolean)
+        .join(' · ');
+    }
+
+
+    function getEffectiveSubscriptionStatus(
+      status
+    ) {
+      return (
+        String(status || '')
+          .trim()
+          .toUpperCase() ||
+        'NOT PAID'
+      );
+    }
+
+
+    function getStatusBadgeClass(status) {
+      switch (
+        getEffectiveSubscriptionStatus(status)
+      ) {
+        case 'PAID':
+          return 'status-badge-paid';
+
+        case 'PENDING':
+          return 'status-badge-pending';
+
+        case 'EXEMPTED':
+          return 'status-badge-exempted';
+
+        case 'NOT PAID':
+        default:
+          return 'status-badge-not-paid';
+      }
+    }
+
+
+    function saveSubscriptionDetails(
+      familyId,
+      status,
+      paymentDate,
+      button
+    ) {
+      if (
+        status === 'PAID' &&
+        !paymentDate
+      ) {
+        showError(
+          'Enter the payment date when the status is PAID.'
+        );
+
+        return;
+      }
+
+
+      const confirmation =
+        `Update ${familyId} to ` +
+        `"${status}"` +
+        (
+          paymentDate
+            ? ` with payment date ${paymentDate}`
+            : ''
+        ) +
+        '?';
+
+
+      if (!window.confirm(confirmation)) {
+        return;
+      }
+
+
+      clearMessage();
+
+      button.disabled = true;
+      button.textContent = 'Saving…';
+
+
+      google.script.run
+        .withSuccessHandler(result => {
+          button.disabled = false;
+
+          button.textContent =
+            'Save Details';
+
+          showSuccess(
+            `${result.message} ` +
+            `KMIS rows updated: ${result.rowsUpdated}.`
+          );
+
+
+          /*
+           * Refresh the visible search result.
+           */
+          const searchValue =
+            document
+              .getElementById('searchInput')
+              .value
+              .trim();
+
+          if (searchValue) {
+            searchFamilies();
+          }
+
+
+          /*
+           * Refresh report if open.
+           */
+          if (
+            document
+              .getElementById('reportPanel')
+              .style
+              .display !== 'none'
+          ) {
+            loadSubscriptionReport(false);
+          }
+        })
+        .withFailureHandler(error => {
+          button.disabled = false;
+
+          button.textContent =
+            'Save Details';
+
+          showError(error);
+        })
+        .updateSubscriptionDetails(
+          familyId,
+          status,
+          paymentDate
+        );
+    }
+
+
+    function openSubscriptionReport() {
+      document
+        .getElementById('reportPanel')
+        .style
+        .display = 'block';
+
+      loadSubscriptionReport(true);
+    }
+
+
+    function loadSubscriptionReport(
+      scrollToReport = true
+    ) {
+      const filters = {
+        searchText:
+          document
+            .getElementById('reportSearch')
+            .value
+            .trim(),
+
+        zone:
+          document
+            .getElementById('reportZone')
+            .value,
+
+        status:
+          document
+            .getElementById('reportStatus')
+            .value
+      };
+
+
+      clearMessage();
+      setLoading(true);
+
+
+      google.script.run
+        .withSuccessHandler(report => {
+          setLoading(false);
+
+          currentSubscriptionReport =
+            report.rows || [];
+            console.log('Report returned:', report);
+          renderReportSummary(
+            report.summary || {}
+          );
+
+          renderSubscriptionReport(
+            currentSubscriptionReport
+          );
+
+
+          if (scrollToReport) {
+            document
+              .getElementById('reportPanel')
+              .scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+          }
+        })
+        .withFailureHandler(error => {
+          setLoading(false);
+          showError(error);
+        })
+        .getSubscriptionReport(filters);
+    }
+
+
+    function renderReportSummary(summary) {
+      document
+        .getElementById('summaryTotal')
+        .textContent =
+          summary.total || 0;
+
+      document
+        .getElementById('summaryPaid')
+        .textContent =
+          summary.paid || 0;
+
+      document
+        .getElementById('summaryNotPaid')
+        .textContent =
+          summary.notPaid || 0;
+
+      document
+        .getElementById('summaryPending')
+        .textContent =
+          summary.pending || 0;
+
+      document
+        .getElementById('summaryExempted')
+        .textContent =
+          summary.exempted || 0;
+    }
+
+
+    function renderSubscriptionReport(rows) {
+      const panel =
+        document.getElementById(
+          'reportPanel'
+        );
+
+      const tbody =
+        document.querySelector(
+          '#reportTable tbody'
+        );
+
+
+      panel.style.display = 'block';
+      tbody.innerHTML = '';
+
+
+      document
+        .getElementById('reportMeta')
+        .textContent =
+          `${rows.length} family record(s) listed.`;
+
+
+      if (!rows.length) {
+        const tr =
+          document.createElement('tr');
+
+        const td =
+          document.createElement('td');
+
+        td.colSpan = 10;
+        td.className = 'empty';
+
+        td.textContent =
+          'No records match the selected filters.';
+
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+
+        return;
+      }
+
+
+      rows.forEach(row => {
+        const tr =
+          document.createElement('tr');
+
+        const effectiveStatus =
+          getEffectiveSubscriptionStatus(
+            row.subscriptionStatus
+          );
+
+
+        appendTableCell(
+          tr,
+          row.familyId
+        );
+
+
+        appendTableCell(
+          tr,
+          effectiveStatus,
+          getStatusCssClass(
+            effectiveStatus
+          )
+        );
+
+
+        appendTableCell(
+          tr,
+          row.memberName
+        );
+
+
+        appendTableCell(
+          tr,
+          row.memberMobile
+        );
+
+
+        appendTableCell(
+          tr,
+          hasAlumniDetails(
+            row.memberAlumniAssociation,
+            row.memberBranch,
+            row.memberBatchYear
+          )
+            ? formatAlumni(
+                row.memberAlumniAssociation,
+                row.memberBranch,
+                row.memberBatchYear
+              )
+            : ''
+        );
+
+
+        appendTableCell(
+          tr,
+          row.spouseName
+        );
+
+
+        appendTableCell(
+          tr,
+          row.spouseMobile
+        );
+
+
+        appendTableCell(
+          tr,
+          hasAlumniDetails(
+            row.spouseAlumniAssociation,
+            row.spouseBranch,
+            row.spouseBatchYear
+          )
+            ? formatAlumni(
+                row.spouseAlumniAssociation,
+                row.spouseBranch,
+                row.spouseBatchYear
+              )
+            : ''
+        );
+
+
+        appendTableCell(
+          tr,
+          row.paymentDateDisplay
+        );
+
+
+        appendTableCell(
+          tr,
+          row.zone
+        );
+
+
+        tbody.appendChild(tr);
+      });
+    }
+
+
+    function appendTableCell(
+      rowElement,
+      value,
+      className
+    ) {
+      const td =
+        document.createElement('td');
+
+      td.textContent =
+        value || '';
+
+      if (className) {
+        td.className =
+          className;
+      }
+
+      rowElement.appendChild(td);
+    }
+
+
+    function getStatusCssClass(status) {
+      switch (
+        getEffectiveSubscriptionStatus(status)
+      ) {
+        case 'PAID':
+          return 'status-paid';
+
+        case 'NOT PAID':
+          return 'status-not-paid';
+
+        case 'PENDING':
+          return 'status-pending';
+
+        default:
+          return '';
+      }
+    }
+
+
+    function downloadSubscriptionReport() {
+      if (
+        !currentSubscriptionReport.length
+      ) {
+        showError(
+          'There are no report records to download.'
+        );
+
+        return;
+      }
+
+
+      const csvRows = [
+        [
+          'FAMILY_ID',
+          'SUBSCRIPTION_STATUS_2026_2027',
+
+          'MEMBER_NAME',
+          'MEMBER_MOBILE',
+          'MEMBER_ALUMNI_ASSOCIATION',
+          'MEMBER_BRANCH',
+          'MEMBER_BATCH_YEAR',
+
+          'SPOUSE_NAME',
+          'SPOUSE_MOBILE',
+          'SPOUSE_ALUMNI_ASSOCIATION',
+          'SPOUSE_BRANCH',
+          'SPOUSE_BATCH_YEAR',
+
+          'SUBSCRIPTION_PAYMENT_DATE_2026_2027',
+          'ZONE'
+        ]
+      ];
+
+
+      currentSubscriptionReport
+        .forEach(item => {
+          csvRows.push([
+            item.familyId,
+
+            getEffectiveSubscriptionStatus(
+              item.subscriptionStatus
+            ),
+
+            item.memberName,
+            item.memberMobile,
+            item.memberAlumniAssociation,
+            item.memberBranch,
+            item.memberBatchYear,
+
+            item.spouseName,
+            item.spouseMobile,
+            item.spouseAlumniAssociation,
+            item.spouseBranch,
+            item.spouseBatchYear,
+
+            item.paymentDateDisplay,
+            item.zone
+          ]);
+        });
+
+
+      const csvText = csvRows
+        .map(
+          row =>
+            row
+              .map(csvEscape)
+              .join(',')
+        )
+        .join('\r\n');
+
+
+      const blob = new Blob(
+        ['\uFEFF' + csvText],
+        {
+          type:
+            'text/csv;charset=utf-8;'
+        }
+      );
+
+
+      const url =
+        URL.createObjectURL(blob);
+
+
+      const link =
+        document.createElement('a');
+
+      link.href = url;
+
+      link.download =
+        `KEFG_Subscription_Report_2026_2027_` +
+        `${new Date()
+          .toISOString()
+          .slice(0, 10)}.csv`;
+
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    }
+
+
+    function csvEscape(value) {
+      const text =
+        String(value ?? '');
+
+      if (
+        text.includes(',') ||
+        text.includes('"') ||
+        text.includes('\n') ||
+        text.includes('\r')
+      ) {
+        return `"${text.replace(
+          /"/g,
+          '""'
+        )}"`;
+      }
+
+      return text;
+    }
+
+
+    function setLoading(isLoading) {
+      document
+        .getElementById('loading')
+        .style
+        .display =
+          isLoading
+            ? 'block'
+            : 'none';
+    }
+
+
+    function clearMessage() {
+      const message =
+        document.getElementById(
+          'message'
+        );
+
+      message.className =
+        'message';
+
+      message.textContent = '';
+    }
+
+
+    function showSuccess(text) {
+      const message =
+        document.getElementById(
+          'message'
+        );
+
+      message.className =
+        'message success';
+
+      message.textContent =
+        text;
+
+      message.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+
+
+    function showError(error) {
+      const errorText =
+        error && error.message
+          ? error.message
+          : String(
+              error ||
+              'An unexpected error occurred.'
+            );
+
+
+      const message =
+        document.getElementById(
+          'message'
+        );
+
+      message.className =
+        'message error';
+
+      message.textContent =
+        errorText;
+
+      message.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  </script>
+</body>
+</html>

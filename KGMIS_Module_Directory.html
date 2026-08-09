@@ -1,0 +1,2677 @@
+<!--
+  ============================================================
+  KGMIS Embedded Member Directory Module
+  File: KGMIS_Module_Directory.html
+  Developed by: JJA Global Systems
+  ============================================================
+
+  Required backend:
+  - KGMIS_Directory_GetInitialData(sessionToken)
+  - KGMIS_Directory_Search(sessionToken, searchText)
+  - KGMIS_Directory_GetProfile(sessionToken, familyId)
+  - KGMIS_Directory_GetSpouseContactReport(sessionToken)
+-->
+
+<section id="kgmisDirectoryModule" class="dir-module">
+
+  
+
+  <div id="dirMessage" class="dir-message" hidden></div>
+
+  <!-- Card 1 -->
+  <section class="dir-card dir-profile-card">
+    <div class="dir-card-heading">
+      <span class="dir-step">1</span>
+      <div>
+        <h3 id="dirProfileHeading">My Directory Profile</h3>
+        <p id="dirProfileCaption">
+          Your family information linked to the signed-in email.
+        </p>
+      </div>
+    </div>
+
+    <div
+      id="dirProfileContent"
+      class="dir-profile-content dir-empty"
+    >
+      Loading your directory profile…
+    </div>
+  </section>
+
+  <div class="dir-lower-grid">
+
+    <!-- Card 2 -->
+    <section class="dir-card">
+      <div class="dir-card-heading">
+        <span class="dir-step">2</span>
+        <div>
+          <h3>Directory Listing</h3>
+          <p>Select a family to display its profile above.</p>
+        </div>
+      </div>
+
+      <div class="dir-list-toolbar">
+        <span id="dirListCount">—</span>
+
+        <label class="dir-sort-control">
+          <span>Sort</span>
+          <select id="dirSortSelect">
+            <option value="FAMILY_ID">Family ID</option>
+            <option value="MEMBER_NAME">Member Name</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="dirList" class="dir-list"></div>
+    </section>
+
+    <!-- Card 3 -->
+    <section class="dir-card">
+      <div class="dir-card-heading">
+        <span class="dir-step">3</span>
+        <div>
+          <h3>Search</h3>
+          <p>One search box for all supported directory fields.</p>
+        </div>
+      </div>
+
+      <form id="dirSearchForm" class="dir-search-form">
+        <label class="dir-field">
+          <span>Search Member Directory</span>
+          <input
+            id="dirSearchInput"
+            type="search"
+            autocomplete="off"
+            placeholder="Enter Family ID, name, mobile, email, alumni or address"
+          >
+        </label>
+
+        <div class="dir-search-actions">
+          <button
+            id="dirSearchButton"
+            class="dir-primary-button"
+            type="submit"
+          >
+            Search
+          </button>
+
+          <button
+            id="dirClearSearchButton"
+            class="dir-secondary-button"
+            type="button"
+          >
+            Clear
+          </button>
+
+          <button
+            id="dirSpouseReportButton"
+            class="dir-report-button"
+            type="button"
+            hidden
+          >
+            Spouse Contact List
+          </button>
+        </div>
+      </form>
+
+      <div id="dirSearchStatus" class="dir-search-status"></div>
+      <div id="dirSearchResults" class="dir-search-results"></div>
+    </section>
+
+  </div>
+
+  <!-- Printable report -->
+  <section id="dirSpouseReport" class="dir-report" hidden>
+    <div class="dir-report-header">
+      <div>
+        <p class="dir-eyebrow">DIRECTORY REPORT</p>
+        <h3>Spouse Contact List</h3>
+        <p>
+          Alphabetical order by spouse name. Blank mobile and email
+          values are retained.
+        </p>
+      </div>
+
+      <div class="dir-report-actions">
+        <label class="dir-sort-control">
+          <span>Sort</span>
+          <select id="dirSpouseReportSort">
+            <option value="NAME">Spouse Name</option>
+            <option value="ZONE">Zone</option>
+          </select>
+        </label>
+
+        <button
+          id="dirPrintReportButton"
+          class="dir-primary-button"
+          type="button"
+        >
+          Print
+        </button>
+
+        <button
+          id="dirCloseReportButton"
+          class="dir-secondary-button"
+          type="button"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <div class="dir-report-wrap">
+      <table class="dir-report-table">
+        <thead>
+          <tr>
+            <th>Sl. No.</th>
+            <th>Spouse Name</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Family ID</th>
+            <th>Member Name</th>
+            <th>Zone</th>
+          </tr>
+        </thead>
+        <tbody id="dirSpouseReportBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</section>
+
+<style>
+  .dir-module {
+    --dir-primary: #176c91;
+    --dir-primary-dark: #0d4e70;
+    --dir-primary-light: #e7f4f9;
+    --dir-success: #16723a;
+    --dir-danger: #b42318;
+    --dir-text: #1f2937;
+    --dir-muted: #64748b;
+    --dir-border: #d5e0e8;
+    --dir-panel: #ffffff;
+    --dir-shadow: 0 8px 24px rgba(13, 78, 112, 0.08);
+
+    color: var(--dir-text);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .dir-module * {
+    box-sizing: border-box;
+  }
+
+  .dir-page-header,
+  .dir-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .dir-page-header {
+    margin-bottom: 18px;
+  }
+
+  .dir-eyebrow {
+    margin: 0 0 5px;
+    color: var(--dir-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .09em;
+  }
+
+  .dir-page-header h2,
+  .dir-report-header h3 {
+    margin: 0;
+    color: var(--dir-primary-dark);
+  }
+
+  .dir-page-header h2 {
+    font-size: 28px;
+  }
+
+  .dir-subtitle,
+  .dir-report-header p {
+    margin: 7px 0 0;
+    color: var(--dir-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .dir-card,
+  .dir-report {
+    padding: 18px;
+    border: 1px solid var(--dir-border);
+    border-radius: 14px;
+    background: var(--dir-panel);
+    box-shadow: var(--dir-shadow);
+  }
+
+  .dir-profile-card {
+    margin-bottom: 16px;
+  }
+
+  .dir-card-heading {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 16px;
+  }
+
+  .dir-card-heading h3 {
+    margin: 0 0 3px;
+    color: var(--dir-primary-dark);
+    font-size: 19px;
+  }
+
+  .dir-card-heading p {
+    margin: 0;
+    color: var(--dir-muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .dir-step {
+    width: 29px;
+    height: 29px;
+    flex: 0 0 29px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--dir-primary-dark);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+
+  .dir-profile-shell {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1.7fr)
+      minmax(300px, .85fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .dir-profile-details {
+    display: grid;
+    gap: 10px;
+
+    padding: 14px;
+
+    border: 1px solid #b9d7e6;
+    border-radius: 12px;
+
+    background:
+      linear-gradient(
+        180deg,
+        #f7fcfe,
+        #ffffff
+      );
+  }
+
+  .dir-person-summary {
+    display: grid;
+    grid-template-columns:
+      minmax(78px, .22fr)
+      minmax(0, 1fr);
+    gap: 12px;
+
+    padding: 8px 0;
+  }
+
+  .dir-person-summary + .dir-person-summary {
+    border-top: 1px solid #dbe8ee;
+  }
+
+  .dir-person-role {
+    color: var(--dir-primary);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+
+  .dir-person-content {
+    min-width: 0;
+  }
+
+  .dir-person-name {
+    margin-bottom: 7px;
+
+    color: #111827;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .dir-person-line {
+    min-height: 0;
+    margin-top: 6px;
+
+    color: #475569;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .dir-person-line a {
+    color: var(--dir-primary-dark);
+    text-decoration: none;
+  }
+
+  .dir-address-card {
+    display: grid;
+    gap: 10px;
+
+    padding: 12px 14px;
+
+    border: 1px solid #c7dce7;
+    border-radius: 10px;
+
+    background: #f8fcfe;
+  }
+
+  .dir-address-title {
+    color: var(--dir-primary);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+
+  .dir-address-grid {
+    display: grid;
+    gap: 10px;
+  }
+
+  .dir-address-location-row {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .dir-address-field {
+    min-width: 0;
+  }
+
+  .dir-address-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .dir-address-label {
+    display: block;
+
+    color: var(--dir-muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .dir-address-value {
+    display: block;
+    margin-top: 4px;
+
+    color: var(--dir-text);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .dir-map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    min-height: 32px;
+    padding: 7px 10px;
+
+    border: 1px solid #9fc7d9;
+    border-radius: 8px;
+
+    color: var(--dir-primary-dark);
+    background: #eef8fc;
+
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .dir-map-link:hover {
+    border-color: var(--dir-primary);
+    background: #e5f3f8;
+  }
+
+  .dir-map-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dir-map-edit-button {
+    min-height: 32px;
+    padding: 7px 10px;
+
+    border: 1px solid #9fc7d9;
+    border-radius: 8px;
+
+    color: #ffffff;
+    background: var(--dir-primary);
+
+    cursor: pointer;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .dir-map-edit-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+
+  .dir-profile-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+
+    padding: 8px 10px;
+
+    border: 1px solid #b9d7e6;
+    border-radius: 10px;
+
+    background: #eef8fc;
+  }
+
+  .dir-meta-item {
+    display: inline-flex;
+    align-items: center;
+
+    color: var(--dir-primary-dark);
+
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+
+  .dir-meta-item strong {
+    margin-left: 4px;
+    font-weight: 900;
+  }
+
+  .dir-profile-subscription {
+    justify-self: start;
+
+    display: inline-flex;
+    align-items: center;
+
+    min-height: 28px;
+    padding: 5px 9px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .dir-profile-subscription-current {
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+  }
+
+  .dir-profile-subscription-pending {
+    color: #92400e;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+  }
+
+  .dir-profile-subscription-exempted {
+    color: #475569;
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+  }
+
+  .dir-profile-subscription-default {
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+  }
+
+  .dir-profile-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+
+    margin-left: auto;
+    padding-top: 0;
+  }
+
+  .dir-family-photo-card {
+    display: grid;
+    grid-template-rows:
+      auto
+      auto
+      auto
+      auto;
+    gap: 10px;
+
+    padding: 14px;
+
+    border: 1px solid #b9d7e6;
+    border-radius: 12px;
+
+    background:
+      linear-gradient(
+        180deg,
+        #f7fcfe,
+        #ffffff
+      );
+  }
+
+  .dir-family-photo-title {
+    color: var(--dir-primary);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+
+  .dir-family-photo-frame {
+    aspect-ratio: 3 / 2;
+    width: 100%;
+
+    overflow: hidden;
+
+    border: 1px solid #cbd8df;
+    border-radius: 10px;
+
+    background: #eaf2f6;
+  }
+
+  .dir-family-photo-frame img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+    object-fit: cover;
+  }
+
+  .dir-photo-upload-row {
+    display: flex;
+    justify-content: center;
+  }
+
+  .dir-photo-upload-button {
+    min-height: 34px;
+    padding: 7px 12px;
+
+    border: 0;
+    border-radius: 8px;
+
+    color: #ffffff;
+    background: var(--dir-primary);
+
+    cursor: pointer;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .dir-photo-upload-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+
+  .dir-photo-note {
+    color: var(--dir-muted);
+    font-size: 10px;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .dir-lower-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(310px, .75fr);
+    gap: 16px;
+  }
+
+  .dir-profile-content {
+    min-height: 150px;
+  }
+
+  .dir-empty {
+    display: grid;
+    place-items: center;
+    padding: 28px 18px;
+    border: 1px dashed #c9d5dc;
+    border-radius: 11px;
+    color: var(--dir-muted);
+    background: #f8fafb;
+    text-align: center;
+  }
+
+
+
+
+
+
+
+  .dir-status {
+    display: inline-flex;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .dir-status-current {
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+  }
+
+  .dir-status-pending {
+    color: #92400e;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+  }
+
+  .dir-status-exempted,
+  .dir-status-default {
+    color: #475569;
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  .dir-primary-button,
+  .dir-secondary-button,
+  .dir-report-button {
+    min-height: 40px;
+    padding: 9px 14px;
+
+    border: 1px solid #a8bdc9;
+    border-radius: 9px;
+
+    color: var(--dir-primary-dark);
+    background: #eef5f8;
+
+    cursor: pointer;
+
+    font: inherit;
+    font-weight: 800;
+  }
+
+  .dir-report-button:hover {
+    border-color: var(--dir-primary);
+    background: #e5f1f6;
+  }
+
+  .dir-report-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+
+  .dir-whatsapp-button {
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 800;
+  }
+
+  .dir-primary-button {
+    min-height: 40px;
+    padding: 9px 14px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--dir-primary-dark), var(--dir-primary));
+  }
+
+  .dir-secondary-button {
+    min-height: 36px;
+    padding: 8px 12px;
+    color: var(--dir-primary-dark);
+    background: #e8eef2;
+  }
+
+  .dir-whatsapp-button {
+    min-height: 28px;
+    padding: 5px 9px;
+
+    color: #fff;
+    background: var(--dir-success);
+
+    font-size: 10px;
+    line-height: 1.1;
+  }
+
+  .dir-list-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 11px;
+    color: var(--dir-muted);
+    font-size: 12px;
+  }
+
+  .dir-sort-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dir-muted);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .dir-sort-control select {
+    min-height: 36px;
+    padding: 7px 34px 7px 10px;
+    border: 1px solid #cbd8df;
+    border-radius: 9px;
+    color: var(--dir-primary-dark);
+    background: #ffffff;
+    font: inherit;
+    font-weight: 800;
+  }
+
+  .dir-list {
+    display: grid;
+    gap: 9px;
+    max-height: 620px;
+    overflow-y: auto;
+  }
+
+  .dir-family-item {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--dir-border);
+    border-radius: 11px;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+
+  .dir-family-item:focus,
+  .dir-family-item:focus-visible {
+    outline: none;
+  }
+
+  .dir-family-item:active {
+    background: #eef8fc;
+    color: inherit;
+  }
+
+  .dir-family-item:hover,
+  .dir-family-item.active {
+    border-color: var(--dir-primary);
+    background: #eef8fc;
+  }
+
+  .dir-family-card-head {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    margin-bottom: 8px;
+  }
+
+  .dir-family-people {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dir-family-person {
+    min-width: 0;
+  }
+
+  .dir-family-person-name {
+    min-height: 18px;
+
+    color: var(--dir-text);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .dir-family-person-detail {
+    min-height: 16px;
+    margin-top: 6px;
+
+    color: var(--dir-muted);
+    font-size: 11px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .dir-family-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 10px;
+    padding-top: 8px;
+
+    border-top: 1px solid #e5edf2;
+  }
+
+  .dir-family-zone,
+  .dir-family-reference {
+    color: #8293a1;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+  }
+
+  .dir-family-zone {
+    text-transform: uppercase;
+  }
+
+  .dir-search-form {
+    display: grid;
+    gap: 13px;
+  }
+
+  .dir-field {
+    display: grid;
+    gap: 7px;
+  }
+
+  .dir-field span {
+    color: #334155;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .dir-field input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cbd8df;
+    border-radius: 10px;
+    color: var(--dir-text);
+    background: #fff;
+    font: inherit;
+  }
+
+  .dir-search-actions,
+  .dir-report-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .dir-search-status {
+    min-height: 18px;
+    margin-top: 12px;
+    color: var(--dir-muted);
+    font-size: 12px;
+  }
+
+  .dir-search-results {
+    display: grid;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .dir-search-result {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid var(--dir-border);
+    border-radius: 9px;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .dir-search-result:hover {
+    border-color: var(--dir-primary);
+    background: #eef8fc;
+  }
+
+  .dir-search-result strong {
+    display: block;
+    color: var(--dir-primary-dark);
+  }
+
+  .dir-search-result small {
+    display: block;
+    margin-top: 3px;
+    color: var(--dir-muted);
+  }
+
+  .dir-message {
+    margin-bottom: 15px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .dir-message.info {
+    border: 1px solid #b9d7e6;
+    background: #eff8fc;
+    color: #155c7b;
+  }
+
+  .dir-message.error {
+    border: 1px solid #fecdca;
+    background: #fef3f2;
+    color: var(--dir-danger);
+  }
+
+  .dir-report {
+    margin-top: 16px;
+  }
+
+  .dir-report-wrap {
+    overflow-x: auto;
+  }
+
+  .dir-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .dir-report-table th,
+  .dir-report-table td {
+    padding: 9px 8px;
+    border: 1px solid var(--dir-border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .dir-report-table th {
+    color: var(--dir-primary-dark);
+    background: #eef7fb;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (max-width: 900px) {
+    .dir-lower-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dir-lower-grid > section:last-child {
+      order: -1;
+    }
+  }
+
+  @media (max-width: 1050px) {
+    .dir-profile-shell {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .dir-family-people {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .dir-address-location-row {
+      grid-template-columns: 1fr;
+    }
+
+    .dir-address-field-full {
+      grid-column: auto;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .dir-page-header,
+    .dir-report-header {
+      flex-direction: column;
+    }
+
+    .dir-profile-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dir-profile-meta-row {
+      align-items: flex-start;
+    }
+
+    .dir-profile-actions {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    .dir-person-summary {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+
+  @media print {
+    body * {
+      visibility: hidden !important;
+    }
+
+    #dirSpouseReport,
+    #dirSpouseReport * {
+      visibility: visible !important;
+    }
+
+    #dirSpouseReport {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .dir-report-actions {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  const state = {
+    initialised: false,
+    sessionToken: '',
+    role: '',
+    permissions: {},
+    directory: [],
+    selectedFamilyId: '',
+    renderToken: 0,
+    renderBatchSize: 30,
+    spouseReportRows: [],
+    currentProfileIsOwn: false
+  };
+
+  const el = {};
+
+  function activate(auth) {
+    const safeAuth = auth || {};
+
+    state.sessionToken =
+      safeAuth.sessionToken || '';
+
+    state.role =
+      String(
+        safeAuth.role ||
+        (
+          safeAuth.user &&
+          safeAuth.user.role
+        ) ||
+        ''
+      )
+        .trim()
+        .toUpperCase();
+
+    state.permissions =
+      safeAuth.permissions || {};
+
+    if (!state.sessionToken) {
+      showMessage(
+        'Your KGMIS session is missing. Please sign in again.',
+        'error'
+      );
+      return;
+    }
+
+    if (!state.initialised) {
+      state.initialised = true;
+      cacheElements();
+      bindEvents();
+    }
+
+    if (
+      state.directory.length &&
+      el.dirProfileContent &&
+      !el.dirProfileContent.classList.contains(
+        'dir-empty'
+      )
+    ) {
+      return;
+    }
+
+    loadInitialData();
+  }
+
+  function cacheElements() {
+    [
+      'dirMessage',
+      'dirProfileHeading',
+      'dirProfileCaption',
+      'dirProfileContent',
+      'dirSpouseReportButton',
+      'dirListCount',
+      'dirSortSelect',
+      'dirList',
+      'dirSearchForm',
+      'dirSearchInput',
+      'dirSearchButton',
+      'dirClearSearchButton',
+      'dirSearchStatus',
+      'dirSearchResults',
+      'dirSpouseReport',
+      'dirSpouseReportBody',
+      'dirSpouseReportSort',
+      'dirPrintReportButton',
+      'dirCloseReportButton'
+    ].forEach(function (id) {
+      el[id] = document.getElementById(id);
+    });
+  }
+
+  function bindEvents() {
+    el.dirSearchForm.addEventListener('submit', searchDirectory);
+    el.dirClearSearchButton.addEventListener('click', clearSearch);
+
+    el.dirSortSelect.addEventListener(
+      'change',
+      function () {
+        renderList(
+          sortDirectoryRecords(
+            state.directory,
+            el.dirSortSelect.value
+          )
+        );
+      }
+    );
+
+    el.dirSpouseReportButton.addEventListener(
+      'click',
+      loadSpouseReport
+    );
+
+    el.dirSpouseReportSort.addEventListener(
+      'change',
+      function () {
+        renderSpouseReport(
+          sortSpouseReportRows(
+            state.spouseReportRows,
+            el.dirSpouseReportSort.value
+          )
+        );
+      }
+    );
+
+    el.dirPrintReportButton.addEventListener('click', function () {
+      window.print();
+    });
+    el.dirCloseReportButton.addEventListener('click', function () {
+      el.dirSpouseReport.hidden = true;
+    });
+  }
+
+  function loadInitialData() {
+    setBusy(true, 'Loading your profile and directory…');
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setBusy(false);
+
+        state.directory = Array.isArray(result.directory)
+          ? result.directory
+          : [];
+
+        state.permissions = result.permissions || state.permissions || {};
+
+        el.dirSpouseReportButton.hidden =
+          !Boolean(state.permissions.canViewSpouseContactReport);
+
+        el.dirSortSelect.value = 'FAMILY_ID';
+
+        renderList(
+          sortDirectoryRecords(
+            state.directory,
+            'FAMILY_ID'
+          )
+        );
+
+        if (result.myProfile) {
+          renderProfile(result.myProfile, true);
+        } else {
+          renderMissingOwnProfile();
+        }
+
+        clearMessage();
+      })
+      .withFailureHandler(handleFailure)
+      .KGMIS_Directory_GetInitialData(state.sessionToken);
+  }
+
+  function renderList(records) {
+    const rows =
+      Array.isArray(records)
+        ? records
+        : [];
+
+    state.renderToken += 1;
+
+    const currentToken =
+      state.renderToken;
+
+    el.dirList.innerHTML = '';
+
+    el.dirListCount.textContent =
+      rows.length +
+      (
+        rows.length === 1
+          ? ' family'
+          : ' families'
+      );
+
+    if (!rows.length) {
+      el.dirList.innerHTML =
+        '<div class="dir-empty">' +
+          'No directory records are available.' +
+        '</div>';
+
+      return;
+    }
+
+    let startIndex =
+      0;
+
+    function renderNextBatch() {
+      if (
+        currentToken !==
+        state.renderToken
+      ) {
+        return;
+      }
+
+      const fragment =
+        document.createDocumentFragment();
+
+      const endIndex =
+        Math.min(
+          startIndex +
+          state.renderBatchSize,
+          rows.length
+        );
+
+      for (
+        let index = startIndex;
+        index < endIndex;
+        index++
+      ) {
+        const record =
+          rows[index];
+
+        const button =
+          document.createElement(
+            'button'
+          );
+
+        button.type =
+          'button';
+
+        button.className =
+          'dir-family-item';
+
+        button.innerHTML =
+          buildListItem(
+            record
+          );
+
+        button.addEventListener(
+          'click',
+          function () {
+            document
+              .querySelectorAll(
+                '.dir-family-item'
+              )
+              .forEach(
+                function (item) {
+                  item.classList.remove(
+                    'active'
+                  );
+                }
+              );
+
+            button.classList.add(
+              'active'
+            );
+
+            loadProfile(
+              record.familyId
+            );
+          }
+        );
+
+        fragment.appendChild(
+          button
+        );
+      }
+
+      el.dirList.appendChild(
+        fragment
+      );
+
+      startIndex =
+        endIndex;
+
+      if (
+        startIndex <
+        rows.length
+      ) {
+        window.requestAnimationFrame(
+          renderNextBatch
+        );
+      }
+    }
+
+    renderNextBatch();
+  }
+
+  function buildListItem(record) {
+    const status =
+      normaliseStatus(
+        record.membershipStatus
+      );
+
+    const year =
+      String(
+        record.subscriptionYear || ''
+      ).trim();
+
+    const memberAlumni =
+      approvedAlumniText(
+        record.memberAlumni
+      );
+
+    const spouseAlumni =
+      approvedAlumniText(
+        record.spouseAlumni
+      );
+
+    return (
+      '<div class="dir-family-card-head">' +
+        '<span class="dir-status ' +
+          statusClass(status) +
+        '">' +
+          escapeHtml(
+            (
+              year
+                ? year + ' '
+                : ''
+            ) +
+            'Subscription: ' +
+            status
+          ) +
+        '</span>' +
+      '</div>' +
+
+      '<div class="dir-family-people">' +
+
+        '<div class="dir-family-person">' +
+          '<div class="dir-family-person-name">' +
+            escapeHtml(
+              record.memberName || ''
+            ) +
+          '</div>' +
+
+          (
+            memberAlumni
+              ? '<div class="dir-family-person-detail">' +
+                  escapeHtml(memberAlumni) +
+                '</div>'
+              : ''
+          ) +
+
+          (
+            String(
+              record.memberMobile || ''
+            ).trim()
+              ? '<div class="dir-family-person-detail">' +
+                  escapeHtml(
+                    record.memberMobile
+                  ) +
+                '</div>'
+              : ''
+          ) +
+        '</div>' +
+
+        '<div class="dir-family-person">' +
+          '<div class="dir-family-person-name">' +
+            escapeHtml(
+              record.spouseName || ''
+            ) +
+          '</div>' +
+
+          (
+            spouseAlumni
+              ? '<div class="dir-family-person-detail">' +
+                  escapeHtml(spouseAlumni) +
+                '</div>'
+              : ''
+          ) +
+
+          (
+            String(
+              record.spouseMobile || ''
+            ).trim()
+              ? '<div class="dir-family-person-detail">' +
+                  escapeHtml(
+                    record.spouseMobile
+                  ) +
+                '</div>'
+              : ''
+          ) +
+        '</div>' +
+
+      '</div>' +
+
+      '<div class="dir-family-footer">' +
+        '<span class="dir-family-zone">' +
+          (
+            record.zone
+              ? 'Zone: ' +
+                escapeHtml(
+                  record.zone
+                )
+              : ''
+          ) +
+        '</span>' +
+
+        '<span class="dir-family-reference">' +
+          escapeHtml(
+            record.familyId || ''
+          ) +
+        '</span>' +
+      '</div>'
+    );
+  }
+
+  function approvedAlumniText(value) {
+    const alumni =
+      String(value || '')
+        .trim()
+        .toUpperCase();
+
+    const approved = [
+      'CETA',
+      'KEA',
+      'MACE',
+      'NIT',
+      'NSS',
+      'TEC',
+      'TKMCE',
+      'AECK'
+    ];
+
+    return approved.indexOf(alumni) !== -1
+      ? alumni
+      : '';
+  }
+
+  function sortDirectoryRecords(records, sortMode) {
+    const rows =
+      Array.isArray(records)
+        ? records.slice()
+        : [];
+
+    if (sortMode === 'MEMBER_NAME') {
+      return rows.sort(
+        function (first, second) {
+          return String(first.memberName || '')
+            .localeCompare(
+              String(second.memberName || ''),
+              undefined,
+              {
+                sensitivity: 'base'
+              }
+            );
+        }
+      );
+    }
+
+    return rows.sort(
+      function (first, second) {
+        return familyIdNumber(first.familyId) -
+          familyIdNumber(second.familyId);
+      }
+    );
+  }
+
+  function familyIdNumber(value) {
+    const match =
+      String(value || '')
+        .match(/(\d+)/);
+
+    return match
+      ? Number(match[1])
+      : Number.MAX_SAFE_INTEGER;
+  }
+
+  function loadProfile(familyId) {
+    if (!familyId) {
+      return;
+    }
+
+    setBusy(true, 'Loading family profile…');
+
+    google.script.run
+      .withSuccessHandler(function (profile) {
+        setBusy(false);
+        renderProfile(profile, false);
+        clearMessage();
+
+        document.getElementById('kgmisDirectoryModule')
+          .scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+      })
+      .withFailureHandler(handleFailure)
+      .KGMIS_Directory_GetProfile(
+        state.sessionToken,
+        familyId
+      );
+  }
+
+  function renderProfile(profile, isMyProfile) {
+    const p = profile || {};
+    const status = normaliseStatus(p.membershipStatus);
+
+    state.selectedFamilyId =
+      p.familyId || '';
+
+    state.currentProfileIsOwn =
+      Boolean(isMyProfile);
+
+    el.dirProfileHeading.textContent =
+      isMyProfile
+        ? 'My Directory Profile'
+        : 'Selected Family Profile';
+
+    el.dirProfileCaption.textContent =
+      isMyProfile
+        ? 'Your family information linked to the signed-in email.'
+        : 'Directory information for the selected family.';
+
+    const memberAlumniLine =
+      buildAlumniLine(
+        p.memberAlumni,
+        p.memberBranch,
+        p.memberBatchYear
+      );
+
+    const spouseAlumniLine =
+      buildAlumniLine(
+        p.spouseAlumni,
+        p.spouseBranch,
+        p.spouseBatchYear
+      );
+
+    el.dirProfileContent.className =
+      'dir-profile-content';
+
+    el.dirProfileContent.innerHTML =
+      '<div class="dir-profile-shell">' +
+
+        '<section class="dir-profile-details">' +
+
+          buildPersonSummary(
+            'Member',
+            p.memberName,
+            memberAlumniLine,
+            p.memberMobile,
+            p.memberEmail
+          ) +
+
+          buildPersonSummary(
+            'Spouse',
+            p.spouseName,
+            spouseAlumniLine,
+            p.spouseMobile,
+            p.spouseEmail
+          ) +
+
+          buildAddressCard(
+            p,
+            isMyProfile
+          ) +
+
+          '<div class="dir-profile-meta-row">' +
+            '<div class="dir-meta-item">' +
+              escapeHtml(p.familyId || '') +
+            '</div>' +
+
+            '<div class="dir-meta-item">' +
+              'Zone:<strong>' +
+                escapeHtml(p.zone || '') +
+              '</strong>' +
+            '</div>' +
+
+            '<div class="dir-meta-item">' +
+              'Financial Year:<strong>' +
+                escapeHtml(p.subscriptionYear || '') +
+              '</strong>' +
+            '</div>' +
+
+            '<div class="dir-profile-subscription ' +
+              profileSubscriptionClass(status) +
+            '">' +
+              'Subscription Status: ' +
+              escapeHtml(status) +
+            '</div>' +
+
+            whatsappActions(p) +
+          '</div>' +
+
+        '</section>' +
+
+        buildFamilyPhotoCard(
+          p.familyPhotoUrl
+        ) +
+
+      '</div>';
+  }
+
+  function buildPersonSummary(
+    label,
+    name,
+    alumniLine,
+    mobile,
+    email
+  ) {
+    return (
+      '<section class="dir-person-summary">' +
+        '<div class="dir-person-role">' +
+          escapeHtml(label) +
+        '</div>' +
+
+        '<div class="dir-person-content">' +
+          '<div class="dir-person-name">' +
+            escapeHtml(name || '') +
+          '</div>' +
+
+          (
+            alumniLine
+              ? '<div class="dir-person-line">' +
+                  '🎓 ' +
+                  escapeHtml(alumniLine) +
+                '</div>'
+              : ''
+          ) +
+
+          (
+            String(mobile || '').trim()
+              ? '<div class="dir-person-line">' +
+                  '📱 <a href="tel:' +
+                    encodeURIComponent(mobile) +
+                  '">' +
+                    escapeHtml(mobile) +
+                  '</a>' +
+                '</div>'
+              : ''
+          ) +
+
+          (
+            String(email || '').trim()
+              ? '<div class="dir-person-line">' +
+                  '✉ <a href="mailto:' +
+                    encodeURIComponent(email) +
+                  '">' +
+                    escapeHtml(email) +
+                  '</a>' +
+                '</div>'
+              : ''
+          ) +
+        '</div>' +
+      '</section>'
+    );
+  }
+
+  function buildAddressCard(
+    profile,
+    isMyProfile
+  ) {
+    const p = profile || {};
+
+    const address =
+      String(
+        p.memberAddress || ''
+      ).trim();
+
+    const cityDistrict =
+      String(
+        p.memberCityDistrict || ''
+      ).trim();
+
+    const stateValue =
+      String(
+        p.memberState || ''
+      ).trim();
+
+    const country =
+      String(
+        p.memberCountry || ''
+      ).trim();
+
+    const mapValue =
+      String(
+        p.googleMapLocation || ''
+      ).trim();
+
+    const fallbackAddress =
+      [
+        address,
+        cityDistrict,
+        stateValue,
+        country
+      ]
+        .filter(Boolean)
+        .join(', ');
+
+    const mapLink =
+      buildGoogleMapLink(
+        mapValue,
+        fallbackAddress
+      );
+
+    const mapUpdateButton =
+      isMyProfile
+        ? (
+            '<button ' +
+              'type="button" ' +
+              'class="dir-map-edit-button" ' +
+              'onclick="window.KGMIS_DIRECTORY_MODULE.' +
+                'updateHomeMapLocation()"' +
+            '>' +
+              (
+                mapValue
+                  ? 'Update Google Map Location'
+                  : 'Add Google Map Location'
+              ) +
+            '</button>'
+          )
+        : '';
+
+    return (
+      '<section class="dir-address-card">' +
+        '<div class="dir-address-title">' +
+          'Member Address' +
+        '</div>' +
+
+        (
+          address
+            ? '<div class="dir-address-value">' +
+                escapeHtml(address) +
+              '</div>'
+            : ''
+        ) +
+
+        '<div class="dir-address-location-row">' +
+          addressField(
+            'City / District',
+            cityDistrict,
+            false
+          ) +
+
+          addressField(
+            'State',
+            stateValue,
+            false
+          ) +
+
+          addressField(
+            'Country',
+            country,
+            false
+          ) +
+        '</div>' +
+
+        '<div class="dir-map-actions">' +
+          mapLink +
+          mapUpdateButton +
+        '</div>' +
+      '</section>'
+    );
+  }
+
+  function addressField(
+    label,
+    value,
+    fullWidth
+  ) {
+    if (!String(value || '').trim()) {
+      return '';
+    }
+
+    return (
+      '<div class="dir-address-field ' +
+        (
+          fullWidth
+            ? 'dir-address-field-full'
+            : ''
+        ) +
+      '">' +
+        '<span class="dir-address-label">' +
+          escapeHtml(label) +
+        '</span>' +
+
+        '<span class="dir-address-value">' +
+          escapeHtml(value) +
+        '</span>' +
+      '</div>'
+    );
+  }
+
+  function buildGoogleMapLink(
+    storedLocation,
+    fallbackAddress
+  ) {
+    const rawLocation =
+      String(
+        storedLocation || ''
+      ).trim();
+
+    const address =
+      String(
+        fallbackAddress || ''
+      ).trim();
+
+    let url = '';
+
+    if (
+      /^https?:\/\//i.test(
+        rawLocation
+      )
+    ) {
+      url =
+        rawLocation;
+    } else if (
+      rawLocation
+    ) {
+      url =
+        'https://www.google.com/maps/search/?api=1&query=' +
+        encodeURIComponent(
+          rawLocation
+        );
+    } else if (
+      address
+    ) {
+      url =
+        'https://www.google.com/maps/search/?api=1&query=' +
+        encodeURIComponent(
+          address
+        );
+    }
+
+    if (!url) {
+      return '';
+    }
+
+    return (
+      '<div>' +
+        '<a ' +
+          'class="dir-map-link" ' +
+          'href="' +
+            escapeHtml(url) +
+          '" ' +
+          'target="_blank" ' +
+          'rel="noopener noreferrer"' +
+        '>' +
+          '📍 Open in Google Maps' +
+        '</a>' +
+      '</div>'
+    );
+  }
+
+
+  function updateHomeMapLocation() {
+    if (
+      !state.currentProfileIsOwn ||
+      !state.selectedFamilyId
+    ) {
+      showMessage(
+        'You can update only your own family location.',
+        'error'
+      );
+      return;
+    }
+
+    const mapLocation =
+      window.prompt(
+        'Paste the Google Maps share link for your home location. You may also enter latitude and longitude.'
+      );
+
+    if (mapLocation === null) {
+      return;
+    }
+
+    const cleanLocation =
+      String(
+        mapLocation || ''
+      ).trim();
+
+    if (!cleanLocation) {
+      showMessage(
+        'Enter a Google Maps link or location.',
+        'error'
+      );
+      return;
+    }
+
+    setBusy(
+      true,
+      'Saving Google Map location…'
+    );
+
+    google.script.run
+      .withSuccessHandler(
+        function (result) {
+          setBusy(false);
+
+          if (
+            result &&
+            result.profile
+          ) {
+            renderProfile(
+              result.profile,
+              true
+            );
+          }
+
+          showMessage(
+            result &&
+            result.message
+              ? result.message
+              : 'Google Map location updated successfully.',
+            'info'
+          );
+        }
+      )
+      .withFailureHandler(
+        handleFailure
+      )
+      .KGMIS_Directory_UpdateOwnGoogleMapLocation(
+        state.sessionToken,
+        state.selectedFamilyId,
+        cleanLocation
+      );
+  }
+
+
+  function buildAlumniLine(
+    alumni,
+    branch,
+    batchYear
+  ) {
+    return [
+      alumni,
+      branch,
+      batchYear
+    ]
+      .map(
+        function (value) {
+          return String(
+            value || ''
+          ).trim();
+        }
+      )
+      .filter(Boolean)
+      .join(' · ');
+  }
+
+  function canUploadFamilyPhoto() {
+    if (
+      state.permissions &&
+      state.permissions.canUploadFamilyPhoto
+    ) {
+      return true;
+    }
+
+    return [
+      'TREASURER',
+      'ADMIN',
+      'SUPER_ADMIN'
+    ].indexOf(
+      state.role
+    ) !== -1;
+  }
+
+
+  function buildFamilyPhotoCard(photoUrl) {
+    const source =
+      String(photoUrl || '').trim() ||
+      getDefaultFamilyPhotoDataUrl();
+
+    const uploadControl =
+      (
+        canUploadFamilyPhoto()
+      )
+        ? (
+            '<div class="dir-photo-upload-row">' +
+              '<button ' +
+                'type="button" ' +
+                'class="dir-photo-upload-button" ' +
+                'onclick="window.KGMIS_DIRECTORY_MODULE.' +
+                  'chooseFamilyPhoto()"' +
+              '>' +
+                'Upload Family Photo' +
+              '</button>' +
+
+              '<input ' +
+                'id="dirFamilyPhotoInput" ' +
+                'type="file" ' +
+                'accept="image/jpeg,image/png,image/webp" ' +
+                'hidden' +
+              '>' +
+            '</div>'
+          )
+        : '';
+
+    return (
+      '<section class="dir-family-photo-card">' +
+        '<div class="dir-family-photo-title">' +
+          'Family Photo' +
+        '</div>' +
+
+        '<div class="dir-family-photo-frame">' +
+          '<img ' +
+            'id="dirFamilyPhotoImage" ' +
+            'src="' +
+              escapeHtml(source) +
+            '" ' +
+            'alt="Family photo" ' +
+            'onerror="this.onerror=null;' +
+              'this.src=window.KGMIS_DIRECTORY_MODULE.' +
+              'getDefaultFamilyPhotoDataUrl();"' +
+          '>' +
+        '</div>' +
+
+        uploadControl +
+
+        '<div class="dir-photo-note">' +
+          'Recommended: 1200 × 800 px · Landscape · Maximum 1 MB' +
+        '</div>' +
+      '</section>'
+    );
+  }
+
+  function chooseFamilyPhoto() {
+    const input =
+      document.getElementById(
+        'dirFamilyPhotoInput'
+      );
+
+    if (!input) {
+      return;
+    }
+
+    input.value = '';
+    input.onchange =
+      handleFamilyPhotoSelection;
+    input.click();
+  }
+
+  function handleFamilyPhotoSelection(event) {
+    const file =
+      event &&
+      event.target &&
+      event.target.files &&
+      event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp'
+    ];
+
+    if (
+      allowedTypes.indexOf(
+        file.type
+      ) === -1
+    ) {
+      showMessage(
+        'Select a JPG, PNG, or WebP image.',
+        'error'
+      );
+      return;
+    }
+
+    if (
+      file.size >
+      1024 * 1024
+    ) {
+      showMessage(
+        'Upload rejected. The family photo is larger than 1 MB.',
+        'error'
+      );
+
+      event.target.value = '';
+      return;
+    }
+
+    const familyId =
+      String(
+        state.selectedFamilyId || ''
+      ).trim();
+
+    if (!familyId) {
+      showMessage(
+        'Select a family before uploading a photo.',
+        'error'
+      );
+      return;
+    }
+
+    const reader =
+      new FileReader();
+
+    reader.onload =
+      function () {
+        uploadFamilyPhoto(
+          familyId,
+          {
+            fileName:
+              file.name,
+
+            mimeType:
+              file.type,
+
+            sizeBytes:
+              file.size,
+
+            base64Data:
+              String(
+                reader.result || ''
+              )
+                .split(',')[1] ||
+              ''
+          }
+        );
+      };
+
+    reader.onerror =
+      function () {
+        showMessage(
+          'The selected image could not be read.',
+          'error'
+        );
+      };
+
+    reader.readAsDataURL(
+      file
+    );
+  }
+
+  function uploadFamilyPhoto(
+    familyId,
+    filePayload
+  ) {
+    setBusy(
+      true,
+      'Uploading family photo…'
+    );
+
+    google.script.run
+      .withSuccessHandler(
+        function (result) {
+          setBusy(false);
+
+          if (
+            result &&
+            result.profile
+          ) {
+            renderProfile(
+              result.profile,
+              false
+            );
+          }
+
+          showMessage(
+            result &&
+            result.message
+              ? result.message
+              : 'Family photo uploaded successfully.',
+            'info'
+          );
+        }
+      )
+      .withFailureHandler(
+        handleFailure
+      )
+      .KGMIS_Directory_UploadFamilyPhoto(
+        state.sessionToken,
+        familyId,
+        filePayload
+      );
+  }
+
+  function getDefaultFamilyPhotoDataUrl() {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" ' +
+        'width="1200" height="800" viewBox="0 0 1200 800">' +
+        '<defs>' +
+          '<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0" stop-color="#e7f4f9"/>' +
+            '<stop offset="1" stop-color="#d8e9f0"/>' +
+          '</linearGradient>' +
+        '</defs>' +
+        '<rect width="1200" height="800" fill="url(#g)"/>' +
+        '<circle cx="420" cy="285" r="92" fill="#7da9bc"/>' +
+        '<circle cx="780" cy="285" r="92" fill="#7da9bc"/>' +
+        '<circle cx="600" cy="365" r="72" fill="#9bbdca"/>' +
+        '<path d="M245 690c18-174 92-265 175-265s157 91 175 265" ' +
+          'fill="#7da9bc"/>' +
+        '<path d="M605 690c18-174 92-265 175-265s157 91 175 265" ' +
+          'fill="#7da9bc"/>' +
+        '<path d="M470 690c14-130 66-202 130-202s116 72 130 202" ' +
+          'fill="#9bbdca"/>' +
+      '</svg>';
+
+    return (
+      'data:image/svg+xml;charset=UTF-8,' +
+      encodeURIComponent(svg)
+    );
+  }
+
+  function whatsappActions(profile) {
+    if (!state.permissions.canUseWhatsApp) {
+      return '';
+    }
+
+    const buttons = [];
+
+    if (String(profile.memberMobile || '').trim()) {
+      buttons.push(
+        whatsappButton('WhatsApp Member', profile.memberMobile)
+      );
+    }
+
+    if (String(profile.spouseMobile || '').trim()) {
+      buttons.push(
+        whatsappButton('WhatsApp Spouse', profile.spouseMobile)
+      );
+    }
+
+    return buttons.length
+      ? '<div class="dir-profile-actions">' + buttons.join('') + '</div>'
+      : '';
+  }
+
+  function whatsappButton(label, mobile) {
+    const number = String(mobile || '').replace(/\D/g, '');
+
+    return (
+      '<button type="button" class="dir-whatsapp-button" ' +
+      'onclick="window.open(\'https://wa.me/' +
+      escapeHtml(number) +
+      '\',\'_blank\',\'noopener\')">' +
+      escapeHtml(label) +
+      '</button>'
+    );
+  }
+
+  function renderMissingOwnProfile() {
+    el.dirProfileContent.className =
+      'dir-profile-content dir-empty';
+
+    el.dirProfileContent.textContent =
+      'No directory profile is linked to your login email. ' +
+      'Please contact the KGMIS Administrator.';
+  }
+
+  function searchDirectory(event) {
+    event.preventDefault();
+
+    const query = String(el.dirSearchInput.value || '').trim();
+
+    if (!query) {
+      el.dirSearchStatus.textContent =
+        'Enter a Family ID, name, mobile, email, alumni, or address.';
+      el.dirSearchInput.focus();
+      return;
+    }
+
+    setBusy(true, 'Searching directory…');
+    el.dirSearchStatus.textContent = 'Searching…';
+    el.dirSearchResults.innerHTML = '';
+
+    google.script.run
+      .withSuccessHandler(function (results) {
+        setBusy(false);
+        renderSearchResults(Array.isArray(results) ? results : []);
+      })
+      .withFailureHandler(handleFailure)
+      .KGMIS_Directory_Search(
+        state.sessionToken,
+        query
+      );
+  }
+
+  function renderSearchResults(results) {
+    el.dirSearchResults.innerHTML = '';
+    el.dirSearchStatus.textContent =
+      results.length +
+      (results.length === 1 ? ' family found.' : ' families found.');
+
+    results.forEach(function (record) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'dir-search-result';
+
+      button.innerHTML =
+        '<strong>' + escapeHtml(record.familyId || '') + '</strong>' +
+        '<small>' +
+          escapeHtml(
+            [record.memberName, record.spouseName]
+              .filter(Boolean)
+              .join(' & ')
+          ) +
+        '</small>' +
+        '<small>' +
+          escapeHtml(
+            [record.zone, record.memberAlumni, record.spouseAlumni]
+              .filter(Boolean)
+              .join(' · ')
+          ) +
+        '</small>';
+
+      button.addEventListener('click', function () {
+        loadProfile(record.familyId);
+      });
+
+      el.dirSearchResults.appendChild(button);
+    });
+  }
+
+  function clearSearch() {
+    el.dirSearchInput.value = '';
+    el.dirSearchStatus.textContent = '';
+    el.dirSearchResults.innerHTML = '';
+    el.dirSearchInput.focus();
+  }
+
+  function loadSpouseReport() {
+    setBusy(true, 'Loading spouse contact report…');
+
+    google.script.run
+      .withSuccessHandler(function (rows) {
+        setBusy(false);
+        state.spouseReportRows =
+          Array.isArray(rows)
+            ? rows
+            : [];
+
+        el.dirSpouseReportSort.value =
+          'NAME';
+
+        renderSpouseReport(
+          sortSpouseReportRows(
+            state.spouseReportRows,
+            'NAME'
+          )
+        );
+
+        el.dirSpouseReport.hidden = false;
+        el.dirSpouseReport.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      })
+      .withFailureHandler(handleFailure)
+      .KGMIS_Directory_GetSpouseContactReport(
+        state.sessionToken
+      );
+  }
+
+  function sortSpouseReportRows(
+    rows,
+    sortMode
+  ) {
+    const sorted =
+      Array.isArray(rows)
+        ? rows.slice()
+        : [];
+
+    function compareText(
+      firstValue,
+      secondValue
+    ) {
+      const firstText =
+        String(firstValue || '').trim();
+
+      const secondText =
+        String(secondValue || '').trim();
+
+      if (!firstText && secondText) {
+        return 1;
+      }
+
+      if (firstText && !secondText) {
+        return -1;
+      }
+
+      return firstText.localeCompare(
+        secondText,
+        undefined,
+        {
+          sensitivity: 'base',
+          numeric: true
+        }
+      );
+    }
+
+    if (sortMode === 'ZONE') {
+      return sorted.sort(
+        function (first, second) {
+          const zoneCompare =
+            compareText(
+              first.zone,
+              second.zone
+            );
+
+          if (zoneCompare !== 0) {
+            return zoneCompare;
+          }
+
+          return compareText(
+            first.spouseName,
+            second.spouseName
+          );
+        }
+      );
+    }
+
+    return sorted.sort(
+      function (first, second) {
+        const nameCompare =
+          compareText(
+            first.spouseName,
+            second.spouseName
+          );
+
+        if (nameCompare !== 0) {
+          return nameCompare;
+        }
+
+        return compareText(
+          first.zone,
+          second.zone
+        );
+      }
+    );
+  }
+
+  function renderSpouseReport(rows) {
+    el.dirSpouseReportBody.innerHTML = '';
+
+    rows.forEach(function (row, index) {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML =
+        '<td>' + String(index + 1) + '</td>' +
+        '<td>' + escapeHtml(row.spouseName || '') + '</td>' +
+        '<td>' + escapeHtml(row.spouseMobile || '') + '</td>' +
+        '<td>' + escapeHtml(row.spouseEmail || '') + '</td>' +
+        '<td>' + escapeHtml(row.familyId || '') + '</td>' +
+        '<td>' + escapeHtml(row.memberName || '') + '</td>' +
+        '<td>' + escapeHtml(row.zone || '') + '</td>';
+
+      el.dirSpouseReportBody.appendChild(tr);
+    });
+  }
+
+  function setBusy(isBusy, message) {
+    [
+      el.dirSearchButton,
+      el.dirClearSearchButton,
+      el.dirSpouseReportButton
+    ]
+      .filter(Boolean)
+      .forEach(function (button) {
+        button.disabled = isBusy;
+      });
+
+    if (message) {
+      showMessage(message, 'info');
+    }
+  }
+
+  function handleFailure(error) {
+    setBusy(false);
+
+    showMessage(
+      error && error.message
+        ? error.message
+        : String(error || 'An unexpected directory error occurred.'),
+      'error'
+    );
+  }
+
+  function showMessage(message, type) {
+    el.dirMessage.textContent = message || '';
+    el.dirMessage.className = 'dir-message ' + (type || 'info');
+    el.dirMessage.hidden = false;
+  }
+
+  function clearMessage() {
+    el.dirMessage.hidden = true;
+    el.dirMessage.textContent = '';
+    el.dirMessage.className = 'dir-message';
+  }
+
+  function normaliseStatus(value) {
+    const status = String(value || '').trim().toUpperCase();
+
+    if (status === 'PAID' || status === 'CURRENT') {
+      return 'CURRENT';
+    }
+
+    if (
+      status === 'PENDING' ||
+      status === 'NOT PAID' ||
+      status === 'PARTIALLY PAID'
+    ) {
+      return 'PENDING';
+    }
+
+    if (status === 'EXEMPT' || status === 'EXEMPTED') {
+      return 'EXEMPTED';
+    }
+
+    return status || 'STATUS NOT SET';
+  }
+
+  function profileSubscriptionClass(status) {
+    if (status === 'CURRENT') {
+      return 'dir-profile-subscription-current';
+    }
+
+    if (status === 'PENDING') {
+      return 'dir-profile-subscription-pending';
+    }
+
+    if (status === 'EXEMPTED') {
+      return 'dir-profile-subscription-exempted';
+    }
+
+    return 'dir-profile-subscription-default';
+  }
+
+  function statusClass(status) {
+    if (status === 'CURRENT') {
+      return 'dir-status-current';
+    }
+
+    if (status === 'PENDING') {
+      return 'dir-status-pending';
+    }
+
+    if (status === 'EXEMPTED') {
+      return 'dir-status-exempted';
+    }
+
+    return 'dir-status-default';
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  window.KGMIS_DIRECTORY_MODULE = {
+    activate: activate,
+
+    getDefaultFamilyPhotoDataUrl:
+      getDefaultFamilyPhotoDataUrl,
+
+    chooseFamilyPhoto:
+      chooseFamilyPhoto,
+
+    updateHomeMapLocation:
+      updateHomeMapLocation
+  };
+})();
+</script>

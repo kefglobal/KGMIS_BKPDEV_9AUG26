@@ -1,0 +1,3787 @@
+<!-- ACCESS CONTROL ACTIVE v1 — 07-Aug-2026 -->
+<!--
+============================================================
+  KEF Global Membership Information System (KGMIS)
+  Embedded Administration Module
+
+  File: 37.00_KGMIS_Module_Admin.html
+  Version: 0.1
+  Developed by: James J0seph Alenchery
+============================================================
+-->
+
+<style>
+  #kgmisAdminModuleHost {
+    --ad-primary: #176c91;
+    --ad-primary-dark: #0d4e70;
+    --ad-primary-light: #e7f4f9;
+    --ad-border: #d5e0e8;
+    --ad-panel: #ffffff;
+    --ad-background: #f3f7fa;
+    --ad-text: #1f2937;
+    --ad-muted: #64748b;
+    --ad-shadow: 0 5px 18px rgba(15, 76, 105, 0.08);
+    width: 100%;
+    min-width: 0;
+    color: var(--ad-text);
+    background: var(--ad-background);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #kgmisAdminModuleHost *,
+  #kgmisAdminModuleHost *::before,
+  #kgmisAdminModuleHost *::after {
+    box-sizing: border-box;
+  }
+
+  #kgmisAdminModuleHost button,
+  #kgmisAdminModuleHost select {
+    font: inherit;
+  }
+
+  #kgmisAdminModuleHost button {
+    cursor: pointer;
+  }
+
+  #kgmisAdminModuleHost button:disabled {
+    cursor: not-allowed;
+  }
+
+  .ad-shell {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ad-navigation {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    margin-bottom: 16px;
+    padding: 10px;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: var(--ad-shadow);
+    backdrop-filter: blur(8px);
+  }
+
+  .ad-navigation-label {
+    margin: 0 0 8px;
+    color: var(--ad-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ad-desktop-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .ad-nav-button {
+    min-height: 38px;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: var(--ad-primary-dark);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .ad-nav-button:hover:not(:disabled) {
+    border-color: #b9d7e6;
+    background: var(--ad-primary-light);
+  }
+
+  .ad-nav-button.active {
+    border-color: var(--ad-primary);
+    color: #ffffff;
+    background: var(--ad-primary);
+  }
+
+  .ad-nav-button:disabled {
+    opacity: 0.48;
+  }
+
+  .ad-nav-icon {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .ad-coming-soon {
+    margin-left: 3px;
+    padding: 2px 5px;
+    border-radius: 999px;
+    color: var(--ad-muted);
+    background: #eef2f5;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .ad-mobile-nav {
+    display: none;
+  }
+
+  .ad-mobile-select {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: 9px;
+    color: var(--ad-primary-dark);
+    background: #ffffff;
+    font-weight: 800;
+  }
+
+  .ad-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ad-global-message {
+    display: none;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+  }
+
+  .ad-global-message.error {
+    display: block;
+    border: 1px solid #fecdca;
+    color: #b42318;
+    background: #fef3f2;
+  }
+
+  .ad-portal-module {
+    display: none;
+  }
+
+  .ad-portal-module.active {
+    display: block;
+  }
+
+  .ad-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+  }
+
+  .ad-page-title {
+    margin: 0;
+    color: var(--ad-primary-dark);
+    font-size: 25px;
+    line-height: 1.15;
+  }
+
+  .ad-page-description {
+    margin: 5px 0 0;
+    color: var(--ad-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ad-edition-badge {
+    min-width: 168px;
+    padding: 9px 14px;
+    border: 1px solid #a8d7e8;
+    border-radius: 11px;
+    color: var(--ad-primary-dark);
+    background: var(--ad-primary-light);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .ad-edition-label {
+    color: var(--ad-muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ad-edition-value {
+    margin-top: 4px;
+    color: var(--ad-primary-dark);
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .ad-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .ad-dashboard-card {
+    min-width: 0;
+    min-height: 110px;
+    padding: 15px 16px;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    background: var(--ad-panel);
+    box-shadow: var(--ad-shadow);
+  }
+
+  .ad-card-label {
+    color: var(--ad-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  .ad-card-value {
+    display: block;
+    margin-top: 8px;
+    color: var(--ad-primary-dark);
+    font-size: 25px;
+    font-weight: 800;
+  }
+
+  .ad-card-note {
+    margin-top: 6px;
+    color: var(--ad-muted);
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .ad-panel {
+    padding: 18px;
+    margin-bottom: 18px;
+    border: 1px solid var(--ad-border);
+    border-radius: 14px;
+    background: var(--ad-panel);
+    box-shadow: var(--ad-shadow);
+  }
+
+  .ad-panel-title {
+    margin: 0 0 5px;
+    color: var(--ad-primary-dark);
+    font-size: 19px;
+  }
+
+  .ad-panel-description {
+    margin: 0;
+    color: var(--ad-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ad-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .ad-quick-action {
+    min-height: 86px;
+    padding: 13px;
+    border: 1px solid var(--ad-border);
+    border-radius: 11px;
+    color: var(--ad-primary-dark);
+    background: #f8fbfd;
+    text-align: left;
+    font-weight: 800;
+  }
+
+  .ad-quick-action:hover:not(:disabled) {
+    border-color: var(--ad-primary);
+    background: var(--ad-primary-light);
+  }
+
+  .ad-quick-action:disabled {
+    opacity: 0.52;
+    background: #f5f7f9;
+  }
+
+  .ad-quick-action-icon {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 20px;
+  }
+
+  .ad-quick-action-note {
+    display: block;
+    margin-top: 5px;
+    color: var(--ad-muted);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .ad-generator-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .ad-generator-icon {
+    width: 76px;
+    height: 76px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #b9d7e6;
+    border-radius: 16px;
+    background: var(--ad-primary-light);
+    font-size: 38px;
+  }
+
+  .ad-generator-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    padding: 7px 10px;
+    border: 1px solid #a7e6bd;
+    border-radius: 999px;
+    color: #166534;
+    background: #ecfdf3;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .ad-generator-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #16a34a;
+  }
+
+
+  .ad-search-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .ad-search-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 11px 14px;
+    border: 1px solid var(--ad-border);
+    border-radius: 10px;
+    color: var(--ad-text);
+    background: #ffffff;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .ad-search-input:focus {
+    border-color: var(--ad-primary);
+    box-shadow: 0 0 0 3px rgba(23, 108, 145, 0.12);
+  }
+
+  .ad-search-button {
+    min-width: 120px;
+    min-height: 44px;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 10px;
+    color: #ffffff;
+    background: var(--ad-primary);
+    font-weight: 800;
+  }
+
+  .ad-search-button:hover:not(:disabled) {
+    background: var(--ad-primary-dark);
+  }
+
+  .ad-search-button:disabled {
+    opacity: 0.65;
+  }
+
+  .ad-search-status {
+    min-height: 20px;
+    margin-top: 12px;
+    color: var(--ad-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ad-search-status.error {
+    color: #b42318;
+  }
+
+  .ad-search-results {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .ad-result-card {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    padding: 15px;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .ad-result-photo {
+    width: 72px;
+    height: 72px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    color: var(--ad-primary-dark);
+    background: var(--ad-primary-light);
+    font-size: 28px;
+    font-weight: 800;
+  }
+
+  .ad-result-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ad-result-name {
+    margin: 0;
+    color: var(--ad-primary-dark);
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .ad-result-type {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    color: var(--ad-primary-dark);
+    background: var(--ad-primary-light);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .ad-result-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 16px;
+    margin-top: 11px;
+    color: var(--ad-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .ad-result-details strong {
+    color: var(--ad-text);
+  }
+
+  .ad-result-card-state {
+    min-width: 150px;
+    text-align: right;
+  }
+
+  .ad-card-status-badge {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .ad-card-status-badge.not-issued {
+    color: #92400e;
+    background: #fff7ed;
+  }
+
+  .ad-card-status-badge.active {
+    color: #166534;
+    background: #ecfdf3;
+  }
+
+  .ad-card-status-badge.extended {
+    color: #1d4ed8;
+    background: #eff6ff;
+  }
+
+  .ad-card-status-badge.revoked {
+    color: #b42318;
+    background: #fef3f2;
+  }
+
+  .ad-result-action {
+    min-width: 120px;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid var(--ad-primary);
+    border-radius: 9px;
+    color: #ffffff;
+    background: var(--ad-primary);
+    font-weight: 800;
+  }
+
+  .ad-result-action.secondary {
+    color: var(--ad-primary-dark);
+    background: #ffffff;
+  }
+
+  .ad-card-action-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  }
+
+  .ad-card-action-group .ad-result-action {
+  width: 190px;
+  min-width: 190px;
+  }
+
+  .ad-empty-results {
+    padding: 22px;
+    border: 1px dashed var(--ad-border);
+    border-radius: 12px;
+    color: var(--ad-muted);
+    background: #fbfdfe;
+    text-align: center;
+    font-size: 13px;
+  }
+
+
+
+  .ad-review-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .ad-review-button {
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 1px solid var(--ad-primary);
+    border-radius: 9px;
+    color: #ffffff;
+    background: var(--ad-primary);
+    font-weight: 800;
+  }
+
+  .ad-review-button.secondary {
+    color: var(--ad-primary-dark);
+    background: #ffffff;
+  }
+
+  .ad-review-button.approve {
+    border-color: #15803d;
+    background: #15803d;
+  }
+
+  .ad-review-button:hover:not(:disabled) {
+    filter: brightness(0.96);
+  }
+
+  .ad-review-button:disabled {
+    opacity: 0.62;
+  }
+
+  .ad-review-status {
+    min-height: 20px;
+    color: var(--ad-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ad-review-status.error {
+    color: #b42318;
+  }
+
+  .ad-request-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .ad-request-card {
+    padding: 14px;
+    border: 1px solid var(--ad-border);
+    border-radius: 11px;
+    background: #ffffff;
+  }
+
+  .ad-request-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .ad-request-title {
+    margin: 0;
+    color: var(--ad-primary-dark);
+    font-size: 16px;
+  }
+
+  .ad-request-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px 16px;
+    margin-top: 9px;
+    color: var(--ad-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .ad-request-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    color: #92400e;
+    background: #fff7ed;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .ad-request-detail {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .ad-request-detail.active {
+    display: block;
+  }
+
+  .ad-review-summary {
+    margin-bottom: 14px;
+    padding: 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: 10px;
+    color: var(--ad-muted);
+    background: #f8fbfd;
+    font-size: 12px;
+    white-space: pre-wrap;
+  }
+
+  .ad-change-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--ad-border);
+    border-radius: 10px;
+  }
+
+  .ad-change-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    background: #ffffff;
+  }
+
+  .ad-change-table th,
+  .ad-change-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ad-border);
+    text-align: left;
+    vertical-align: top;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .ad-change-table th {
+    color: var(--ad-primary-dark);
+    background: var(--ad-primary-light);
+    font-weight: 800;
+  }
+
+  .ad-change-table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .ad-old-value {
+    color: var(--ad-muted);
+  }
+
+  .ad-new-value {
+    color: #166534;
+    font-weight: 700;
+  }
+
+  .ad-review-remarks {
+    width: 100%;
+    min-height: 86px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: 9px;
+    color: var(--ad-text);
+    background: #ffffff;
+    font: inherit;
+    resize: vertical;
+  }
+
+
+  .ad-access-form { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:16px; }
+  .ad-access-field label { display:block; margin-bottom:5px; color:var(--ad-muted); font-size:10px; font-weight:800; text-transform:uppercase; }
+  .ad-access-input,.ad-access-select,.ad-access-textarea { width:100%; min-height:42px; padding:9px 11px; border:1px solid var(--ad-border); border-radius:9px; background:#fff; font:inherit; }
+  .ad-access-textarea { min-height:70px; resize:vertical; }
+  .ad-access-table-wrap { margin-top:16px; overflow-x:auto; border:1px solid var(--ad-border); border-radius:11px; }
+  .ad-access-table { width:100%; min-width:1050px; border-collapse:collapse; background:#fff; }
+  .ad-access-table th,.ad-access-table td { padding:10px 11px; border-bottom:1px solid var(--ad-border); text-align:left; vertical-align:top; font-size:11px; }
+  .ad-access-table th { color:var(--ad-primary-dark); background:var(--ad-primary-light); }
+  .ad-access-status { min-height:20px; margin-top:12px; color:var(--ad-muted); font-size:12px; }
+  .ad-access-status.error { color:#b42318; }
+  .ad-access-status.success { color:#166534; }
+  @media (max-width:900px) { .ad-access-form { grid-template-columns:1fr 1fr; } }
+
+  @media (max-width: 1100px) {
+    .ad-dashboard-grid,
+    .ad-quick-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .ad-navigation {
+      position: static;
+      padding: 9px;
+    }
+
+    .ad-desktop-nav {
+      display: none;
+    }
+
+    .ad-mobile-nav {
+      display: block;
+    }
+
+    .ad-page-header {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ad-edition-badge {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .ad-dashboard-grid,
+    .ad-quick-actions,
+    .ad-generator-intro {
+      grid-template-columns: 1fr;
+    }
+
+    .ad-page-title {
+      font-size: 22px;
+    }
+
+    .ad-panel {
+      padding: 14px;
+    }
+
+    .ad-search-bar {
+      flex-direction: column;
+    }
+
+    .ad-search-button {
+      width: 100%;
+    }
+
+    .ad-result-card {
+      grid-template-columns: 58px minmax(0, 1fr);
+    }
+
+    .ad-result-photo {
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
+      font-size: 23px;
+    }
+
+    .ad-result-details {
+      grid-template-columns: 1fr;
+    }
+
+    .ad-result-card-state {
+      grid-column: 1 / -1;
+      width: 100%;
+      text-align: left;
+    }
+
+    .ad-result-action {
+      width: 100%;
+    }
+
+    .ad-request-card-header,
+    .ad-review-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .ad-request-meta {
+      grid-template-columns: 1fr;
+    }
+
+    .ad-review-button {
+      width: 100%;
+    }
+  }
+</style>
+
+<div id="kgmisAdminModuleHost" class="ad-shell">
+  <div class="ad-navigation">
+    <p class="ad-navigation-label">Administration Functions</p>
+
+    <nav class="ad-desktop-nav" aria-label="Administration navigation">
+      <button class="ad-nav-button active" type="button"
+        data-ad-module="dashboard">
+        <span class="ad-nav-icon">🏠</span>Dashboard
+      </button>
+
+      <button class="ad-nav-button" type="button"
+        data-ad-module="digital-id-generator">
+        <span class="ad-nav-icon">🪪</span>Digital ID Generator
+      </button>
+
+      <button class="ad-nav-button" type="button"
+        data-ad-module="member-management">
+        <span class="ad-nav-icon">🔄</span>Change Management
+      </button>
+
+      <button class="ad-nav-button" type="button"
+        data-ad-module="add-new-user">
+        <span class="ad-nav-icon">➕</span>Add New Member
+      </button>
+
+      <button class="ad-nav-button" type="button"
+        data-ad-module="family-management">
+        <span class="ad-nav-icon">👨‍👩‍👧‍👦</span>Family Management
+      </button>
+
+      <button class="ad-nav-button" type="button"
+        data-ad-module="access-control">
+        <span class="ad-nav-icon">🔐</span>Access Control
+      </button>
+
+      <button class="ad-nav-button" type="button" disabled>
+        <span class="ad-nav-icon">⚙️</span>System Settings
+        <span class="ad-coming-soon">Soon</span>
+      </button>
+
+      <button class="ad-nav-button" type="button" disabled>
+        <span class="ad-nav-icon">📋</span>Audit Logs
+        <span class="ad-coming-soon">Soon</span>
+      </button>
+
+      <button class="ad-nav-button" type="button" disabled>
+        <span class="ad-nav-icon">🧹</span>Maintenance
+        <span class="ad-coming-soon">Soon</span>
+      </button>
+    </nav>
+
+    <div class="ad-mobile-nav">
+      <select id="kgmisAdminMobileNav" class="ad-mobile-select">
+        <option value="dashboard">🏠 Dashboard</option>
+        <option value="digital-id-generator">🪪 Digital ID Generator</option>
+        <option value="member-management">🔄 Change Management</option>
+        <option value="add-new-user">➕ Add New User</option>
+        <option value="family-management">👨‍👩‍👧‍👦 Family Management</option>
+        <option value="access-control">🔐 Access Control</option>
+        <option disabled>⚙️ System Settings — Coming Soon</option>
+        <option disabled>📋 Audit Logs — Coming Soon</option>
+        <option disabled>🧹 Maintenance — Coming Soon</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="ad-content">
+    <div id="kgmisAdminGlobalMessage" class="ad-global-message"></div>
+
+    <section id="kgmisAdminDashboardModule"
+      class="ad-portal-module active">
+      <div class="ad-dashboard-grid">
+        <div class="ad-dashboard-card">
+          <span class="ad-card-label">Digital Card Records</span>
+          <span id="adStatDigitalCardRecords" class="ad-card-value">—</span>
+          <div class="ad-card-note">Total records in KEFG_MEMBER_CARDS</div>
+        </div>
+
+        <div class="ad-dashboard-card">
+          <span class="ad-card-label">Active Cards</span>
+          <span id="adStatActiveCards" class="ad-card-value">—</span>
+          <div class="ad-card-note">Cards with ACTIVE status</div>
+        </div>
+
+        <div class="ad-dashboard-card">
+          <span class="ad-card-label">Extended Cards</span>
+          <span id="adStatExtendedCards" class="ad-card-value">—</span>
+          <div class="ad-card-note">Cards with EXTENDED status</div>
+        </div>
+
+        <div class="ad-dashboard-card">
+          <span class="ad-card-label">Revoked Cards</span>
+          <span id="adStatRevokedCards" class="ad-card-value">—</span>
+          <div class="ad-card-note">Cards with REVOKED status</div>
+        </div>
+      </div>
+
+      <section class="ad-panel">
+  <h3 class="ad-panel-title">Membership Statistics</h3>
+
+  <p class="ad-panel-description">
+    Current KGMIS membership overview.
+  </p>
+
+  <div class="ad-dashboard-grid" style="margin-top:14px; margin-bottom:0;">
+
+    <div class="ad-dashboard-card">
+      <span class="ad-card-label">Total Members</span>
+      <span id="adStatTotalMembers" class="ad-card-value">—</span>
+      <div class="ad-card-note">
+        Total member records in KGMIS
+      </div>
+    </div>
+
+    <div class="ad-dashboard-card">
+      <span class="ad-card-label">Total Families</span>
+      <span id="adStatTotalFamilies" class="ad-card-value">—</span>
+      <div class="ad-card-note">
+        Total registered families
+      </div>
+    </div>
+
+    <div class="ad-dashboard-card">
+      <span class="ad-card-label">
+        Active Families — Current Financial Year
+      </span>
+      <span id="adStatActiveFamilies" class="ad-card-value">—</span>
+      <div class="ad-card-note">
+        Families with current-year active membership
+      </div>
+    </div>
+
+    <div class="ad-dashboard-card">
+      <span class="ad-card-label">New Members</span>
+      <span id="adStatNewMembers" class="ad-card-value">—</span>
+      <div class="ad-card-note">
+        Members added during the current financial year
+      </div>
+    </div>
+
+    <div class="ad-dashboard-card">
+      <span class="ad-card-label">Membership Pending</span>
+      <span id="adStatMembershipPending" class="ad-card-value">—</span>
+      <div class="ad-card-note">
+        Families with pending membership status
+      </div>
+    </div>
+
+    <div class="ad-dashboard-card">
+      <span class="ad-card-label">Paid Members</span>
+      <span id="adStatPaidMembers" class="ad-card-value">—</span>
+      <div class="ad-card-note">
+        Members with paid subscription status
+      </div>
+    </div>
+
+    <div class="ad-dashboard-card">
+      <span class="ad-card-label">Alumni Members</span>
+      <span id="adStatAlumniMembers" class="ad-card-value">—</span>
+      <div class="ad-card-note">
+        Registered alumni members
+      </div>
+    </div>
+
+    <div class="ad-dashboard-card">
+      <span class="ad-card-label">Non-Alumni Spouses</span>
+      <span id="adStatNonAlumniSpouses" class="ad-card-value">—</span>
+      <div class="ad-card-note">
+        Non-alumni spouse records
+      </div>
+    </div>
+
+  </div>
+</section>
+
+    </section>
+
+    <section id="kgmisAdminDigitalIdGeneratorModule" 
+      class="ad-portal-module">
+      <div class="ad-page-header">
+        <div>
+          <h2 class="ad-page-title">Digital ID Generator</h2>
+          <p class="ad-page-description">
+            Search an eligible member and create the digital membership-card
+            record in KEFG_MEMBER_CARDS.
+          </p>
+        </div>
+
+        <div class="ad-edition-badge">
+          <div class="ad-edition-label">Module Status</div>
+          <div class="ad-edition-value">Active</div>
+        </div>
+      </div>
+
+      <section class="ad-panel">
+        <h3 class="ad-panel-title">Search Member</h3>
+        <p class="ad-panel-description">
+          Search by KEFG ID, Family ID, Card Number, Name, Mobile Number or Email Address.
+        </p>
+
+        <div class="ad-search-bar">
+          <input
+            id="adCardSearchText"
+            class="ad-search-input"
+            type="text"
+            autocomplete="off"
+            placeholder="Enter search value"
+          >
+
+          <button
+            id="adCardSearchButton"
+            class="ad-search-button"
+            type="button"
+          >
+            🔍 Search
+          </button>
+        </div>
+
+        <div
+          id="adSearchStatus"
+          class="ad-search-status"
+          aria-live="polite"
+        ></div>
+
+          <div
+            id="adSearchResults"
+            class="ad-search-results"
+          ></div>
+        </section>
+      </section>
+
+      <section
+        id="kgmisAdminMemberManagementModule"
+        class="ad-portal-module"
+      >
+        <div class="ad-page-header">
+          <div>
+            <h2 class="ad-page-title">Change Management</h2>
+
+<p class="ad-page-description">
+  Review and approve Member change requests.
+</p>
+          </div>
+
+          <div class="ad-edition-badge">
+            <div class="ad-edition-label">Review Stage</div>
+            <div class="ad-edition-value">Approve</div>
+          </div>
+        </div>
+
+        <section class="ad-panel">
+          <h3 class="ad-panel-title">Pending Profile Requests</h3>
+          <p class="ad-panel-description">
+            Select a request to compare the existing and submitted values before approval.
+          </p>
+
+          <div class="ad-review-toolbar">
+            <div id="adProfileReviewStatus" class="ad-review-status" aria-live="polite"></div>
+            <button id="adRefreshProfileRequests" class="ad-review-button secondary" type="button">
+              ↻ Refresh Requests
+            </button>
+          </div>
+
+          <div id="adProfileRequestList" class="ad-request-list"></div>
+
+<!-- INSERT PART 1B HERE -->
+
+<hr style="margin:30px 0;">
+
+<h3 class="ad-panel-title">
+Family Member Requests
+</h3>
+
+...
+
+<div
+  id="adFamilyMemberRequestList"
+  class="ad-request-list">
+</div>
+
+      </section>
+
+        <section id="adProfileRequestDetail" class="ad-panel ad-request-detail">
+          <h3 id="adProfileRequestDetailTitle" class="ad-panel-title">Request Details</h3>
+          <p id="adProfileRequestDetailMeta" class="ad-panel-description"></p>
+
+          <div id="adProfileRequestSummary" class="ad-review-summary"></div>
+          <div id="adProfileChangesTable"></div>
+
+          <textarea
+            id="adProfileReviewRemarks"
+            class="ad-review-remarks"
+            placeholder="Optional review remarks"
+          ></textarea>
+
+          <div class="ad-review-toolbar">
+            <button id="adBackToProfileRequests" class="ad-review-button secondary" type="button">
+              ← Back to Requests
+            </button>
+            <div>
+              <button id="adEditProfileRequest" class="ad-review-button secondary" type="button">
+                Edit
+              </button>
+              <button id="adSaveApproveProfileRequest" class="ad-review-button approve" type="button" style="display:none;">
+                Save & Approve
+              </button>
+              <button id="adApproveProfileRequest" class="ad-review-button approve" type="button">
+                ✓ Approve Request
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section
+  id="adFamilyMemberRequestDetail"
+  class="ad-panel ad-request-detail">
+
+  <h3
+    id="adFamilyMemberRequestDetailTitle"
+    class="ad-panel-title">
+    Family Member Request
+  </h3>
+
+  <p
+    id="adFamilyMemberRequestDetailMeta"
+    class="ad-panel-description">
+  </p>
+
+  <div
+    id="adFamilyMemberRequestSummary"
+    class="ad-review-summary">
+  </div>
+
+  <div
+    id="adFamilyMemberChangesTable">
+  </div>
+
+  <textarea
+    id="adFamilyMemberReviewRemarks"
+    class="ad-review-remarks"
+    placeholder="Optional review remarks">
+  </textarea>
+
+  <div class="ad-review-toolbar">
+
+    <button
+      id="adBackToFamilyMemberRequests"
+      class="ad-review-button secondary"
+      type="button">
+
+      ← Back to Requests
+
+    </button>
+
+    <div>
+
+  <button
+    id="adEditFamilyMemberRequest"
+    class="ad-review-button secondary"
+    type="button">
+    Edit
+  </button>
+
+  <button
+    id="adSaveApproveFamilyMemberRequest"
+    class="ad-review-button approve"
+    type="button"
+    style="display:none;">
+    Save & Approve
+  </button>
+
+  <button
+    id="adApproveFamilyMemberRequest"
+    class="ad-review-button approve"
+    type="button">
+    ✓ Approve Request
+  </button>
+
+</div>
+
+  </div>
+
+</section>
+
+      </section>
+
+<!-- =====================================================
+     ADD NEW USER
+     ===================================================== -->
+
+<section
+  id="kgmisAdminAddNewUserModule"
+  class="ad-portal-module"
+>
+  <?!= include('38.00_KGMIS_Module_Add_New_Member'); ?>
+</section>
+</section>
+
+<!-- =====================================================
+     FAMILY MANAGEMENT
+     ===================================================== -->
+
+<section
+  id="kgmisAdminFamilyManagementModule"
+  class="ad-portal-module"
+>
+  <?!= include('39.00_KGMIS_Module_Family_Management'); ?>
+</section>
+</section>
+
+<section id="kgmisAdminAccessControlModule" class="ad-portal-module">
+  <div class="ad-page-header">
+    <div>
+      <h2 class="ad-page-title">Access Control</h2>
+      <p class="ad-page-description">Manage authorised KGMIS users, roles and account status.</p>
+    </div>
+  </div>
+  <section class="ad-panel">
+    <h3 class="ad-panel-title">Add / Update User</h3>
+    <p class="ad-panel-description">Email is the unique account key. Existing users are updated; new users are added.</p>
+    <div class="ad-access-form">
+      <div class="ad-access-field"><label>Email</label><input id="adAccessEmail" class="ad-access-input" type="email"></div>
+      <div class="ad-access-field"><label>User Name</label><input id="adAccessUserName" class="ad-access-input" type="text"></div>
+      <div class="ad-access-field"><label>Role</label><select id="adAccessRole" class="ad-access-select">
+        <option>DIRECTORY_USER</option><option>VIEWER</option><option>TREASURER</option><option>ADMIN</option><option>SUPER_ADMIN</option>
+      </select></div>
+      <div class="ad-access-field"><label>Status</label><select id="adAccessStatus" class="ad-access-select"><option>ACTIVE</option><option>INACTIVE</option></select></div>
+    </div>
+    <div class="ad-access-field" style="margin-top:12px;"><label>Remarks</label><textarea id="adAccessRemarks" class="ad-access-textarea"></textarea></div>
+    <div class="ad-review-toolbar">
+      <div id="adAccessStatusMessage" class="ad-access-status"></div>
+      <div>
+        <button id="adAccessClearButton" class="ad-review-button secondary" type="button">Clear</button>
+        <button id="adAccessRefreshButton" class="ad-review-button secondary" type="button">↻ Refresh</button>
+        <button id="adAccessSaveButton" class="ad-review-button approve" type="button">Save User</button>
+      </div>
+    </div>
+    <div class="ad-access-table-wrap">
+      <table class="ad-access-table">
+        <thead><tr><th>Email</th><th>User Name</th><th>Role</th><th>Status</th><th>Last Login</th><th>Created On</th><th>Created By</th><th>Updated On</th><th>Updated By</th><th>Remarks</th><th>Action</th></tr></thead>
+        <tbody id="adAccessUserTableBody"><tr><td colspan="11">Open Access Control to load users.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  const state = {
+    auth: null,
+    sessionToken: '',
+    initialised: false,
+    activeModule: 'dashboard',
+    profileRequestsLoaded: false,
+    selectedProfileRequestId: '',
+    selectedProfileChanges: [],
+    profileEditMode: false,
+    selectedFamilyMemberRequestId: '',
+    selectedFamilyMemberChanges: [],
+    familyMemberEditMode: false,
+    domInitialised: false,
+    eventsBound: false
+  };
+
+  const el = {};
+
+  function cacheElements() {
+    [
+      'kgmisAdminModuleHost',
+      'kgmisAdminMobileNav',
+      'kgmisAdminGlobalMessage',
+      'kgmisAdminDashboardModule',
+      'kgmisAdminDigitalIdGeneratorModule',
+      'kgmisAdminMemberManagementModule',
+      'kgmisAdminAddNewUserModule',
+      'kgmisAdminFamilyManagementModule',
+      'kgmisAdminAccessControlModule',
+      'adAccessEmail',
+      'adAccessUserName',
+      'adAccessRole',
+      'adAccessStatus',
+      'adAccessRemarks',
+      'adAccessSaveButton',
+      'adAccessClearButton',
+      'adAccessRefreshButton',
+      'adAccessStatusMessage',
+      'adAccessUserTableBody',
+      'adStatDigitalCardRecords',
+      'adStatActiveCards',
+      'adStatExtendedCards',
+      'adStatRevokedCards',
+      'adStatTotalMembers',
+      'adStatTotalFamilies',
+      'adStatActiveFamilies',
+      'adStatNewMembers',
+      'adStatMembershipPending',
+      'adStatPaidMembers',
+      'adStatAlumniMembers',
+      'adStatNonAlumniSpouses',
+      'adCardSearchText',
+      'adCardSearchButton',
+      'adSearchStatus',
+      'adSearchResults',
+      'adProfileReviewStatus',
+      'adRefreshProfileRequests',
+      'adProfileRequestList',
+      'adProfileRequestDetail',
+      'adProfileRequestDetailTitle',
+      'adProfileRequestDetailMeta',
+      'adProfileRequestSummary',
+      'adProfileChangesTable',
+      'adProfileReviewRemarks',
+      'adBackToProfileRequests',
+      'adEditProfileRequest',
+      'adSaveApproveProfileRequest',
+      'adApproveProfileRequest',
+      'adFamilyMemberReviewStatus',
+      'adRefreshFamilyMemberRequests',
+      'adFamilyMemberRequestList',
+      'adFamilyMemberRequestDetail',
+      'adFamilyMemberRequestDetailTitle',
+      'adFamilyMemberRequestDetailMeta',
+      'adFamilyMemberRequestSummary',
+      'adFamilyMemberChangesTable',
+      'adFamilyMemberReviewRemarks',
+      'adBackToFamilyMemberRequests',
+      'adEditFamilyMemberRequest',
+      'adSaveApproveFamilyMemberRequest',
+      'adApproveFamilyMemberRequest',
+      
+
+    ].forEach(function (id) {
+      el[id] = document.getElementById(id);
+    });
+  }
+
+  function bindEvents() {
+    if (!el.kgmisAdminModuleHost || state.eventsBound) {
+      return;
+    }
+
+    state.eventsBound = true;
+
+    el.kgmisAdminModuleHost.addEventListener('click', function (event) {
+      const navButton = event.target.closest('[data-ad-module]');
+
+      if (navButton && !navButton.disabled) {
+        openModule(navButton.getAttribute('data-ad-module'));
+        return;
+      }
+
+      const quickButton =
+        event.target.closest('[data-ad-quick-module]');
+
+      if (quickButton && !quickButton.disabled) {
+        openModule(
+          quickButton.getAttribute('data-ad-quick-module')
+        );
+        return;
+      }
+
+      const profileRequestButton =
+        event.target.closest('[data-ad-profile-request]');
+
+      if (profileRequestButton && !profileRequestButton.disabled) {
+        openProfileRequest(
+          profileRequestButton.getAttribute('data-ad-profile-request') || ''
+        );
+        return;
+      }
+
+      const familyMemberRequestButton =
+        event.target.closest(
+        '[data-ad-family-member-request]'
+      );
+
+    if (
+      familyMemberRequestButton &&
+      !familyMemberRequestButton.disabled
+    ) {
+
+    openFamilyMemberRequest(
+
+    familyMemberRequestButton.getAttribute(
+      'data-ad-family-member-request'
+    ) || ''
+
+  );
+
+  return;
+
+}
+
+      const cardActionButton =
+        event.target.closest('[data-ad-card-action]');
+
+      if (cardActionButton && !cardActionButton.disabled) {
+        const action =
+          cardActionButton.getAttribute('data-ad-card-action');
+
+        if (action === 'issue-card') {
+          const candidateKey =
+            cardActionButton.getAttribute('data-candidate-key') || '';
+
+          issueDigitalCard(
+            candidateKey,
+            cardActionButton
+          );
+
+          return;
+        }
+
+      if (action === 'view-card') {
+
+  const cardId =
+    cardActionButton.getAttribute(
+      'data-card-id'
+    ) || '';
+
+  viewDigitalCard(
+    cardId,
+    cardActionButton
+  );
+
+  return;
+}
+
+      }
+    });
+
+    if (el.kgmisAdminMobileNav) {
+      el.kgmisAdminMobileNav.addEventListener('change', function () {
+        openModule(el.kgmisAdminMobileNav.value);
+      });
+    }
+
+    if (el.adCardSearchButton) {
+      el.adCardSearchButton.addEventListener(
+        'click',
+        searchDigitalCardCandidates
+      );
+    }
+
+    if (el.adCardSearchText) {
+      el.adCardSearchText.addEventListener(
+        'keydown',
+        function (event) {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            searchDigitalCardCandidates();
+          }
+        }
+      );
+    }
+
+
+    if (el.adRefreshProfileRequests) {
+      el.adRefreshProfileRequests.addEventListener(
+        'click',
+        loadPendingProfileRequests
+      );
+    }
+
+    if (el.adRefreshFamilyMemberRequests) {
+  el.adRefreshFamilyMemberRequests.addEventListener(
+    'click',
+    loadPendingFamilyMemberRequests
+  );
+
+}
+
+    if (el.adBackToProfileRequests) {
+      el.adBackToProfileRequests.addEventListener(
+        'click',
+        showProfileRequestList
+      );
+    }
+
+    if (el.adBackToFamilyMemberRequests) {
+      el.adBackToFamilyMemberRequests.addEventListener(
+        'click',
+        showFamilyMemberRequestList
+      );
+    }
+
+    if (el.adEditFamilyMemberRequest) {
+      el.adEditFamilyMemberRequest.addEventListener(
+        'click',
+        toggleFamilyMemberEditMode
+      );
+    }
+
+    if (el.adSaveApproveFamilyMemberRequest) {
+      el.adSaveApproveFamilyMemberRequest.addEventListener(
+        'click',
+        saveAndApproveSelectedFamilyMemberRequest
+      );
+    }
+
+    if (el.adApproveFamilyMemberRequest) {
+      el.adApproveFamilyMemberRequest.addEventListener(
+       'click',
+        approveSelectedFamilyMemberRequest
+     );
+    }
+
+    if (el.adEditProfileRequest) {
+      el.adEditProfileRequest.addEventListener(
+        'click',
+        toggleProfileEditMode
+      );
+    }
+
+    if (el.adSaveApproveProfileRequest) {
+      el.adSaveApproveProfileRequest.addEventListener(
+        'click',
+        saveAndApproveSelectedProfileRequest
+      );
+    }
+
+    if (el.adApproveProfileRequest) {
+      el.adApproveProfileRequest.addEventListener(
+        'click',
+        approveSelectedProfileRequest
+      );
+    }
+
+    if (el.adAccessSaveButton) el.adAccessSaveButton.addEventListener('click', saveAccessUser);
+    if (el.adAccessClearButton) el.adAccessClearButton.addEventListener('click', clearAccessForm);
+    if (el.adAccessRefreshButton) el.adAccessRefreshButton.addEventListener('click', loadAccessUsers);
+    if (el.adAccessUserTableBody) {
+      el.adAccessUserTableBody.addEventListener('click', function(event) {
+        const button = event.target.closest('[data-ad-access-edit]');
+        if (button) populateAccessFormFromButton(button);
+      });
+    }
+  }
+
+
+  function loadPendingProfileRequests() {
+    clearMessage();
+
+    if (!state.sessionToken) {
+      setProfileReviewError(
+        'The Administration session is missing. Please sign in again.'
+      );
+      return;
+    }
+
+    setProfileReviewBusy(true, 'Loading pending profile requests…');
+    showProfileRequestList();
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        setProfileReviewBusy(false);
+
+        if (!response || response.success !== true) {
+          setProfileReviewError(
+            response && response.message
+              ? response.message
+              : 'The pending profile requests could not be loaded.'
+          );
+          return;
+        }
+
+        state.profileRequestsLoaded = true;
+        renderPendingProfileRequests(response.requests || []);
+      })
+      .withFailureHandler(function (error) {
+        setProfileReviewBusy(false);
+        setProfileReviewError(error);
+      })
+      .KGMIS_Admin_GetPendingProfileRequests(
+        state.sessionToken
+      );
+  }
+
+  function loadPendingFamilyMemberRequests() {
+
+  if (!state.sessionToken) {
+    setProfileReviewError(
+      'The Administration session is missing.'
+    );
+    return;
+  }
+
+  google.script.run
+
+    .withSuccessHandler(function(response){
+
+      if (!response || response.success !== true) {
+        return;
+      }
+
+      renderPendingFamilyMemberRequests(
+        response.requests || []
+      );
+
+    })
+
+    .withFailureHandler(function(error){
+
+      console.error(error);
+
+    })
+
+    .KGMIS_Admin_GetPendingFamilyMemberRequests(
+      state.sessionToken
+    );
+
+}
+
+function renderPendingFamilyMemberRequests(requests) {
+
+  if (!el.adFamilyMemberRequestList) {
+    return;
+  }
+
+  const safeRequests =
+    Array.isArray(requests)
+      ? requests
+      : [];
+
+  if (!safeRequests.length) {
+
+    el.adFamilyMemberRequestList.innerHTML =
+      '<div class="ad-empty-results">' +
+      'No pending Family Member requests.' +
+      '</div>';
+
+    return;
+  }
+
+  el.adFamilyMemberRequestList.innerHTML =
+    safeRequests.map(function(request){
+
+      return (
+
+        '<article class="ad-request-card">' +
+
+          '<div class="ad-request-card-header">' +
+
+            '<div>' +
+
+              '<h4 class="ad-request-title">' +
+
+                escapeHtml(
+                  request.requestId || ''
+                ) +
+
+              '</h4>' +
+
+              '<div class="ad-request-meta">' +
+
+                detailHtml(
+                  'Member',
+                  request.memberName
+                ) +
+
+                detailHtml(
+                  'Family',
+                  request.familyId
+                ) +
+
+                detailHtml(
+                  'Action',
+                  request.requestType
+                ) +
+
+              '</div>' +
+
+     '</div>' +
+
+'<div>' +
+  '<span class="ad-request-badge">' +
+    escapeHtml(request.operation || 'PENDING') +
+  '</span>' +
+  '<br><br>' +
+  '<button type="button" class="ad-review-button" ' +
+    'data-ad-family-member-request="' +
+    escapeHtml(request.requestId || '') +
+    '">Review</button>' +
+'</div>' +
+
+'</div>' +
+
+'</article>'
+        );
+
+        }).join('');
+
+}
+
+  function renderPendingProfileRequests(requests) {
+    if (!el.adProfileRequestList) {
+      return;
+    }
+
+    const safeRequests = Array.isArray(requests) ? requests : [];
+
+    if (!safeRequests.length) {
+      setProfileReviewStatus('No pending Family Profile requests were found.');
+      el.adProfileRequestList.innerHTML =
+        '<div class="ad-empty-results">' +
+        'There are no pending Family Profile update requests.' +
+        '</div>';
+      return;
+    }
+
+    setProfileReviewStatus(
+      safeRequests.length +
+      (safeRequests.length === 1
+        ? ' pending request found.'
+        : ' pending requests found.')
+    );
+
+    el.adProfileRequestList.innerHTML = safeRequests
+      .map(function (request) {
+        return (
+          '<article class="ad-request-card">' +
+            '<div class="ad-request-card-header">' +
+              '<div>' +
+                '<h4 class="ad-request-title">' +
+                  escapeHtml(
+                    request.primaryMemberKefgId ||
+                    request.familyId ||
+                    request.requestId ||
+                    'Profile Request'
+                  ) +
+                '</h4>' +
+                '<div class="ad-request-meta">' +
+                  detailHtml('Request ID', request.requestId) +
+                  detailHtml('Family ID', request.familyId) +
+                  detailHtml('Submitted On', request.submittedOn) +
+                  detailHtml('Submitted By', request.submittedByEmail) +
+                  detailHtml('Changed Sections', request.changedSections) +
+                '</div>' +
+              '</div>' +
+              '<div>' +
+                '<span class="ad-request-badge">' +
+                  escapeHtml(request.requestStatus || 'PENDING') +
+                '</span>' +
+                '<br><br>' +
+                '<button type="button" class="ad-review-button" ' +
+                  'data-ad-profile-request="' +
+                  escapeHtml(request.requestId || '') +
+                  '">Review</button>' +
+              '</div>' +
+            '</div>' +
+          '</article>'
+        );
+      })
+      .join('');
+  }
+
+  function openProfileRequest(requestId) {
+    const safeRequestId = String(requestId || '').trim();
+
+    if (!safeRequestId) {
+      setProfileReviewError('The selected request ID is missing.');
+      return;
+    }
+
+    state.selectedProfileRequestId = safeRequestId;
+    setProfileReviewBusy(true, 'Loading request details…');
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        setProfileReviewBusy(false);
+
+        if (
+          !response ||
+          response.success !== true ||
+          !response.request
+        ) {
+          setProfileReviewError(
+            response && response.message
+              ? response.message
+              : 'The selected request could not be loaded.'
+          );
+          return;
+        }
+
+        renderProfileRequestDetail(response.request);
+      })
+      .withFailureHandler(function (error) {
+        setProfileReviewBusy(false);
+        setProfileReviewError(error);
+      })
+      .KGMIS_Admin_GetProfileRequest(
+        state.sessionToken,
+        safeRequestId
+      );
+  }
+
+function openFamilyMemberRequest(requestId) {
+
+  const safeRequestId =
+    String(requestId || '').trim();
+
+  if (!safeRequestId) {
+
+    alert(
+      'The selected Family Member Request ID is missing.'
+    );
+
+    return;
+  }
+
+  state.selectedFamilyMemberRequestId =
+    safeRequestId;
+
+  google.script.run
+
+    .withSuccessHandler(function (response) {
+
+      if (
+        !response ||
+        response.success !== true ||
+        !response.request
+      ) {
+
+        alert(
+          response && response.message
+            ? response.message
+            : 'The Family Member Request could not be loaded.'
+        );
+
+        return;
+      }
+
+      renderFamilyMemberRequestDetail(
+        response.request
+      );
+
+    })
+
+    .withFailureHandler(function (error) {
+
+      alert(
+        error && error.message
+          ? error.message
+          : String(error)
+      );
+
+    })
+
+    .KGMIS_Admin_GetFamilyMemberRequest(
+
+      state.sessionToken,
+
+      safeRequestId
+
+    );
+
+}
+
+function renderFamilyMemberRequestDetail(request) {
+
+  state.selectedFamilyMemberRequestId =
+    request.requestId || '';
+
+  if (el.adFamilyMemberRequestDetailTitle) {
+    el.adFamilyMemberRequestDetailTitle.textContent =
+      'Family Member Request ' +
+      (request.requestId || '');
+  }
+
+  if (el.adFamilyMemberRequestDetailMeta) {
+    el.adFamilyMemberRequestDetailMeta.textContent =
+      'Family ID: ' +
+      (request.familyId || '—') +
+      ' | Primary Member: ' +
+      (request.primaryMemberKefgId || '—') +
+      ' | Operation: ' +
+      (request.operation || '—');
+  }
+
+  if (el.adFamilyMemberRequestSummary) {
+    el.adFamilyMemberRequestSummary.textContent =
+      request.changeSummary ||
+      'No change summary was provided.';
+  }
+
+  if (el.adFamilyMemberChangesTable) {
+
+    const changes =
+      Array.isArray(request.changes)
+        ? request.changes
+        : [];
+
+      state.selectedFamilyMemberChanges =
+        changes;
+
+      state.familyMemberEditMode =
+        false;
+
+    if (!changes.length) {
+
+      el.adFamilyMemberChangesTable.innerHTML =
+        '<div class="ad-empty-results">' +
+        'No changed fields were found.' +
+        '</div>';
+
+    } else {
+
+      el.adFamilyMemberChangesTable.innerHTML =
+        '<div class="ad-change-table-wrap">' +
+          '<table class="ad-change-table">' +
+            '<thead><tr>' +
+              '<th>Field</th>' +
+              '<th>Existing Value</th>' +
+              '<th>Submitted Value</th>' +
+            '</tr></thead>' +
+            '<tbody>' +
+
+            changes.map(function (change) {
+
+  return (
+    '<tr>' +
+      '<td><strong>' +
+        escapeHtml(
+          formatProfileFieldName(
+            change.field
+          )
+        ) +
+      '</strong></td>' +
+
+      '<td class="ad-old-value">' +
+        escapeHtml(
+          change.existingValue || '—'
+        ) +
+      '</td>' +
+
+      '<td class="ad-new-value">' +
+
+        '<span data-ad-family-member-submitted-display="' +
+          escapeHtml(change.field || '') +
+        '">' +
+          escapeHtml(
+            change.submittedValue || '—'
+          ) +
+        '</span>' +
+
+        '<input type="text" ' +
+          'class="ad-search-input" ' +
+          'data-ad-family-member-edited-field="' +
+            escapeHtml(change.field || '') +
+          '" value="' +
+            escapeHtml(
+              change.submittedValue || ''
+            ) +
+          '" style="display:none;min-height:36px;">' +
+
+      '</td>' +
+    '</tr>'
+  );
+
+}).join('') +
+
+            '</tbody>' +
+          '</table>' +
+        '</div>';
+    }
+  }
+
+  if (el.adFamilyMemberReviewRemarks) {
+    el.adFamilyMemberReviewRemarks.value = '';
+  }
+
+  if (el.adFamilyMemberRequestList) {
+    el.adFamilyMemberRequestList.style.display = 'none';
+  }
+
+  if (el.adFamilyMemberRequestDetail) {
+    el.adFamilyMemberRequestDetail.classList.add('active');
+
+    el.adFamilyMemberRequestDetail.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+
+if (el.adEditFamilyMemberRequest) {
+  el.adEditFamilyMemberRequest.textContent =
+    'Edit';
+}
+
+if (el.adSaveApproveFamilyMemberRequest) {
+  el.adSaveApproveFamilyMemberRequest.style.display =
+    'none';
+}
+
+if (el.adApproveFamilyMemberRequest) {
+  el.adApproveFamilyMemberRequest.style.display =
+    '';
+}
+
+}
+
+function showFamilyMemberRequestList() {
+
+  state.selectedFamilyMemberRequestId = '';
+
+  if (el.adFamilyMemberRequestDetail) {
+    el.adFamilyMemberRequestDetail.classList.remove('active');
+  }
+
+  if (el.adFamilyMemberRequestList) {
+    el.adFamilyMemberRequestList.style.display = 'grid';
+  }
+}
+
+function approveSelectedFamilyMemberRequest() {
+
+  const requestId =
+    String(
+      state.selectedFamilyMemberRequestId || ''
+    ).trim();
+
+  if (!requestId) {
+    alert('No Family Member request is selected.');
+    return;
+  }
+
+  if (
+    !window.confirm(
+      'Approve this Family Member request?'
+    )
+  ) {
+    return;
+  }
+
+  const remarks =
+    String(
+      el.adFamilyMemberReviewRemarks
+        ? el.adFamilyMemberReviewRemarks.value
+        : ''
+    ).trim();
+
+  google.script.run
+
+    .withSuccessHandler(function (response) {
+
+      if (!response || response.success !== true) {
+
+        alert(
+          response && response.message
+            ? response.message
+            : 'The request could not be approved.'
+        );
+
+        return;
+      }
+
+      showFamilyMemberRequestList();
+      loadPendingFamilyMemberRequests();
+
+      alert(
+        response.message ||
+        'Family Member request approved successfully.'
+      );
+
+    })
+
+    .withFailureHandler(function (error) {
+
+      alert(
+        error && error.message
+          ? error.message
+          : String(error)
+      );
+
+    })
+
+    .KGMIS_Admin_ApproveFamilyMemberRequest(
+      state.sessionToken,
+      requestId,
+      remarks
+    );
+}
+
+  function renderProfileRequestDetail(request) {
+    state.selectedProfileRequestId = request.requestId || '';
+    state.selectedProfileChanges = Array.isArray(request.changes)
+      ? request.changes.slice()
+      : [];
+    state.profileEditMode = false;
+
+    if (el.adProfileRequestDetailTitle) {
+      el.adProfileRequestDetailTitle.textContent =
+        'Profile Request ' + (request.requestId || '');
+    }
+
+    if (el.adProfileRequestDetailMeta) {
+      el.adProfileRequestDetailMeta.textContent =
+        'Family ID: ' + (request.familyId || '—') +
+        ' | Primary Member: ' + (request.primaryMemberKefgId || '—') +
+        ' | Submitted: ' + (request.submittedOn || '—');
+    }
+
+    if (el.adProfileRequestSummary) {
+      el.adProfileRequestSummary.textContent =
+        request.changeSummary || 'No change summary was provided.';
+    }
+
+    renderProfileChangesTable(state.selectedProfileChanges);
+
+    if (el.adProfileReviewRemarks) {
+      el.adProfileReviewRemarks.value = '';
+    }
+
+    if (el.adProfileRequestList) {
+      el.adProfileRequestList.style.display = 'none';
+    }
+
+    if (el.adProfileRequestDetail) {
+      el.adProfileRequestDetail.classList.add('active');
+      el.adProfileRequestDetail.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+
+    setProfileReviewStatus('Review the submitted values before approval.');
+  }
+
+  function renderProfileChangesTable(changes) {
+    if (!el.adProfileChangesTable) {
+      return;
+    }
+
+    const safeChanges = Array.isArray(changes) ? changes : [];
+
+    if (!safeChanges.length) {
+      el.adProfileChangesTable.innerHTML =
+        '<div class="ad-empty-results">No changed fields were found.</div>';
+      return;
+    }
+
+    el.adProfileChangesTable.innerHTML =
+      '<div class="ad-change-table-wrap">' +
+        '<table class="ad-change-table">' +
+          '<thead><tr>' +
+            '<th>Field</th>' +
+            '<th>Existing Value</th>' +
+            '<th>Submitted Value</th>' +
+          '</tr></thead>' +
+          '<tbody>' +
+            safeChanges.map(function (change) {
+              return (
+                '<tr>' +
+                  '<td><strong>' +
+                    escapeHtml(formatProfileFieldName(change.fieldName)) +
+                  '</strong></td>' +
+                  '<td class="ad-old-value">' +
+                    escapeHtml(change.oldValue || '—') +
+                  '</td>' +
+                  '<td class="ad-new-value">' +
+                    '<span data-ad-submitted-display="' +
+                      escapeHtml(change.fieldName || '') +
+                    '">' +
+                      escapeHtml(change.submittedValue || '—') +
+                    '</span>' +
+                    '<input type="text" class="ad-search-input" ' +
+                      'data-ad-edited-field="' +
+                      escapeHtml(change.fieldName || '') +
+                      '" value="' +
+                      escapeHtml(change.submittedValue || '') +
+                      '" style="display:none;min-height:36px;">' +
+                  '</td>' +
+                '</tr>'
+              );
+            }).join('') +
+          '</tbody>' +
+        '</table>' +
+      '</div>';
+  }
+
+  function toggleProfileEditMode() {
+    state.profileEditMode = !state.profileEditMode;
+
+    if (el.adProfileChangesTable) {
+      el.adProfileChangesTable
+        .querySelectorAll('[data-ad-submitted-display]')
+        .forEach(function (item) {
+          item.style.display = state.profileEditMode ? 'none' : '';
+        });
+
+      el.adProfileChangesTable
+        .querySelectorAll('[data-ad-edited-field]')
+        .forEach(function (input) {
+          input.style.display = state.profileEditMode ? '' : 'none';
+        });
+    }
+
+    if (el.adEditProfileRequest) {
+      el.adEditProfileRequest.textContent =
+        state.profileEditMode ? 'Cancel Edit' : 'Edit';
+    }
+
+    if (el.adSaveApproveProfileRequest) {
+      el.adSaveApproveProfileRequest.style.display =
+        state.profileEditMode ? '' : 'none';
+    }
+
+    if (el.adApproveProfileRequest) {
+      el.adApproveProfileRequest.style.display =
+        state.profileEditMode ? 'none' : '';
+    }
+
+    if (!state.profileEditMode) {
+      renderProfileChangesTable(state.selectedProfileChanges);
+    }
+  }
+
+  function saveAndApproveSelectedProfileRequest() {
+    const requestId = String(
+      state.selectedProfileRequestId || ''
+    ).trim();
+
+    if (!requestId) {
+      setProfileReviewError('No Family Profile request is selected.');
+      return;
+    }
+
+    const editedValues = {};
+
+    if (el.adProfileChangesTable) {
+      el.adProfileChangesTable
+        .querySelectorAll('[data-ad-edited-field]')
+        .forEach(function (input) {
+          editedValues[input.getAttribute('data-ad-edited-field')] =
+            input.value;
+        });
+    }
+
+    if (!window.confirm('Save the edited values and approve this request?')) {
+      return;
+    }
+
+    const remarks = String(
+      el.adProfileReviewRemarks
+        ? el.adProfileReviewRemarks.value
+        : ''
+    ).trim();
+
+    setProfileReviewBusy(true, 'Applying the edited profile changes…');
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        setProfileReviewBusy(false);
+
+        if (!response || response.success !== true) {
+          setProfileReviewError(
+            response && response.message
+              ? response.message
+              : 'The edited request could not be approved.'
+          );
+          return;
+        }
+
+        state.selectedProfileRequestId = '';
+        state.selectedProfileChanges = [];
+        state.profileEditMode = false;
+        showProfileRequestList();
+        setProfileReviewStatus(
+          response.message ||
+          'The edited Family Profile request was approved successfully.'
+        );
+        loadPendingProfileRequests();
+      })
+      .withFailureHandler(function (error) {
+        setProfileReviewBusy(false);
+        setProfileReviewError(error);
+      })
+      .KGMIS_Admin_EditAndApproveProfileRequest(
+        state.sessionToken,
+        requestId,
+        editedValues,
+        remarks
+      );
+  }
+
+  function approveSelectedProfileRequest() {
+    const requestId = String(
+      state.selectedProfileRequestId || ''
+    ).trim();
+
+    if (!requestId) {
+      setProfileReviewError('No Family Profile request is selected.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Approve this Family Profile request exactly as submitted?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const remarks = String(
+      el.adProfileReviewRemarks
+        ? el.adProfileReviewRemarks.value
+        : ''
+    ).trim();
+
+    setProfileReviewBusy(true, 'Applying the approved profile changes…');
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        setProfileReviewBusy(false);
+
+        if (!response || response.success !== true) {
+          setProfileReviewError(
+            response && response.message
+              ? response.message
+              : 'The request could not be approved.'
+          );
+          return;
+        }
+
+        state.selectedProfileRequestId = '';
+        showProfileRequestList();
+        setProfileReviewStatus(
+          response.message ||
+          'The Family Profile request was approved successfully.'
+        );
+        loadPendingProfileRequests();
+      })
+      .withFailureHandler(function (error) {
+        setProfileReviewBusy(false);
+        setProfileReviewError(error);
+      })
+      .KGMIS_Admin_ApproveProfileRequest(
+        state.sessionToken,
+        requestId,
+        remarks
+      );
+  }
+
+
+function toggleFamilyMemberEditMode() {
+
+  state.familyMemberEditMode =
+    !state.familyMemberEditMode;
+
+  if (el.adFamilyMemberChangesTable) {
+
+    el.adFamilyMemberChangesTable
+      .querySelectorAll(
+        '[data-ad-family-member-submitted-display]'
+      )
+      .forEach(function (item) {
+
+        item.style.display =
+          state.familyMemberEditMode
+            ? 'none'
+            : '';
+
+      });
+
+    el.adFamilyMemberChangesTable
+      .querySelectorAll(
+        '[data-ad-family-member-edited-field]'
+      )
+      .forEach(function (input) {
+
+        input.style.display =
+          state.familyMemberEditMode
+            ? ''
+            : 'none';
+
+      });
+  }
+
+  if (el.adEditFamilyMemberRequest) {
+    el.adEditFamilyMemberRequest.textContent =
+      state.familyMemberEditMode
+        ? 'Cancel Edit'
+        : 'Edit';
+  }
+
+  if (el.adSaveApproveFamilyMemberRequest) {
+    el.adSaveApproveFamilyMemberRequest.style.display =
+      state.familyMemberEditMode
+        ? ''
+        : 'none';
+  }
+
+  if (el.adApproveFamilyMemberRequest) {
+    el.adApproveFamilyMemberRequest.style.display =
+      state.familyMemberEditMode
+        ? 'none'
+        : '';
+  }
+
+}
+
+
+function saveAndApproveSelectedFamilyMemberRequest() {
+
+  const requestId =
+    String(
+      state.selectedFamilyMemberRequestId || ''
+    ).trim();
+
+  if (!requestId) {
+    alert(
+      'No Family Member request is selected.'
+    );
+    return;
+  }
+
+  const editedValues = {};
+
+  if (el.adFamilyMemberChangesTable) {
+
+    el.adFamilyMemberChangesTable
+      .querySelectorAll(
+        '[data-ad-family-member-edited-field]'
+      )
+      .forEach(function (input) {
+
+        const fieldName =
+          input.getAttribute(
+            'data-ad-family-member-edited-field'
+          );
+
+        if (fieldName) {
+          editedValues[fieldName] =
+            input.value;
+        }
+
+      });
+  }
+
+  if (
+    !Object.keys(editedValues).length
+  ) {
+    alert(
+      'No edited Family Member values were found.'
+    );
+    return;
+  }
+
+  if (
+    !window.confirm(
+      'Save the edited values and approve this Family Member request?'
+    )
+  ) {
+    return;
+  }
+
+  const remarks =
+    String(
+      el.adFamilyMemberReviewRemarks
+        ? el.adFamilyMemberReviewRemarks.value
+        : ''
+    ).trim();
+
+  google.script.run
+
+    .withSuccessHandler(function (response) {
+
+      if (
+        !response ||
+        response.success !== true
+      ) {
+
+        alert(
+          response && response.message
+            ? response.message
+            : 'The edited Family Member request could not be approved.'
+        );
+
+        return;
+      }
+
+      state.selectedFamilyMemberRequestId = '';
+      state.selectedFamilyMemberChanges = [];
+      state.familyMemberEditMode = false;
+
+      showFamilyMemberRequestList();
+      loadPendingFamilyMemberRequests();
+
+      alert(
+        response.message ||
+        'The edited Family Member request was approved successfully.'
+      );
+
+    })
+
+    .withFailureHandler(function (error) {
+
+      alert(
+        error && error.message
+          ? error.message
+          : String(error)
+      );
+
+    })
+
+    .KGMIS_Admin_EditAndApproveFamilyMemberRequest(
+      state.sessionToken,
+      requestId,
+      editedValues,
+      remarks
+    );
+}
+
+  function showProfileRequestList() {
+    state.selectedProfileRequestId = '';
+    state.selectedProfileChanges = [];
+    state.profileEditMode = false;
+
+    if (el.adProfileRequestDetail) {
+      el.adProfileRequestDetail.classList.remove('active');
+    }
+
+    if (el.adProfileRequestList) {
+      el.adProfileRequestList.style.display = 'grid';
+    }
+  }
+
+  function setProfileReviewBusy(isBusy, message) {
+    const busy = Boolean(isBusy);
+
+    if (el.adRefreshProfileRequests) {
+      el.adRefreshProfileRequests.disabled = busy;
+      el.adRefreshProfileRequests.textContent = busy
+        ? 'Working…'
+        : '↻ Refresh Requests';
+    }
+
+    if (el.adApproveProfileRequest) {
+      el.adApproveProfileRequest.disabled = busy;
+      el.adApproveProfileRequest.textContent = busy
+        ? 'Applying…'
+        : '✓ Approve Request';
+    }
+
+    if (el.adEditProfileRequest) {
+      el.adEditProfileRequest.disabled = busy;
+    }
+
+    if (el.adSaveApproveProfileRequest) {
+      el.adSaveApproveProfileRequest.disabled = busy;
+      el.adSaveApproveProfileRequest.textContent = busy
+        ? 'Applying…'
+        : 'Save & Approve';
+    }
+
+    if (message) {
+      setProfileReviewStatus(message);
+    }
+  }
+
+  function setProfileReviewStatus(message) {
+    if (!el.adProfileReviewStatus) {
+      return;
+    }
+
+    el.adProfileReviewStatus.className = 'ad-review-status';
+    el.adProfileReviewStatus.textContent = String(message || '');
+  }
+
+  function setProfileReviewError(error) {
+    if (!el.adProfileReviewStatus) {
+      return;
+    }
+
+    const message = error && error.message
+      ? error.message
+      : String(error || 'An unexpected Profile Review error occurred.');
+
+    el.adProfileReviewStatus.className = 'ad-review-status error';
+    el.adProfileReviewStatus.textContent = message;
+  }
+
+  function formatProfileFieldName(fieldName) {
+    return String(fieldName || '')
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, function (letter) {
+        return letter.toUpperCase();
+      });
+  }
+
+  function searchDigitalCardCandidates() {
+    clearMessage();
+
+    const searchText =
+      String(
+        el.adCardSearchText
+          ? el.adCardSearchText.value
+          : ''
+      ).trim();
+
+    if (!state.sessionToken) {
+      showSearchError(
+        'The Administration session is missing. Please sign in again.'
+      );
+      return;
+    }
+
+    if (searchText.length < 2) {
+      showSearchError(
+        'Enter at least two characters to search.'
+      );
+      return;
+    }
+
+    setSearchBusy(true);
+    setSearchStatus('Searching KGMIS records…');
+    clearSearchResults();
+
+    const searchTimeout = window.setTimeout(function () {
+  setSearchBusy(false);
+  showSearchError(
+    'The search is taking too long. Please try again.'
+  );
+}, 30000);
+
+  google.script.run
+  .withSuccessHandler(function (response) {
+    window.clearTimeout(searchTimeout);
+    handleSearchSuccess(response);
+  })
+  .withFailureHandler(function (error) {
+    window.clearTimeout(searchTimeout);
+    handleSearchFailure(error);
+  })
+  .KGMIS_Admin_SearchDigitalCardCandidates(
+    state.sessionToken,
+    searchText
+  );
+  }
+  
+  /**
+ * Opens one issued Digital Membership Card.
+ */
+function viewDigitalCard(cardId, button) {
+
+  clearMessage();
+
+  const cleanCardId =
+    String(cardId || '')
+      .trim()
+      .toUpperCase();
+
+  if (!state.sessionToken) {
+
+    showSearchError(
+      'The Administration session is missing. Please sign in again.'
+    );
+
+    return;
+  }
+
+  if (!cleanCardId) {
+
+    showSearchError(
+      'The selected card has no Card ID.'
+    );
+
+    return;
+  }
+
+  /*
+   * Open the window immediately.
+   * This prevents the browser from blocking it as a popup
+   * while waiting for google.script.run.
+   */
+  const previewWindow =
+    window.open(
+      '',
+      '_blank'
+    );
+
+  if (!previewWindow) {
+
+    showSearchError(
+      'The Digital Card window was blocked by the browser. Please allow pop-ups for this portal.'
+    );
+
+    return;
+  }
+
+  previewWindow.document.open();
+
+  previewWindow.document.write(
+    '<!DOCTYPE html>' +
+    '<html>' +
+      '<head>' +
+        '<title>Loading Digital Card</title>' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '</head>' +
+      '<body style="' +
+        'font-family:Arial,Helvetica,sans-serif;' +
+        'padding:40px;' +
+        'text-align:center;' +
+      '">' +
+        '<p>Loading Digital Membership Card…</p>' +
+      '</body>' +
+    '</html>'
+  );
+
+  previewWindow.document.close();
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Opening…';
+  }
+
+  setSearchStatus(
+    'Opening Digital Membership Card ' +
+    cleanCardId +
+    '…'
+  );
+
+  google.script.run
+
+    .withSuccessHandler(function (response) {
+
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'View Digital ID';
+      }
+
+      if (
+        !response ||
+        response.success !== true ||
+        !response.html
+      ) {
+
+        if (
+          previewWindow &&
+          !previewWindow.closed
+        ) {
+          previewWindow.close();
+        }
+
+        showSearchError(
+          response && response.message
+            ? response.message
+            : 'The Digital Membership Card could not be rendered.'
+        );
+
+        return;
+      }
+
+      /*
+       * Make google.script.run available inside the card window.
+       * This is required by Generate and Save PNG.
+       */
+      previewWindow.google =
+        window.google;
+
+      previewWindow.document.open();
+
+      previewWindow.document.write(
+        response.html
+      );
+
+      previewWindow.document.close();
+
+      previewWindow.google =
+        window.google;
+
+      setSearchStatus(
+        'Digital Membership Card opened: ' +
+        cleanCardId
+      );
+
+    })
+
+    .withFailureHandler(function (error) {
+
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'View Difital ID';
+      }
+
+      if (
+        previewWindow &&
+        !previewWindow.closed
+      ) {
+        previewWindow.close();
+      }
+
+      showSearchError(error);
+
+    })
+
+    .KGMIS_Admin_RenderDigitalCardPreview(
+      state.sessionToken,
+      cleanCardId
+    );
+}
+  
+  /**
+   * Issues one Digital Membership Card.
+   */
+  
+  function issueDigitalCard(candidateKey, button) {
+    clearMessage();
+
+    const cleanCandidateKey =
+      String(candidateKey || '').trim();
+
+    if (!state.sessionToken) {
+      showSearchError(
+        'The Administration session is missing. Please sign in again.'
+      );
+      return;
+    }
+
+    if (!cleanCandidateKey) {
+      showSearchError(
+        'The selected member reference is missing. Please search again.'
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Issue a Digital Membership Card for this person?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIssueButtonBusy(button, true);
+    setSearchStatus('Creating the Digital Membership Card record…');
+
+    const issueTimeout = window.setTimeout(function () {
+    setIssueButtonBusy(button, false);
+
+      showSearchError(
+    'Card issuance is taking too long. Please check KEFG_MEMBER_CARDS before trying again.'
+  );
+}, 45000);
+
+    google.script.run
+    .withSuccessHandler(function (response) {
+    window.clearTimeout(issueTimeout);
+    handleIssueCardSuccess(response, button);
+  })
+  .withFailureHandler(function (error) {
+    window.clearTimeout(issueTimeout);
+    handleIssueCardFailure(error, button);
+  })
+  .KGMIS_Admin_IssueDigitalCard(
+    state.sessionToken,
+    cleanCandidateKey
+  );
+  }
+
+
+ /**
+ * Handles successful card issuance.
+ */
+function handleIssueCardSuccess(
+  response,
+  button
+) {
+
+  setIssueButtonBusy(
+    button,
+    false
+  );
+
+  if (
+    !response ||
+    response.success !== true
+  ) {
+
+    handleIssueCardFailure(
+
+      new Error(
+        response && response.message
+          ? response.message
+          : 'The card could not be issued.'
+      ),
+
+      button
+    );
+
+    return;
+  }
+
+  setSearchStatus(
+    response.message ||
+    'Digital Membership Card issued successfully.'
+  );
+
+  if (!button) {
+    return;
+  }
+
+  const resultCard =
+    button.closest(
+      '.ad-result-card'
+    );
+
+  if (!resultCard) {
+    return;
+  }
+
+  const statusBadge =
+    resultCard.querySelector(
+      '.ad-card-status-badge'
+    );
+
+  if (statusBadge) {
+
+    statusBadge.className =
+      'ad-card-status-badge active';
+
+    statusBadge.textContent =
+      'ACTIVE';
+  }
+
+  const detailsContainer =
+    resultCard.querySelector(
+      '.ad-result-details'
+    );
+
+  if (detailsContainer) {
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Card Number',
+      response.cardId
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Membership Year',
+      response.membershipYear
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Valid Until',
+      response.validUntil
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Version',
+      response.cardVersion
+    );
+  }
+
+  const actionGroup =
+    document.createElement('div');
+
+  actionGroup.className =
+    'ad-card-action-group';
+
+  actionGroup.innerHTML =
+
+    '<button type="button" ' +
+      'class="ad-result-action secondary" ' +
+      'data-ad-card-action="view-card" ' +
+      'data-card-id="' +
+      escapeHtml(response.cardId || '') +
+      '">' +
+      'View Digital ID' +
+    '</button>' +
+
+    '<button type="button" ' +
+      'class="ad-result-action secondary" ' +
+      'data-ad-card-action="card-management" ' +
+      'data-card-id="' +
+      escapeHtml(response.cardId || '') +
+      '">' +
+      'Card Management ▾' +
+    '</button>';
+
+  button.replaceWith(
+    actionGroup
+  );
+}
+
+
+  /**
+   * Handles failed card issuance.
+   */
+  function handleIssueCardFailure(error, button) {
+    setIssueButtonBusy(button, false);
+    showSearchError(error);
+  }
+
+  /**
+   * Shows a busy state on the selected Issue Card button.
+   */
+  function setIssueButtonBusy(button, isBusy) {
+    if (!button) {
+      return;
+    }
+
+    button.disabled = Boolean(isBusy);
+    button.textContent = isBusy
+      ? 'Issuing…'
+      : (
+          button.getAttribute('data-ad-card-action') === 'view-card'
+            ? 'View Digital ID'
+            : 'Issue Card'
+        );
+  }
+
+  /**
+   * Updates the visible result card after successful issuance.
+   */
+  function updateIssuedCardResult(button, response) {
+    if (!button) {
+      return;
+    }
+
+    const resultCard = button.closest('.ad-result-card');
+
+    if (!resultCard) {
+      return;
+    }
+
+    const statusBadge = resultCard.querySelector(
+      '.ad-card-status-badge'
+    );
+
+    if (statusBadge) {
+      statusBadge.className = 'ad-card-status-badge active';
+      statusBadge.textContent = 'ACTIVE';
+    }
+
+    const detailsContainer = resultCard.querySelector(
+      '.ad-result-details'
+    );
+
+    if (!detailsContainer) {
+      return;
+    }
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Card Number',
+      response.cardId
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Membership Year',
+      response.membershipYear
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Valid Until',
+      response.validUntil
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Version',
+      response.cardVersion
+    );
+  }
+
+  /**
+   * Adds or updates one detail displayed inside a result card.
+   */
+  function appendOrUpdateDetail(container, label, value) {
+    const safeValue = String(value || '').trim();
+
+    if (!safeValue) {
+      return;
+    }
+
+    const detailItems = Array.prototype.slice.call(
+      container.children
+    );
+
+    const existingItem = detailItems.find(function (item) {
+      const strong = item.querySelector('strong');
+
+      return (
+        strong &&
+        strong.textContent.replace(':', '').trim() === label
+      );
+    });
+
+    if (existingItem) {
+      existingItem.innerHTML =
+        '<strong>' +
+        escapeHtml(label) +
+        ':</strong> ' +
+        escapeHtml(safeValue);
+      return;
+    }
+
+    const newItem = document.createElement('div');
+    newItem.innerHTML =
+      '<strong>' +
+      escapeHtml(label) +
+      ':</strong> ' +
+      escapeHtml(safeValue);
+
+    container.appendChild(newItem);
+  }
+
+  function handleSearchSuccess(response) {
+    setSearchBusy(false);
+
+    if (!response || response.success !== true) {
+      handleSearchFailure(
+        new Error(
+          response && response.message
+            ? response.message
+            : 'The search did not return a valid response.'
+        )
+      );
+      return;
+    }
+
+    const results =
+      Array.isArray(response.results)
+        ? response.results
+        : [];
+
+    if (!results.length) {
+      setSearchStatus('No matching records found.');
+      el.adSearchResults.innerHTML =
+        '<div class="ad-empty-results">' +
+        'No member, dependant or card record matched this search.' +
+        '</div>';
+      return;
+    }
+
+    setSearchStatus(
+      results.length +
+      (results.length === 1 ? ' result found.' : ' results found.')
+    );
+
+    renderSearchResults(results);
+  }
+
+  function handleSearchFailure(error) {
+    setSearchBusy(false);
+    showSearchError(error);
+  }
+
+  function renderSearchResults(results) {
+    if (!el.adSearchResults) {
+      return;
+    }
+
+    el.adSearchResults.innerHTML =
+      results.map(renderSearchResultCard).join('');
+  }
+
+
+function renderSearchResultCard(result) {
+
+  const cardIssued =
+    Boolean(result.cardIssued);
+
+  const cardStatus =
+    String(result.cardStatus || '')
+      .trim()
+      .toUpperCase();
+
+  const displayStatus =
+    cardIssued
+      ? (cardStatus || 'ISSUED')
+      : 'NOT ISSUED';
+
+  const statusClass =
+    cardIssued
+      ? normaliseCssClass(
+          cardStatus || 'active'
+        )
+      : 'not-issued';
+
+  const photoHtml =
+    result.photoUrl
+      ? (
+          '<img src="' +
+          escapeHtml(result.photoUrl) +
+          '" alt="">'
+        )
+      : escapeHtml(
+          String(result.name || '?')
+            .trim()
+            .charAt(0)
+            .toUpperCase() || '?'
+        );
+
+  let actionHtml = '';
+
+  if (cardIssued) {
+
+    actionHtml =
+
+      '<div class="ad-card-action-group">' +
+
+        '<button type="button" ' +
+          'class="ad-result-action secondary" ' +
+          'data-ad-card-action="view-card" ' +
+          'data-card-id="' +
+            escapeHtml(result.cardId || '') +
+          '" ' +
+          'data-card-image-file-id="' +
+            escapeHtml(result.cardImageFileId || '') +
+          '" ' +
+          'data-card-image-url="' +
+            escapeHtml(result.cardImageUrl || '') +
+          '">' +
+          'View Digital ID' +
+        '</button>' +
+
+        '<button type="button" ' +
+          'class="ad-result-action secondary" ' +
+          'data-ad-card-action="card-management" ' +
+          'data-card-id="' +
+            escapeHtml(result.cardId || '') +
+          '">' +
+          'Card Management ▾' +
+        '</button>' +
+
+      '</div>';
+
+  } else {
+
+    actionHtml =
+
+      '<button type="button" ' +
+        'class="ad-result-action" ' +
+        'data-ad-card-action="issue-card" ' +
+        'data-candidate-key="' +
+          escapeHtml(result.candidateKey || '') +
+        '">' +
+        'Issue Card' +
+      '</button>';
+  }
+
+  return (
+
+    '<article class="ad-result-card">' +
+
+      '<div class="ad-result-photo">' +
+        photoHtml +
+      '</div>' +
+
+      '<div>' +
+
+        '<h4 class="ad-result-name">' +
+          escapeHtml(
+            result.name ||
+            'Unnamed Record'
+          ) +
+        '</h4>' +
+
+        '<span class="ad-result-type">' +
+          escapeHtml(
+            result.cardholderType ||
+            result.memberCategory ||
+            'Member'
+          ) +
+        '</span>' +
+
+        '<div class="ad-result-details">' +
+
+          detailHtml(
+            'Family ID',
+            result.familyId
+          ) +
+
+          detailHtml(
+            'KEFG / Person ID',
+            result.kefgId ||
+            result.personId
+          ) +
+
+          detailHtml(
+            'Mobile',
+            result.phone
+          ) +
+
+          detailHtml(
+            'Email',
+            result.email
+          ) +
+
+          detailHtml(
+            'Membership Type',
+            result.membershipType
+          ) +
+
+          detailHtml(
+            'Membership Year',
+            result.membershipYear
+          ) +
+
+          detailHtml(
+            'Membership Status',
+            result.membershipStatus
+          ) +
+
+          detailHtml(
+            'Card Number',
+            result.cardId
+          ) +
+
+          detailHtml(
+            'Valid Until',
+            result.validUntil
+          ) +
+
+          detailHtml(
+            'Version',
+            result.cardVersion
+          ) +
+
+        '</div>' +
+
+      '</div>' +
+
+      '<div class="ad-result-card-state">' +
+
+        '<span class="ad-card-status-badge ' +
+          statusClass +
+        '">' +
+          escapeHtml(displayStatus) +
+        '</span>' +
+
+        '<br>' +
+
+        actionHtml +
+
+      '</div>' +
+
+    '</article>'
+  );
+}
+
+  function detailHtml(label, value) {
+    const safeValue =
+      String(value || '').trim();
+
+    if (!safeValue) {
+      return '';
+    }
+
+    return (
+      '<div><strong>' +
+      escapeHtml(label) +
+      ':</strong> ' +
+      escapeHtml(safeValue) +
+      '</div>'
+    );
+  }
+
+  function setSearchBusy(isBusy) {
+    if (el.adCardSearchButton) {
+      el.adCardSearchButton.disabled = Boolean(isBusy);
+      el.adCardSearchButton.textContent =
+        isBusy
+          ? 'Searching…'
+          : '🔍 Search';
+    }
+
+    if (el.adCardSearchText) {
+      el.adCardSearchText.disabled = Boolean(isBusy);
+    }
+  }
+
+  function setSearchStatus(message) {
+    if (!el.adSearchStatus) {
+      return;
+    }
+
+    el.adSearchStatus.className = 'ad-search-status';
+    el.adSearchStatus.textContent = String(message || '');
+  }
+
+  function showSearchError(error) {
+    if (!el.adSearchStatus) {
+      return;
+    }
+
+    const message =
+      error && error.message
+        ? error.message
+        : String(error || 'An unexpected search error occurred.');
+
+    el.adSearchStatus.className = 'ad-search-status error';
+    el.adSearchStatus.textContent = message;
+  }
+
+  function clearSearchResults() {
+    if (el.adSearchResults) {
+      el.adSearchResults.innerHTML = '';
+    }
+  }
+
+  function normaliseCssClass(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-');
+  }
+
+  function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function setAccessStatus(message, type) {
+    if (!el.adAccessStatusMessage) return;
+    el.adAccessStatusMessage.className = 'ad-access-status' + (type ? ' ' + type : '');
+    el.adAccessStatusMessage.textContent = String(message || '');
+  }
+
+  function clearAccessForm() {
+    if (el.adAccessEmail) el.adAccessEmail.value = '';
+    if (el.adAccessUserName) el.adAccessUserName.value = '';
+    if (el.adAccessRole) el.adAccessRole.value = 'DIRECTORY_USER';
+    if (el.adAccessStatus) el.adAccessStatus.value = 'ACTIVE';
+    if (el.adAccessRemarks) el.adAccessRemarks.value = '';
+  }
+
+  function loadAccessUsers() {
+    if (!state.sessionToken) return setAccessStatus('Administration session is missing.', 'error');
+    setAccessStatus('Loading authorised users…');
+    google.script.run.withSuccessHandler(function(response) {
+      if (!response || response.success !== true) return setAccessStatus(response && response.message ? response.message : 'Users could not be loaded.', 'error');
+      renderAccessUsers(response.users || []);
+      setAccessStatus((response.users || []).length + ' authorised user(s) loaded.');
+    }).withFailureHandler(function(error) {
+      setAccessStatus(error && error.message ? error.message : String(error || ''), 'error');
+    }).KGMIS_Admin_GetAccessControlUsers(state.sessionToken);
+  }
+
+  function renderAccessUsers(users) {
+    if (!el.adAccessUserTableBody) return;
+    if (!users.length) {
+      el.adAccessUserTableBody.innerHTML='<tr><td colspan="11">No authorised users found.</td></tr>';
+      return;
+    }
+    el.adAccessUserTableBody.innerHTML=users.map(function(u) {
+      return '<tr><td>'+escapeHtml(u.email)+'</td><td>'+escapeHtml(u.userName)+'</td><td>'+escapeHtml(u.role)+'</td><td>'+escapeHtml(u.status)+'</td>'+
+      '<td>'+escapeHtml(u.lastLogin||'—')+'</td><td>'+escapeHtml(u.createdOn||'—')+'</td><td>'+escapeHtml(u.createdBy||'—')+'</td>'+
+      '<td>'+escapeHtml(u.updatedOn||'—')+'</td><td>'+escapeHtml(u.updatedBy||'—')+'</td><td>'+escapeHtml(u.remarks||'')+'</td>'+
+      '<td><button type="button" class="ad-review-button secondary" data-ad-access-edit="1" data-email="'+escapeHtml(u.email)+'" data-user-name="'+escapeHtml(u.userName)+'" data-role="'+escapeHtml(u.role)+'" data-status="'+escapeHtml(u.status)+'" data-remarks="'+escapeHtml(u.remarks||'')+'">Edit</button></td></tr>';
+    }).join('');
+  }
+
+  function populateAccessFormFromButton(button) {
+    el.adAccessEmail.value=button.getAttribute('data-email')||'';
+    el.adAccessUserName.value=button.getAttribute('data-user-name')||'';
+    el.adAccessRole.value=button.getAttribute('data-role')||'DIRECTORY_USER';
+    el.adAccessStatus.value=button.getAttribute('data-status')||'ACTIVE';
+    el.adAccessRemarks.value=button.getAttribute('data-remarks')||'';
+    setAccessStatus('Editing '+el.adAccessEmail.value+'.');
+  }
+
+  function saveAccessUser() {
+    const payload={
+      email:String(el.adAccessEmail.value||'').trim(),
+      userName:String(el.adAccessUserName.value||'').trim(),
+      role:String(el.adAccessRole.value||'').trim(),
+      status:String(el.adAccessStatus.value||'').trim(),
+      remarks:String(el.adAccessRemarks.value||'').trim()
+    };
+    if (!payload.email) return setAccessStatus('Email is required.','error');
+    if (!payload.userName) return setAccessStatus('User Name is required.','error');
+    el.adAccessSaveButton.disabled=true;
+    google.script.run.withSuccessHandler(function(response) {
+      el.adAccessSaveButton.disabled=false;
+      if (!response || response.success!==true) return setAccessStatus(response&&response.message?response.message:'User could not be saved.','error');
+      clearAccessForm();
+      setAccessStatus(response.message||'User saved.','success');
+      loadAccessUsers();
+    }).withFailureHandler(function(error) {
+      el.adAccessSaveButton.disabled=false;
+      setAccessStatus(error&&error.message?error.message:String(error||''),'error');
+    }).KGMIS_Admin_SaveAccessControlUser(state.sessionToken,payload);
+  }
+
+
+  function activate(authContext) {
+    initialise();
+
+    const auth = authContext || {};
+    const sessionToken =
+      String(auth.sessionToken || '').trim();
+
+    if (!sessionToken) {
+      showError(
+        'The Administration session is missing. Please sign out and sign in again.'
+      );
+      return;
+    }
+
+    state.auth = auth;
+    state.sessionToken = sessionToken;
+
+    if (!state.initialised) {
+      state.initialised = true;
+      openModule('dashboard');
+      return;
+    }
+
+    openModule(state.activeModule || 'dashboard');
+  }
+
+  function loadDashboardStatistics() {
+    if (!state.sessionToken) return;
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        if (!response || response.success !== true) {
+          showError(response && response.message
+            ? response.message
+            : 'Administration Dashboard statistics could not be loaded.');
+          return;
+        }
+
+        const stats = response.statistics || {};
+        const values = {
+          adStatDigitalCardRecords: stats.digitalCardRecords,
+          adStatActiveCards: stats.activeCards,
+          adStatExtendedCards: stats.extendedCards,
+          adStatRevokedCards: stats.revokedCards,
+          adStatTotalMembers: stats.totalMembers,
+          adStatTotalFamilies: stats.totalFamilies,
+          adStatActiveFamilies: stats.activeFamilies,
+          adStatNewMembers: stats.newMembers,
+          adStatMembershipPending: stats.membershipPending,
+          adStatPaidMembers: stats.paidMembers,
+          adStatAlumniMembers: stats.alumniMembers,
+          adStatNonAlumniSpouses: stats.nonAlumniSpouses
+        };
+
+        Object.keys(values).forEach(function (id) {
+          if (el[id]) {
+            const value = Number(values[id]);
+            el[id].textContent = Number.isFinite(value) ? value : 0;
+          }
+        });
+      })
+      .withFailureHandler(showError)
+      .KGMIS_Admin_GetDashboardStatistics(state.sessionToken);
+  }
+
+
+  function openModule(moduleName) {
+    initialise();
+    clearMessage();
+    hideAllModules();
+    setActiveNavigation(moduleName);
+
+    state.activeModule = moduleName;
+
+    if (moduleName === 'dashboard') {
+      if (!el.kgmisAdminDashboardModule) {
+        showError('The Administration Dashboard could not be loaded.');
+        return;
+      }
+      el.kgmisAdminDashboardModule.classList.add('active');
+      loadDashboardStatistics();
+      return;
+    }
+
+    if (moduleName === 'digital-id-generator') {
+      if (!el.kgmisAdminDigitalIdGeneratorModule) {
+        showError('The Digital ID Generator could not be loaded.');
+        return;
+      }
+      el.kgmisAdminDigitalIdGeneratorModule.classList.add('active');
+      return;
+    }
+
+    if (moduleName === 'member-management') {
+      if (!el.kgmisAdminMemberManagementModule) {
+        showError('The Member Management module could not be loaded.');
+        return;
+      }
+      el.kgmisAdminMemberManagementModule.classList.add('active');
+
+      if (!state.profileRequestsLoaded) {
+        loadPendingProfileRequests();
+      }
+
+      loadPendingFamilyMemberRequests();
+
+      return;
+    }
+
+    if (moduleName === 'add-new-user') {
+
+  if (!el.kgmisAdminAddNewUserModule) {
+    showError(
+      'The Add New User module could not be loaded.'
+    );
+    return;
+  }
+
+  el.kgmisAdminAddNewUserModule
+    .classList.add('active');
+
+  return;
+}
+
+ if (moduleName === 'family-management') {
+
+  if (!el.kgmisAdminFamilyManagementModule) {
+    showError(
+      'The Family Management module could not be loaded.'
+    );
+    return;
+  }
+
+  el.kgmisAdminFamilyManagementModule
+    .classList.add('active');
+
+  return;
+}
+
+    if (moduleName === 'access-control') {
+      if (!el.kgmisAdminAccessControlModule) {
+        showError('The Access Control module could not be loaded.');
+        return;
+      }
+      el.kgmisAdminAccessControlModule.classList.add('active');
+      loadAccessUsers();
+      return;
+    }
+
+    showError(
+      'The selected Administration function is not available.'
+    );
+  }
+
+  function hideAllModules() {
+    [
+      el.kgmisAdminDashboardModule,
+      el.kgmisAdminDigitalIdGeneratorModule,
+      el.kgmisAdminMemberManagementModule,
+      el.kgmisAdminAddNewUserModule,
+      el.kgmisAdminFamilyManagementModule,
+      el.kgmisAdminAccessControlModule,
+    ].forEach(function (section) {
+      if (section) {
+        section.classList.remove('active');
+      }
+    });
+  }
+
+  function setActiveNavigation(moduleName) {
+    if (!el.kgmisAdminModuleHost) {
+      return;
+    }
+
+    el.kgmisAdminModuleHost
+      .querySelectorAll('[data-ad-module]')
+      .forEach(function (button) {
+        button.classList.toggle(
+          'active',
+          button.getAttribute('data-ad-module') === moduleName
+        );
+      });
+
+    if (el.kgmisAdminMobileNav) {
+      el.kgmisAdminMobileNav.value = moduleName;
+    }
+  }
+
+  function clearMessage() {
+    if (!el.kgmisAdminGlobalMessage) {
+      return;
+    }
+
+    el.kgmisAdminGlobalMessage.className =
+      'ad-global-message';
+    el.kgmisAdminGlobalMessage.textContent = '';
+  }
+
+  function showError(error) {
+    if (!el.kgmisAdminGlobalMessage) {
+      return;
+    }
+
+    const text =
+      error && error.message
+        ? error.message
+        : String(error || 'An unexpected error occurred.');
+
+    el.kgmisAdminGlobalMessage.className =
+      'ad-global-message error';
+    el.kgmisAdminGlobalMessage.textContent = text;
+  }
+
+  function initialise() {
+    if (state.domInitialised && el.kgmisAdminModuleHost) {
+      return;
+    }
+
+    cacheElements();
+
+    if (!el.kgmisAdminModuleHost) {
+      return;
+    }
+
+    state.domInitialised = true;
+    bindEvents();
+  }
+
+  window.KGMIS_ADMIN_MODULE = {
+    activate: activate,
+    openModule: openModule
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialise
+    );
+  } else {
+    initialise();
+  }
+})();
+</script>

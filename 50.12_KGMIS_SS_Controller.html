@@ -1,0 +1,202 @@
+<!--
+==============================================================================
+KEFG Membership Information System (KGMIS)
+
+Module        : Self-Service Portal
+File          : 50.12_KGMIS_SS_Controller.html
+Version       : 1.0
+Status        : Development
+
+Designed and Developed by:
+James Joseph Alenchery
+==============================================================================
+-->
+
+<script>
+
+'use strict';
+
+/* ==========================================================
+   Self Service Controller
+   ========================================================== */
+
+const ssp = {
+
+    currentStep : 0,
+
+    totalSteps : 8,
+
+    data : null,
+
+    completed : [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ]
+
+};
+
+/* ==========================================================
+   Initialise
+   ========================================================== */
+
+function KGMIS_SS_Activate(auth){
+
+    KGMIS_SS_LoadInitialData(auth);
+
+}
+
+/* ==========================================================
+   Load Initial Data
+   ========================================================== */
+
+function KGMIS_SS_LoadInitialData(auth){
+
+    google.script.run
+
+        .withSuccessHandler(
+
+            function(result){
+
+                ssp.data = result;
+
+                KGMIS_SS_ShowStep(0);
+
+            }
+
+        )
+
+        .withFailureHandler(
+
+            function(error){
+
+                alert(error.message);
+
+            }
+
+        )
+
+        .KGMIS_SS_GetInitialData(
+
+            auth.sessionToken
+
+        );
+
+}
+
+/* ==========================================================
+   Show Wizard Step
+   ========================================================== */
+
+function KGMIS_SS_ShowStep(step){
+
+    ssp.currentStep = step;
+
+    console.log(
+
+        'Loading step',
+
+        step
+
+    );
+
+}
+
+/* ==========================================================
+   Next
+   ========================================================== */
+
+function KGMIS_SS_Next(){
+
+    if(
+
+        ssp.currentStep >=
+
+        ssp.totalSteps - 1
+
+    ){
+
+        return;
+
+    }
+
+    KGMIS_SS_ShowStep(
+
+        ssp.currentStep + 1
+
+    );
+
+}
+
+/* ==========================================================
+   Previous
+   ========================================================== */
+
+function KGMIS_SS_Previous(){
+
+    if(
+
+        ssp.currentStep <= 0
+
+    ){
+
+        return;
+
+    }
+
+    KGMIS_SS_ShowStep(
+
+        ssp.currentStep - 1
+
+    );
+
+}
+
+/* ==========================================================
+   Save Draft
+   ========================================================== */
+
+function KGMIS_SS_SaveDraft(){
+
+    console.log(
+
+        'Save Draft'
+
+    );
+
+}
+
+/* ==========================================================
+   Submit
+   ========================================================== */
+
+function KGMIS_SS_Submit(){
+
+    console.log(
+
+        'Submit'
+
+    );
+
+}
+
+/* ==========================================================
+   Relationship Change
+   ========================================================== */
+
+function KGMIS_SS_OpenRelationshipChange(){
+
+    console.log(
+
+        'Relationship Change'
+
+    );
+
+}
+
+</script>

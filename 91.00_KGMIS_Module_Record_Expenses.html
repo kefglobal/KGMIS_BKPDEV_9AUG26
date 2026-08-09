@@ -1,0 +1,3743 @@
+<!--
+============================================================
+KEF Global Membership Information System (KGMIS)
+Module    : Record Expenses
+File Name : 91.00_KGMIS_Module_Record_Expenses.html
+Version   : 1.1
+Designed & Developed by: James Joseph Alenchery
+============================================================
+
+PURPOSE
+-------
+Treasurer-facing expense-entry interface.
+
+USER-FACING TERMINOLOGY
+-----------------------
+This module uses "Expense" terminology to avoid confusion with
+the separate "Receive Payment" module.
+
+Existing backend PAYMENT_* fields and Payment Service functions
+remain unchanged.
+
+IMPORTANT
+---------
+This file contains UI/client logic only.
+
+It does NOT:
+• generate PAYMENT_ID
+• generate voucher numbers
+• write directly to KGMIS_PAYMENT_TRANSACTIONS
+• update LAST_PAYMENT_VOUCHER_NO
+
+Backend wrapper:
+91.10_KGMIS_Module_Record_Expenses.gs
+============================================================
+-->
+
+
+<style>
+
+  /* =========================================================
+     RECORD EXPENSES — ISOLATED STYLES
+     ========================================================= */
+
+  .re1-shell {
+    width: 100%;
+  }
+
+
+  .re1-topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+
+  .re1-heading {
+    margin: 0;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+
+  .re1-subheading {
+    margin: 5px 0 0;
+    color: var(--tr3-muted, #667085);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+
+  .re1-fy-badge {
+    flex: 0 0 auto;
+    min-width: 132px;
+    padding: 8px 12px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 10px;
+    background: #ffffff;
+    text-align: center;
+  }
+
+
+  .re1-fy-label {
+    display: block;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+
+  .re1-fy-value {
+    display: block;
+    margin-top: 3px;
+    color: var(--tr3-primary, #1c5d99);
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+
+  .re1-panel {
+    margin-bottom: 14px;
+    padding: 16px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+
+  .re1-panel-title {
+    margin: 0 0 3px;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+
+  .re1-panel-note {
+    margin: 0 0 13px;
+    color: var(--tr3-muted, #667085);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+
+  .re1-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+
+  .re1-field {
+    min-width: 0;
+  }
+
+
+  .re1-span-2 {
+    grid-column: span 2;
+  }
+
+
+  .re1-span-full {
+    grid-column: 1 / -1;
+  }
+
+
+  .re1-label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+
+  .re1-required::after {
+    content: " *";
+    color: #b42318;
+  }
+
+
+  .re1-input,
+  .re1-select,
+  .re1-textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 8px;
+    outline: none;
+    background: #ffffff;
+    color: var(--tr3-text, #1f2937);
+    font: inherit;
+    font-size: 12px;
+  }
+
+
+  .re1-input:focus,
+  .re1-select:focus,
+  .re1-textarea:focus {
+    border-color: var(--tr3-primary, #1c5d99);
+    box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.09);
+  }
+
+
+  .re1-textarea {
+    min-height: 82px;
+    resize: vertical;
+    line-height: 1.45;
+  }
+
+
+  .re1-help {
+    margin-top: 4px;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    line-height: 1.35;
+  }
+
+
+  .re1-hidden {
+    display: none !important;
+  }
+
+
+  /* =========================================================
+     PAID-TO CHOICE
+     ========================================================= */
+
+  .re1-paid-to-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    max-width: 620px;
+  }
+
+
+  .re1-choice {
+    position: relative;
+    display: block;
+    cursor: pointer;
+  }
+
+
+  .re1-choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+
+  .re1-choice-box {
+    display: block;
+    min-height: 58px;
+    padding: 11px 12px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 10px;
+    background: #ffffff;
+  }
+
+
+  .re1-choice input:checked + .re1-choice-box {
+    border-color: var(--tr3-primary, #1c5d99);
+    background: #f1f7fd;
+    box-shadow: 0 0 0 2px rgba(28, 93, 153, 0.08);
+  }
+
+
+  .re1-choice-title {
+    display: block;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+
+  .re1-choice-note {
+    display: block;
+    margin-top: 3px;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+
+  /* =========================================================
+     MEMBER SEARCH
+     ========================================================= */
+
+  .re1-member-search-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+
+  .re1-member-results {
+    display: none;
+    margin-top: 9px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 9px;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+
+  .re1-member-results.active {
+    display: block;
+  }
+
+
+  .re1-member-result {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 11px;
+    border-bottom: 1px solid var(--tr3-border, #dbe3ec);
+  }
+
+
+  .re1-member-result:last-child {
+    border-bottom: 0;
+  }
+
+
+  .re1-member-name {
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+
+  .re1-member-meta {
+    margin-top: 3px;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+
+  .re1-selected-member {
+    display: none;
+    margin-top: 10px;
+    padding: 11px 12px;
+    border: 1px solid #a9d9bd;
+    border-radius: 9px;
+    background: #effaf3;
+  }
+
+
+  .re1-selected-member.active {
+    display: block;
+  }
+
+
+  .re1-selected-member-name {
+    color: #166534;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+
+  .re1-selected-member-meta {
+    margin-top: 3px;
+    color: #3f6f50;
+    font-size: 9px;
+  }
+
+
+  /* =========================================================
+     BUTTONS
+     ========================================================= */
+
+  .re1-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 14px;
+  }
+
+
+  .re1-button {
+    min-height: 40px;
+    padding: 8px 15px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+
+  .re1-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+
+  .re1-button-primary {
+    border-color: var(--tr3-primary, #1c5d99);
+    background: var(--tr3-primary, #1c5d99);
+    color: #ffffff;
+  }
+
+
+  .re1-button-secondary {
+    border-color: var(--tr3-border, #dbe3ec);
+    background: #ffffff;
+    color: var(--tr3-primary-dark, #123a63);
+  }
+
+
+  .re1-button-success {
+    border-color: #157347;
+    background: #157347;
+    color: #ffffff;
+  }
+
+
+  /* =========================================================
+     MESSAGE
+     ========================================================= */
+
+  .re1-message {
+    display: none;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+
+  .re1-message-info {
+    display: block;
+    border: 1px solid #b9d6f2;
+    background: #eef7ff;
+    color: #174b78;
+  }
+
+
+  .re1-message-success {
+    display: block;
+    border: 1px solid #a9d9bd;
+    background: #effaf3;
+    color: #166534;
+  }
+
+
+  .re1-message-error {
+    display: block;
+    border: 1px solid #f0b5b5;
+    background: #fff2f2;
+    color: #b42318;
+  }
+
+
+  /* =========================================================
+     SYSTEM SUMMARY / RESULT
+     ========================================================= */
+
+  .re1-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+
+  .re1-summary-item {
+    padding: 11px 12px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 9px;
+    background: #f8fbff;
+  }
+
+
+  .re1-summary-label {
+    display: block;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+
+  .re1-summary-value {
+    display: block;
+    margin-top: 4px;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 13px;
+    font-weight: 800;
+    word-break: break-word;
+  }
+
+
+  .re1-result {
+    display: none;
+  }
+
+
+  .re1-result.active {
+    display: block;
+  }
+
+
+  .re1-result-title {
+    margin: 0 0 12px;
+    color: #166534;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+
+  .re1-money-wrap {
+    position: relative;
+  }
+
+
+  .re1-money-prefix {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #475467;
+    font-size: 12px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+
+
+  .re1-money-wrap .re1-input {
+    padding-left: 26px;
+  }
+
+
+  @media (max-width: 1000px) {
+
+    .re1-grid,
+    .re1-summary {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+
+  }
+
+
+  @media (max-width: 620px) {
+
+    .re1-topbar {
+      display: block;
+    }
+
+
+    .re1-fy-badge {
+      box-sizing: border-box;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+
+    .re1-grid,
+    .re1-summary,
+    .re1-paid-to-options {
+      grid-template-columns: 1fr;
+    }
+
+
+    .re1-span-2,
+    .re1-span-full {
+      grid-column: auto;
+    }
+
+
+    .re1-member-search-row {
+      grid-template-columns: 1fr;
+    }
+
+
+    .re1-actions {
+      justify-content: stretch;
+    }
+
+
+    .re1-actions .re1-button {
+      flex: 1 1 100%;
+    }
+
+  }
+
+
+  /* =========================================================
+     VERSION 1.1 — RECEIVE PAYMENT VISUAL ALIGNMENT
+     ========================================================= */
+
+  .re1-panel {
+    padding: 22px 24px;
+    border-radius: 16px;
+  }
+
+  .re1-step-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .re1-step-number {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--tr3-primary-dark, #123a63);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .re1-step-copy {
+    min-width: 0;
+  }
+
+  .re1-panel-title {
+    margin: 0 0 4px;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  .re1-panel-note {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .re1-label {
+    margin-bottom: 6px;
+    font-size: 11px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .re1-input,
+  .re1-select,
+  .re1-textarea {
+    min-height: 46px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .re1-textarea {
+    min-height: 92px;
+  }
+
+  .re1-help {
+    font-size: 10px;
+  }
+
+  .re1-paid-to-options {
+    max-width: none;
+    gap: 12px;
+  }
+
+  .re1-choice-box {
+    min-height: 76px;
+    padding: 14px 16px;
+  }
+
+  .re1-choice-title {
+    font-size: 15px;
+  }
+
+  .re1-choice-note {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .re1-member-name,
+  .re1-selected-member-name {
+    font-size: 13px;
+  }
+
+  .re1-member-meta,
+  .re1-selected-member-meta {
+    font-size: 10px;
+  }
+
+  .re1-button {
+    min-height: 46px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .re1-summary-label {
+    font-size: 10px;
+  }
+
+  .re1-summary-value {
+    font-size: 14px;
+  }
+
+  .re1-money-prefix {
+    font-size: 14px;
+  }
+
+  .re1-money-wrap .re1-input {
+    padding-left: 28px;
+  }
+
+  .re1-payee-layout {
+    display: grid;
+    grid-template-columns: minmax(300px, .8fr) minmax(0, 1.4fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .re1-payee-layout .re1-panel {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 1000px) {
+    .re1-payee-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .re1-panel {
+      padding: 18px;
+    }
+
+    .re1-step-number {
+      flex-basis: 30px;
+      width: 30px;
+      height: 30px;
+    }
+
+    .re1-panel-title {
+      font-size: 16px;
+    }
+  }
+
+</style>
+
+
+<div
+  id="re1Root"
+  class="re1-shell"
+>
+
+
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
+
+  <div class="re1-topbar">
+
+    <div>
+
+      <h2 class="re1-heading">
+        Record Expenses
+      </h2>
+
+      <p class="re1-subheading">
+        Record expenses incurred by KEF Global and generate the
+        corresponding expense record and voucher.
+      </p>
+
+    </div>
+
+
+    <div class="re1-fy-badge">
+
+      <span class="re1-fy-label">
+        Financial Year
+      </span>
+
+      <span
+        id="re1FinancialYear"
+        class="re1-fy-value"
+      >
+        —
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="re1Message"
+    class="re1-message"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
+  <!-- =====================================================
+       EXPENSE PAID TO
+       ===================================================== -->
+
+  <section class="re1-panel">
+
+    <div class="re1-step-heading">
+      <span class="re1-step-number">1</span>
+      <div class="re1-step-copy">
+        <h3 class="re1-panel-title">Expense Paid To</h3>
+        <p class="re1-panel-note">
+          Select whether the expense was paid to an external party or paid through / reimbursed to a KEF Global member.
+        </p>
+      </div>
+    </div>
+
+
+    <div class="re1-paid-to-options">
+
+
+      <label class="re1-choice">
+
+        <input
+          type="radio"
+          name="re1PaidToType"
+          value="EXTERNAL"
+          checked
+        >
+
+        <span class="re1-choice-box">
+
+          <span class="re1-choice-title">
+            External Party
+          </span>
+
+          <span class="re1-choice-note">
+            Vendor, hall owner, caterer, hotel, service provider,
+            organisation or other external beneficiary.
+          </span>
+
+        </span>
+
+      </label>
+
+
+      <label class="re1-choice">
+
+        <input
+          type="radio"
+          name="re1PaidToType"
+          value="MEMBER"
+        >
+
+        <span class="re1-choice-box">
+
+          <span class="re1-choice-title">
+            KEF Global Member
+          </span>
+
+          <span class="re1-choice-note">
+            Use when an expense is paid through, reimbursed to,
+            or otherwise settled with a KEF Global member.
+          </span>
+
+        </span>
+
+      </label>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       EXTERNAL PARTY DETAILS
+       ===================================================== -->
+
+  <section
+    id="re1ExternalPartySection"
+    class="re1-panel"
+  >
+
+    <div class="re1-step-heading">
+      <span class="re1-step-number">2</span>
+      <div class="re1-step-copy">
+        <h3 class="re1-panel-title">External Party Details</h3>
+        <p class="re1-panel-note">
+          Enter the payee details. Family ID and KEFG ID are not required for an external party.
+        </p>
+      </div>
+    </div>
+
+
+    <div class="re1-grid">
+
+
+      <div class="re1-field re1-span-2">
+
+        <label
+          class="re1-label re1-required"
+          for="re1ExternalPayeeName"
+        >
+          Payee Name
+        </label>
+
+        <input
+          id="re1ExternalPayeeName"
+          class="re1-input"
+          type="text"
+          maxlength="150"
+          autocomplete="off"
+          placeholder="Person, vendor or organisation"
+        >
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label re1-required"
+          for="re1ExternalPayeeType"
+        >
+          Payee Type
+        </label>
+
+        <select
+          id="re1ExternalPayeeType"
+          class="re1-select"
+        >
+
+          <option value="">
+            Select type
+          </option>
+
+          <option value="VENDOR">
+            VENDOR
+          </option>
+
+          <option value="NON-MEMBER">
+            NON-MEMBER
+          </option>
+
+          <option value="HALL OWNER">
+            HALL OWNER
+          </option>
+
+          <option value="CATERER">
+            CATERER
+          </option>
+
+          <option value="HOTEL">
+            HOTEL
+          </option>
+
+          <option value="PRINTER">
+            PRINTER
+          </option>
+
+          <option value="SERVICE PROVIDER">
+            SERVICE PROVIDER
+          </option>
+
+          <option value="BANK">
+            BANK
+          </option>
+
+          <option value="GOVERNMENT">
+            GOVERNMENT
+          </option>
+
+          <option value="CHARITABLE BENEFICIARY">
+            CHARITABLE BENEFICIARY
+          </option>
+
+          <option value="OTHER">
+            OTHER
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label"
+          for="re1VendorId"
+        >
+          Vendor ID
+        </label>
+
+        <input
+          id="re1VendorId"
+          class="re1-input"
+          type="text"
+          maxlength="40"
+          autocomplete="off"
+          placeholder="Optional"
+        >
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       MEMBER DETAILS
+       ===================================================== -->
+
+  <section
+    id="re1MemberSection"
+    class="re1-panel re1-hidden"
+  >
+
+    <div class="re1-step-heading">
+      <span class="re1-step-number">2</span>
+      <div class="re1-step-copy">
+        <h3 class="re1-panel-title">Select Member</h3>
+        <p class="re1-panel-note">
+          Search and select the KEF Global member. KGMIS will use the Family ID and KEFG ID automatically.
+        </p>
+      </div>
+    </div>
+
+
+    <div class="re1-field">
+
+      <label
+        class="re1-label re1-required"
+        for="re1MemberSearch"
+      >
+        Search Member
+      </label>
+
+
+      <div class="re1-member-search-row">
+
+        <input
+          id="re1MemberSearch"
+          class="re1-input"
+          type="text"
+          autocomplete="off"
+          placeholder="Name, mobile number or KEFG ID"
+        >
+
+
+        <button
+          id="re1MemberSearchButton"
+          class="re1-button re1-button-secondary"
+          type="button"
+        >
+          Search
+        </button>
+
+      </div>
+
+
+      <div
+        id="re1MemberResults"
+        class="re1-member-results"
+      ></div>
+
+
+      <div
+        id="re1SelectedMember"
+        class="re1-selected-member"
+      >
+
+        <div
+          id="re1SelectedMemberName"
+          class="re1-selected-member-name"
+        >
+          —
+        </div>
+
+        <div
+          id="re1SelectedMemberMeta"
+          class="re1-selected-member-meta"
+        >
+          —
+        </div>
+
+      </div>
+
+
+      <!--
+      Internal values only.
+      Treasurer does not type these IDs.
+      -->
+
+      <input
+        id="re1SelectedFamilyId"
+        type="hidden"
+        value=""
+      >
+
+      <input
+        id="re1SelectedKefgId"
+        type="hidden"
+        value=""
+      >
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       EXPENSE DETAILS
+       ===================================================== -->
+
+  <section class="re1-panel">
+
+    <div class="re1-step-heading">
+      <span class="re1-step-number">3</span>
+      <div class="re1-step-copy">
+        <h3 class="re1-panel-title">Expense Details</h3>
+        <p class="re1-panel-note">
+          Enter the expense information. The Expense Record ID and voucher number will be generated automatically by KGMIS.
+        </p>
+      </div>
+    </div>
+
+
+    <div class="re1-grid">
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label re1-required"
+          for="re1ExpenseDate"
+        >
+          Expense Date
+        </label>
+
+        <input
+          id="re1ExpenseDate"
+          class="re1-input"
+          type="date"
+        >
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label re1-required"
+          for="re1ExpensePurpose"
+        >
+          Expense Purpose
+        </label>
+
+        <select
+          id="re1ExpensePurpose"
+          class="re1-select"
+        >
+
+          <option value="">
+            Select purpose
+          </option>
+
+          <option value="HALL BOOKING">
+            HALL BOOKING
+          </option>
+
+          <option value="FOOD AND CATERING">
+            FOOD AND CATERING
+          </option>
+
+          <option value="CHARITY PAYMENT">
+            CHARITY PAYMENT
+          </option>
+
+          <option value="WELFARE ASSISTANCE">
+            WELFARE ASSISTANCE
+          </option>
+
+          <option value="PRINTING">
+            PRINTING
+          </option>
+
+          <option value="OFFICE EXPENSE">
+            OFFICE EXPENSE
+          </option>
+
+          <option value="TRAVEL">
+            TRAVEL
+          </option>
+
+          <option value="ACCOMMODATION">
+            ACCOMMODATION
+          </option>
+
+          <option value="DECORATION">
+            DECORATION
+          </option>
+
+          <option value="AUDIO VISUAL">
+            AUDIO VISUAL
+          </option>
+
+          <option value="TRANSPORT">
+            TRANSPORT
+          </option>
+
+          <option value="BANK CHARGES">
+            BANK CHARGES
+          </option>
+
+          <option value="PROFESSIONAL FEES">
+            PROFESSIONAL FEES
+          </option>
+
+          <option value="EQUIPMENT HIRE">
+            EQUIPMENT HIRE
+          </option>
+
+          <option value="REFUND">
+            REFUND
+          </option>
+
+          <option value="VENDOR PAYMENT">
+            VENDOR PAYMENT
+          </option>
+
+          <option value="OTHER">
+            OTHER
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label re1-required"
+          for="re1ExpenseCategory"
+        >
+          Expense Category
+        </label>
+
+        <select
+          id="re1ExpenseCategory"
+          class="re1-select"
+        >
+
+          <option value="">
+            Select category
+          </option>
+
+          <option value="EVENT">
+            EVENT
+          </option>
+
+          <option value="CHARITY">
+            CHARITY
+          </option>
+
+          <option value="WELFARE">
+            WELFARE
+          </option>
+
+          <option value="ADMINISTRATION">
+            ADMINISTRATION
+          </option>
+
+          <option value="OFFICE">
+            OFFICE
+          </option>
+
+          <option value="TRAVEL">
+            TRAVEL
+          </option>
+
+          <option value="PUBLICATION">
+            PUBLICATION
+          </option>
+
+          <option value="BANK">
+            BANK
+          </option>
+
+          <option value="VENDOR PAYMENT">
+            VENDOR PAYMENT
+          </option>
+
+          <option value="REFUND">
+            REFUND
+          </option>
+
+          <option value="OTHER">
+            OTHER
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label re1-required"
+          for="re1Amount"
+        >
+          Expense Amount
+        </label>
+
+        <div class="re1-money-wrap">
+
+          <span class="re1-money-prefix">
+            ₹
+          </span>
+
+          <input
+            id="re1Amount"
+            class="re1-input"
+            type="number"
+            min="0.01"
+            step="0.01"
+            inputmode="decimal"
+            placeholder="0.00"
+          >
+
+        </div>
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label re1-required"
+          for="re1ExpenseMode"
+        >
+          Expense Mode
+        </label>
+
+        <select
+          id="re1ExpenseMode"
+          class="re1-select"
+        >
+
+          <option value="">
+            Select mode
+          </option>
+
+          <option value="CASH">
+            CASH
+          </option>
+
+          <option value="UPI">
+            UPI
+          </option>
+
+          <option value="BANK TRANSFER">
+            BANK TRANSFER
+          </option>
+
+          <option value="CHEQUE">
+            CHEQUE
+          </option>
+
+          <option value="CARD">
+            CARD
+          </option>
+
+          <option value="ONLINE PAYMENT">
+            ONLINE PAYMENT
+          </option>
+
+          <option value="OTHER">
+            OTHER
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="re1-field re1-span-2">
+
+        <label
+          class="re1-label"
+          for="re1TransactionReference"
+        >
+          Transaction Reference
+        </label>
+
+        <input
+          id="re1TransactionReference"
+          class="re1-input"
+          type="text"
+          maxlength="120"
+          autocomplete="off"
+          placeholder="Bank / UPI / cheque / card reference"
+        >
+
+        <div
+          id="re1TransactionReferenceHelp"
+          class="re1-help"
+        >
+          Required for non-cash expenses.
+        </div>
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label"
+          for="re1RestrictedFund"
+        >
+          Restricted Fund
+        </label>
+
+        <select
+          id="re1RestrictedFund"
+          class="re1-select"
+        >
+
+          <option
+            value="NO"
+            selected
+          >
+            NO
+          </option>
+
+          <option value="YES">
+            YES
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       EVENT / PROJECT / BUDGET
+       ===================================================== -->
+
+  <section class="re1-panel">
+
+    <h3 class="re1-panel-title">
+      Event / Project &amp; Budget
+    </h3>
+
+    <p class="re1-panel-note">
+      Complete these fields where the expense relates to an event,
+      project, programme or specific budget head.
+    </p>
+
+
+    <div class="re1-grid">
+
+
+      <div class="re1-field">
+
+        <label
+          id="re1EventCodeLabel"
+          class="re1-label"
+          for="re1EventCode"
+        >
+          Event Code
+        </label>
+
+        <input
+          id="re1EventCode"
+          class="re1-input"
+          type="text"
+          maxlength="50"
+          autocomplete="off"
+          placeholder="Example: ONAM-2026"
+        >
+
+      </div>
+
+
+      <div class="re1-field re1-span-2">
+
+        <label
+          class="re1-label"
+          for="re1EventProject"
+        >
+          Event / Project Name
+        </label>
+
+        <input
+          id="re1EventProject"
+          class="re1-input"
+          type="text"
+          maxlength="150"
+          autocomplete="off"
+          placeholder="Example: KEF Global Onam 2026"
+        >
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label"
+          for="re1BudgetHead"
+        >
+          Budget Head
+        </label>
+
+        <input
+          id="re1BudgetHead"
+          class="re1-input"
+          type="text"
+          maxlength="100"
+          autocomplete="off"
+        >
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       INVOICE / DESCRIPTION
+       ===================================================== -->
+
+  <section class="re1-panel">
+
+    <h3 class="re1-panel-title">
+      Invoice &amp; Description
+    </h3>
+
+
+    <div class="re1-grid">
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label"
+          for="re1InvoiceNumber"
+        >
+          Invoice Number
+        </label>
+
+        <input
+          id="re1InvoiceNumber"
+          class="re1-input"
+          type="text"
+          maxlength="80"
+          autocomplete="off"
+        >
+
+      </div>
+
+
+      <div class="re1-field">
+
+        <label
+          class="re1-label"
+          for="re1InvoiceDate"
+        >
+          Invoice Date
+        </label>
+
+        <input
+          id="re1InvoiceDate"
+          class="re1-input"
+          type="date"
+        >
+
+      </div>
+
+
+      <div class="re1-field re1-span-2">
+
+        <label
+          class="re1-label"
+          for="re1SupportingDocumentId"
+        >
+          Supporting Document File ID
+        </label>
+
+        <input
+          id="re1SupportingDocumentId"
+          class="re1-input"
+          type="text"
+          maxlength="150"
+          autocomplete="off"
+          placeholder="Optional Google Drive file ID"
+        >
+
+      </div>
+
+
+      <div class="re1-field re1-span-full">
+
+        <label
+          class="re1-label re1-required"
+          for="re1Description"
+        >
+          Description / Particulars
+        </label>
+
+        <textarea
+          id="re1Description"
+          class="re1-textarea"
+          maxlength="1000"
+          placeholder="Briefly describe the expense and its purpose."
+        ></textarea>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       SYSTEM CONTROL
+       ===================================================== -->
+
+  <section class="re1-panel">
+
+    <h3 class="re1-panel-title">
+      System Control
+    </h3>
+
+    <p class="re1-panel-note">
+      These values are controlled by KGMIS and cannot be edited.
+    </p>
+
+
+    <div class="re1-summary">
+
+
+      <div class="re1-summary-item">
+
+        <span class="re1-summary-label">
+          Expense Status
+        </span>
+
+        <span class="re1-summary-value">
+          PAID
+        </span>
+
+      </div>
+
+
+      <div class="re1-summary-item">
+
+        <span class="re1-summary-label">
+          Record Status
+        </span>
+
+        <span class="re1-summary-value">
+          ACTIVE
+        </span>
+
+      </div>
+
+
+      <div class="re1-summary-item">
+
+        <span class="re1-summary-label">
+          Expense Record ID
+        </span>
+
+        <span class="re1-summary-value">
+          Generated on save
+        </span>
+
+      </div>
+
+
+      <div class="re1-summary-item">
+
+        <span class="re1-summary-label">
+          Voucher Number
+        </span>
+
+        <span class="re1-summary-value">
+          Generated on save
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="re1-actions">
+
+      <button
+        id="re1ClearButton"
+        class="re1-button re1-button-secondary"
+        type="button"
+      >
+        Clear Form
+      </button>
+
+
+      <button
+        id="re1SaveButton"
+        class="re1-button re1-button-primary"
+        type="button"
+      >
+        Record Expense
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       SUCCESS RESULT
+       ===================================================== -->
+
+  <section
+    id="re1Result"
+    class="re1-panel re1-result"
+  >
+
+    <h3 class="re1-result-title">
+      Expense recorded successfully
+    </h3>
+
+
+    <div class="re1-summary">
+
+
+      <div class="re1-summary-item">
+
+        <span class="re1-summary-label">
+          Expense Record ID
+        </span>
+
+        <span
+          id="re1ResultExpenseId"
+          class="re1-summary-value"
+        >
+          —
+        </span>
+
+      </div>
+
+
+      <div class="re1-summary-item">
+
+        <span class="re1-summary-label">
+          Voucher Number
+        </span>
+
+        <span
+          id="re1ResultVoucherNumber"
+          class="re1-summary-value"
+        >
+          —
+        </span>
+
+      </div>
+
+
+      <div class="re1-summary-item">
+
+        <span class="re1-summary-label">
+          Expense Amount
+        </span>
+
+        <span
+          id="re1ResultAmount"
+          class="re1-summary-value"
+        >
+          —
+        </span>
+
+      </div>
+
+
+      <div class="re1-summary-item">
+
+        <span class="re1-summary-label">
+          Paid To
+        </span>
+
+        <span
+          id="re1ResultPayee"
+          class="re1-summary-value"
+        >
+          —
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="re1-actions">
+
+      <button
+        id="re1AnotherButton"
+        class="re1-button re1-button-secondary"
+        type="button"
+      >
+        Record Another Expense
+      </button>
+
+
+      <button
+        id="re1VoucherButton"
+        class="re1-button re1-button-success"
+        type="button"
+        disabled
+      >
+        Generate / View Expense Voucher
+      </button>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<script>
+
+(function () {
+
+  'use strict';
+
+
+  /* =========================================================
+     STATE
+     ========================================================= */
+
+  const state = {
+
+    initialised:
+      false,
+
+    sessionToken:
+      '',
+
+    financialYear:
+      '',
+
+    paymentOpen:
+      false,
+
+    paidToType:
+      'EXTERNAL',
+
+    lastExpenseId:
+      '',
+
+    lastVoucherNumber:
+      ''
+
+  };
+
+
+  const el = {};
+
+
+  /* =========================================================
+     CACHE ELEMENTS
+     ========================================================= */
+
+  function cacheElements() {
+
+    [
+      're1FinancialYear',
+      're1Message',
+
+      're1ExpenseDate',
+      're1ExpensePurpose',
+      're1ExpenseCategory',
+      're1Amount',
+      're1ExpenseMode',
+      're1TransactionReference',
+      're1TransactionReferenceHelp',
+      're1RestrictedFund',
+
+      're1ExternalPartySection',
+      're1ExternalPayeeName',
+      're1ExternalPayeeType',
+      're1VendorId',
+
+      're1MemberSection',
+      're1MemberSearch',
+      're1MemberSearchButton',
+      're1MemberResults',
+      're1SelectedMember',
+      're1SelectedMemberName',
+      're1SelectedMemberMeta',
+      're1SelectedFamilyId',
+      're1SelectedKefgId',
+
+      're1EventCodeLabel',
+      're1EventCode',
+      're1EventProject',
+      're1BudgetHead',
+
+      're1InvoiceNumber',
+      're1InvoiceDate',
+      're1SupportingDocumentId',
+      're1Description',
+
+      're1ClearButton',
+      're1SaveButton',
+
+      're1Result',
+      're1ResultExpenseId',
+      're1ResultVoucherNumber',
+      're1ResultAmount',
+      're1ResultPayee',
+
+      're1AnotherButton',
+      're1VoucherButton'
+
+    ].forEach(
+      function (id) {
+
+        el[id] =
+          document.getElementById(id);
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     EVENTS
+     ========================================================= */
+
+  function bindEvents() {
+
+    document
+      .querySelectorAll(
+        'input[name="re1PaidToType"]'
+      )
+      .forEach(
+        function (radio) {
+
+          radio.addEventListener(
+            'change',
+            handlePaidToTypeChange
+          );
+
+        }
+      );
+
+
+    el.re1ExpenseMode
+      .addEventListener(
+        'change',
+        updateReferenceRequirement
+      );
+
+
+    el.re1ExpenseCategory
+      .addEventListener(
+        'change',
+        updateEventRequirement
+      );
+
+
+    el.re1MemberSearchButton
+      .addEventListener(
+        'click',
+        searchMembers
+      );
+
+
+    el.re1MemberSearch
+      .addEventListener(
+        'keydown',
+        function (event) {
+
+          if (event.key === 'Enter') {
+
+            event.preventDefault();
+
+            searchMembers();
+
+          }
+
+        }
+      );
+
+
+    el.re1MemberResults
+      .addEventListener(
+        'click',
+        function (event) {
+
+          const button =
+            event.target.closest(
+              '[data-re1-member-select]'
+            );
+
+
+          if (!button) {
+
+            return;
+
+          }
+
+
+          selectMember(
+            button
+          );
+
+        }
+      );
+
+
+    el.re1ClearButton
+      .addEventListener(
+        'click',
+        function () {
+
+          resetForm(true);
+
+        }
+      );
+
+
+    el.re1SaveButton
+      .addEventListener(
+        'click',
+        saveExpense
+      );
+
+
+    el.re1AnotherButton
+      .addEventListener(
+        'click',
+        function () {
+
+          resetForm(true);
+
+        }
+      );
+
+
+    el.re1VoucherButton
+      .addEventListener(
+        'click',
+        generateVoucher
+      );
+
+  }
+
+
+  /* =========================================================
+     ACTIVATE
+     ========================================================= */
+
+  function activate(
+    context
+  ) {
+
+    const safeContext =
+      context &&
+      typeof context === 'object'
+        ? context
+        : {};
+
+
+    if (!state.initialised) {
+
+      cacheElements();
+
+      bindEvents();
+
+      state.initialised =
+        true;
+
+    }
+
+
+    state.sessionToken =
+      clean(
+        safeContext.sessionToken
+      );
+
+
+    if (!state.sessionToken) {
+
+      showMessage(
+        'The Treasurer session is missing. Please sign out and sign in again.',
+        'error'
+      );
+
+
+      setFormEnabled(false);
+
+      return;
+
+    }
+
+
+    state.financialYear =
+      clean(
+        safeContext.financialYear
+      );
+
+
+    if (state.financialYear) {
+
+      el.re1FinancialYear.textContent =
+        state.financialYear;
+
+    }
+
+
+    loadSetup();
+
+  }
+
+
+  /* =========================================================
+     LOAD SETUP
+     ========================================================= */
+
+  function loadSetup() {
+
+    setFormEnabled(false);
+
+
+    showMessage(
+      'Loading Record Expenses settings…',
+      'info'
+    );
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          if (
+            !response ||
+            response.success !== true
+          ) {
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'Record Expenses settings could not be loaded.',
+              'error'
+            );
+
+            return;
+
+          }
+
+
+          state.financialYear =
+            clean(
+              response.financialYear
+            );
+
+
+          state.paymentOpen =
+            response.paymentOpen === true;
+
+
+          el.re1FinancialYear.textContent =
+            state.financialYear ||
+            '—';
+
+
+          setDateLimits(
+            response.startDateIso || '',
+            response.endDateIso || ''
+          );
+
+
+          if (
+            !el.re1ExpenseDate.value
+          ) {
+
+            el.re1ExpenseDate.value =
+              response.todayIso || '';
+
+          }
+
+
+          if (!state.paymentOpen) {
+
+            setFormEnabled(false);
+
+
+            showMessage(
+              'Expenses cannot be recorded because transactions are closed for financial year ' +
+              state.financialYear +
+              '.',
+              'error'
+            );
+
+            return;
+
+          }
+
+
+          setFormEnabled(true);
+
+
+          showMessage(
+            '',
+            ''
+          );
+
+
+          handlePaidToTypeChange();
+
+          updateReferenceRequirement();
+
+          updateEventRequirement();
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          setFormEnabled(false);
+
+
+          showMessage(
+            getErrorMessage(error),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_RecordExpenses_GetSetup(
+        state.sessionToken
+      );
+
+  }
+
+
+  /* =========================================================
+     PAID TO TYPE
+     ========================================================= */
+
+  function handlePaidToTypeChange() {
+
+    const selected =
+      document.querySelector(
+        'input[name="re1PaidToType"]:checked'
+      );
+
+
+    state.paidToType =
+      selected
+        ? selected.value
+        : 'EXTERNAL';
+
+
+    const memberMode =
+      state.paidToType ===
+      'MEMBER';
+
+
+    el.re1ExternalPartySection
+      .classList.toggle(
+        're1-hidden',
+        memberMode
+      );
+
+
+    el.re1MemberSection
+      .classList.toggle(
+        're1-hidden',
+        !memberMode
+      );
+
+
+    if (memberMode) {
+
+      el.re1ExternalPayeeName.value =
+        '';
+
+      el.re1ExternalPayeeType.value =
+        '';
+
+      el.re1VendorId.value =
+        '';
+
+    } else {
+
+      clearSelectedMember();
+
+    }
+
+  }
+
+
+  /* =========================================================
+     MEMBER SEARCH
+     ========================================================= */
+
+  function searchMembers() {
+
+    const query =
+      clean(
+        el.re1MemberSearch.value
+      );
+
+
+    if (query.length < 2) {
+
+      showMessage(
+        'Enter at least 2 characters to search for a member.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    el.re1MemberSearchButton.disabled =
+      true;
+
+
+    el.re1MemberSearchButton.textContent =
+      'Searching…';
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          el.re1MemberSearchButton.disabled =
+            false;
+
+
+          el.re1MemberSearchButton.textContent =
+            'Search';
+
+
+          if (
+            !response ||
+            response.success !== true
+          ) {
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'Member search could not be completed.',
+              'error'
+            );
+
+            return;
+
+          }
+
+
+          renderMemberResults(
+            response.results || []
+          );
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          el.re1MemberSearchButton.disabled =
+            false;
+
+
+          el.re1MemberSearchButton.textContent =
+            'Search';
+
+
+          showMessage(
+            getErrorMessage(error),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_RecordExpenses_SearchMembers(
+        state.sessionToken,
+        query
+      );
+
+  }
+
+
+  function renderMemberResults(
+    results
+  ) {
+
+    el.re1MemberResults.innerHTML =
+      '';
+
+
+    if (
+      !Array.isArray(results) ||
+      !results.length
+    ) {
+
+      el.re1MemberResults.innerHTML =
+        '<div class="re1-member-result">' +
+          '<div>' +
+            '<div class="re1-member-name">' +
+              'No matching member found' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+
+      el.re1MemberResults
+        .classList.add(
+          'active'
+        );
+
+
+      return;
+
+    }
+
+
+    el.re1MemberResults.innerHTML =
+      results
+        .map(
+          function (member) {
+
+            const name =
+              escapeHtml(
+                member.memberName || ''
+              );
+
+
+            const mobile =
+              escapeHtml(
+                member.mobile || ''
+              );
+
+
+            const kefgId =
+              escapeHtml(
+                member.kefgId || ''
+              );
+
+
+            const familyId =
+              escapeHtml(
+                member.familyId || ''
+              );
+
+
+            return (
+
+              '<div class="re1-member-result">' +
+
+                '<div>' +
+
+                  '<div class="re1-member-name">' +
+                    name +
+                  '</div>' +
+
+                  '<div class="re1-member-meta">' +
+                    [
+                      kefgId,
+                      mobile
+                    ]
+                      .filter(Boolean)
+                      .join(' • ') +
+                  '</div>' +
+
+                '</div>' +
+
+                '<button ' +
+                  'type="button" ' +
+                  'class="re1-button re1-button-secondary" ' +
+                  'data-re1-member-select="1" ' +
+                  'data-name="' +
+                    name +
+                  '" ' +
+                  'data-mobile="' +
+                    mobile +
+                  '" ' +
+                  'data-kefg-id="' +
+                    kefgId +
+                  '" ' +
+                  'data-family-id="' +
+                    familyId +
+                  '">' +
+                  'Select' +
+                '</button>' +
+
+              '</div>'
+
+            );
+
+          }
+        )
+        .join('');
+
+
+    el.re1MemberResults
+      .classList.add(
+        'active'
+      );
+
+  }
+
+
+  function selectMember(
+    button
+  ) {
+
+    const memberName =
+      clean(
+        button.getAttribute(
+          'data-name'
+        )
+      );
+
+
+    const mobile =
+      clean(
+        button.getAttribute(
+          'data-mobile'
+        )
+      );
+
+
+    const kefgId =
+      clean(
+        button.getAttribute(
+          'data-kefg-id'
+        )
+      );
+
+
+    const familyId =
+      clean(
+        button.getAttribute(
+          'data-family-id'
+        )
+      );
+
+
+    el.re1SelectedKefgId.value =
+      kefgId;
+
+
+    el.re1SelectedFamilyId.value =
+      familyId;
+
+
+    el.re1SelectedMemberName.textContent =
+      memberName ||
+      'Selected Member';
+
+
+    el.re1SelectedMemberMeta.textContent =
+      [
+        kefgId,
+        mobile
+      ]
+        .filter(Boolean)
+        .join(' • ');
+
+
+    el.re1SelectedMember
+      .classList.add(
+        'active'
+      );
+
+
+    el.re1MemberResults
+      .classList.remove(
+        'active'
+      );
+
+
+    showMessage(
+      '',
+      ''
+    );
+
+  }
+
+
+  function clearSelectedMember() {
+
+    el.re1SelectedFamilyId.value =
+      '';
+
+
+    el.re1SelectedKefgId.value =
+      '';
+
+
+    el.re1SelectedMemberName.textContent =
+      '—';
+
+
+    el.re1SelectedMemberMeta.textContent =
+      '—';
+
+
+    el.re1SelectedMember
+      .classList.remove(
+        'active'
+      );
+
+
+    el.re1MemberResults
+      .classList.remove(
+        'active'
+      );
+
+
+    el.re1MemberResults.innerHTML =
+      '';
+
+
+    el.re1MemberSearch.value =
+      '';
+
+  }
+
+
+  /* =========================================================
+     EXPENSE MODE
+     ========================================================= */
+
+  function updateReferenceRequirement() {
+
+    const mode =
+      clean(
+        el.re1ExpenseMode.value
+      ).toUpperCase();
+
+
+    const required =
+      Boolean(mode) &&
+      mode !== 'CASH';
+
+
+    el.re1TransactionReference.required =
+      required;
+
+
+    el.re1TransactionReferenceHelp.textContent =
+      required
+        ? 'Required for ' +
+          mode +
+          ' expenses.'
+        : 'Optional for cash expenses.';
+
+  }
+
+
+  /* =========================================================
+     EVENT RULE
+     ========================================================= */
+
+  function updateEventRequirement() {
+
+    const category =
+      clean(
+        el.re1ExpenseCategory.value
+      ).toUpperCase();
+
+
+    const isEvent =
+      category === 'EVENT';
+
+
+    el.re1EventCode.required =
+      isEvent;
+
+
+    el.re1EventCodeLabel
+      .classList.toggle(
+        're1-required',
+        isEvent
+      );
+
+  }
+
+
+  /* =========================================================
+     COLLECT PAYLOAD
+     ========================================================= */
+
+  function collectPayload() {
+
+    const memberMode =
+      state.paidToType ===
+      'MEMBER';
+
+
+    return {
+
+      /*
+       * UI calls these Expense fields.
+       * 91.10 will map them to existing Payment Service fields.
+       */
+
+      financialYear:
+        state.financialYear,
+
+
+      expenseDate:
+        clean(
+          el.re1ExpenseDate.value
+        ),
+
+
+      expensePurpose:
+        clean(
+          el.re1ExpensePurpose.value
+        ),
+
+
+      expenseCategory:
+        clean(
+          el.re1ExpenseCategory.value
+        ),
+
+
+      amount:
+        clean(
+          el.re1Amount.value
+        ),
+
+
+      expenseMode:
+        clean(
+          el.re1ExpenseMode.value
+        ),
+
+
+      transactionReference:
+        clean(
+          el.re1TransactionReference.value
+        ),
+
+
+      paidToType:
+        state.paidToType,
+
+
+      payeeName:
+        memberMode
+          ? clean(
+              el.re1SelectedMemberName.textContent
+            )
+          : clean(
+              el.re1ExternalPayeeName.value
+            ),
+
+
+      payeeType:
+        memberMode
+          ? 'MEMBER'
+          : clean(
+              el.re1ExternalPayeeType.value
+            ),
+
+
+      vendorId:
+        memberMode
+          ? ''
+          : clean(
+              el.re1VendorId.value
+            ),
+
+
+      familyId:
+        memberMode
+          ? clean(
+              el.re1SelectedFamilyId.value
+            )
+          : '',
+
+
+      kefgId:
+        memberMode
+          ? clean(
+              el.re1SelectedKefgId.value
+            )
+          : '',
+
+
+      eventCode:
+        clean(
+          el.re1EventCode.value
+        ),
+
+
+      eventProject:
+        clean(
+          el.re1EventProject.value
+        ),
+
+
+      budgetHead:
+        clean(
+          el.re1BudgetHead.value
+        ),
+
+
+      restrictedFund:
+        clean(
+          el.re1RestrictedFund.value ||
+          'NO'
+        ),
+
+
+      invoiceNumber:
+        clean(
+          el.re1InvoiceNumber.value
+        ),
+
+
+      invoiceDate:
+        clean(
+          el.re1InvoiceDate.value
+        ),
+
+
+      supportingDocumentId:
+        clean(
+          el.re1SupportingDocumentId.value
+        ),
+
+
+      description:
+        clean(
+          el.re1Description.value
+        )
+
+    };
+
+  }
+
+
+  /* =========================================================
+     VALIDATION
+     ========================================================= */
+
+  function validatePayload(
+    data
+  ) {
+
+    if (!data.expenseDate) {
+
+      return (
+        'Expense Date is required.'
+      );
+
+    }
+
+
+    if (!data.expensePurpose) {
+
+      return (
+        'Expense Purpose is required.'
+      );
+
+    }
+
+
+    if (!data.expenseCategory) {
+
+      return (
+        'Expense Category is required.'
+      );
+
+    }
+
+
+    if (
+      !Number.isFinite(
+        Number(data.amount)
+      ) ||
+      Number(data.amount) <= 0
+    ) {
+
+      return (
+        'Enter a valid Expense Amount greater than zero.'
+      );
+
+    }
+
+
+    if (!data.expenseMode) {
+
+      return (
+        'Expense Mode is required.'
+      );
+
+    }
+
+
+    if (
+      data.expenseMode !== 'CASH' &&
+      !data.transactionReference
+    ) {
+
+      return (
+        'Transaction Reference is required for ' +
+        data.expenseMode +
+        '.'
+      );
+
+    }
+
+
+    if (
+      data.paidToType ===
+      'EXTERNAL'
+    ) {
+
+      if (!data.payeeName) {
+
+        return (
+          'Payee Name is required.'
+        );
+
+      }
+
+
+      if (!data.payeeType) {
+
+        return (
+          'Payee Type is required.'
+        );
+
+      }
+
+    }
+
+
+    if (
+      data.paidToType ===
+      'MEMBER'
+    ) {
+
+      if (
+        !data.kefgId ||
+        !data.payeeName
+      ) {
+
+        return (
+          'Please search and select the KEF Global member.'
+        );
+
+      }
+
+    }
+
+
+    if (
+      data.expenseCategory === 'EVENT' &&
+      !data.eventCode
+    ) {
+
+      return (
+        'Event Code is required for an EVENT expense.'
+      );
+
+    }
+
+
+    if (
+      data.eventCode &&
+      !data.eventProject
+    ) {
+
+      return (
+        'Event / Project Name is required when an Event Code is entered.'
+      );
+
+    }
+
+
+    if (!data.description) {
+
+      return (
+        'Description / Particulars is required.'
+      );
+
+    }
+
+
+    return '';
+
+  }
+
+
+  /* =========================================================
+     SAVE
+     ========================================================= */
+
+  function saveExpense() {
+
+    if (!state.paymentOpen) {
+
+      showMessage(
+        'Expenses cannot currently be recorded.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    const payload =
+      collectPayload();
+
+
+    const validation =
+      validatePayload(
+        payload
+      );
+
+
+    if (validation) {
+
+      showMessage(
+        validation,
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    const confirmed =
+      window.confirm(
+
+        'Record this expense?\n\n' +
+
+        'Paid To: ' +
+        payload.payeeName +
+
+        '\nAmount: ₹' +
+        formatAmount(
+          Number(
+            payload.amount
+          )
+        ) +
+
+        '\nExpense Date: ' +
+        payload.expenseDate +
+
+        '\n\nKGMIS will generate the Expense Record ID and voucher number.'
+
+      );
+
+
+    if (!confirmed) {
+
+      return;
+
+    }
+
+
+    setSaving(true);
+
+
+    showMessage(
+      'Recording expense…',
+      'info'
+    );
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          setSaving(false);
+
+
+          if (
+            !response ||
+            response.success !== true
+          ) {
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'The expense could not be recorded.',
+              'error'
+            );
+
+            return;
+
+          }
+
+
+          /*
+           * Internally the service returns PAYMENT_ID.
+           * The wrapper will expose it to this UI as expenseId.
+           */
+
+          state.lastExpenseId =
+            clean(
+              response.expenseId
+            );
+
+
+          state.lastVoucherNumber =
+            clean(
+              response.voucherNumber
+            );
+
+
+          showResult(
+            response
+          );
+
+
+          showMessage(
+            response.message ||
+            'Expense recorded successfully.',
+            'success'
+          );
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          setSaving(false);
+
+
+          showMessage(
+            getErrorMessage(error),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_RecordExpenses_Create(
+        state.sessionToken,
+        payload
+      );
+
+  }
+
+
+  /* =========================================================
+     RESULT
+     ========================================================= */
+
+  function showResult(
+    response
+  ) {
+
+    el.re1ResultExpenseId.textContent =
+      response.expenseId ||
+      '—';
+
+
+    el.re1ResultVoucherNumber.textContent =
+      response.voucherNumber ||
+      '—';
+
+
+    el.re1ResultAmount.textContent =
+      '₹' +
+      formatAmount(
+        Number(
+          response.amount ||
+          0
+        )
+      );
+
+
+    el.re1ResultPayee.textContent =
+      response.payeeName ||
+      '—';
+
+
+    el.re1Result
+      .classList.add(
+        'active'
+      );
+
+
+    el.re1VoucherButton.disabled =
+      !response.expenseId ||
+      !response.voucherNumber;
+
+
+    el.re1Result.scrollIntoView({
+
+      behavior:
+        'smooth',
+
+      block:
+        'nearest'
+
+    });
+
+  }
+
+
+  /* =========================================================
+     EXPENSE VOUCHER
+     ========================================================= */
+
+  function generateVoucher() {
+
+    if (!state.lastExpenseId) {
+
+      showMessage(
+        'No Expense Record ID is available for voucher generation.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    el.re1VoucherButton.disabled =
+      true;
+
+
+    showMessage(
+      'Preparing expense voucher…',
+      'info'
+    );
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          el.re1VoucherButton.disabled =
+            false;
+
+
+          if (
+            !response ||
+            response.success !== true
+          ) {
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'The expense voucher could not be generated.',
+              'error'
+            );
+
+            return;
+
+          }
+
+
+          showMessage(
+            response.message ||
+            'Expense voucher is ready.',
+            'success'
+          );
+
+
+          if (response.fileUrl) {
+
+            window.open(
+              response.fileUrl,
+              '_blank',
+              'noopener'
+            );
+
+          }
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          el.re1VoucherButton.disabled =
+            false;
+
+
+          showMessage(
+            getErrorMessage(error),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_RecordExpenses_GenerateVoucher(
+        state.sessionToken,
+        state.lastExpenseId
+      );
+
+  }
+
+
+  /* =========================================================
+     RESET
+     ========================================================= */
+
+  function resetForm(
+    preserveFinancialYear
+  ) {
+
+    el.re1ExpensePurpose.value =
+      '';
+
+
+    el.re1ExpenseCategory.value =
+      '';
+
+
+    el.re1Amount.value =
+      '';
+
+
+    el.re1ExpenseMode.value =
+      '';
+
+
+    el.re1TransactionReference.value =
+      '';
+
+
+    el.re1RestrictedFund.value =
+      'NO';
+
+
+    el.re1ExternalPayeeName.value =
+      '';
+
+
+    el.re1ExternalPayeeType.value =
+      '';
+
+
+    el.re1VendorId.value =
+      '';
+
+
+    clearSelectedMember();
+
+
+    el.re1EventCode.value =
+      '';
+
+
+    el.re1EventProject.value =
+      '';
+
+
+    el.re1BudgetHead.value =
+      '';
+
+
+    el.re1InvoiceNumber.value =
+      '';
+
+
+    el.re1InvoiceDate.value =
+      '';
+
+
+    el.re1SupportingDocumentId.value =
+      '';
+
+
+    el.re1Description.value =
+      '';
+
+
+    state.lastExpenseId =
+      '';
+
+
+    state.lastVoucherNumber =
+      '';
+
+
+    el.re1Result
+      .classList.remove(
+        'active'
+      );
+
+
+    el.re1VoucherButton.disabled =
+      true;
+
+
+    const externalRadio =
+      document.querySelector(
+        'input[name="re1PaidToType"][value="EXTERNAL"]'
+      );
+
+
+    if (externalRadio) {
+
+      externalRadio.checked =
+        true;
+
+    }
+
+
+    state.paidToType =
+      'EXTERNAL';
+
+
+    handlePaidToTypeChange();
+
+    updateReferenceRequirement();
+
+    updateEventRequirement();
+
+
+    if (
+      preserveFinancialYear &&
+      state.sessionToken
+    ) {
+
+      el.re1ExpenseDate.value =
+        '';
+
+      loadSetup();
+
+    }
+
+  }
+
+
+  /* =========================================================
+     FORM STATE
+     ========================================================= */
+
+  function setSaving(
+    saving
+  ) {
+
+    el.re1SaveButton.disabled =
+      Boolean(saving);
+
+
+    el.re1ClearButton.disabled =
+      Boolean(saving);
+
+
+    el.re1SaveButton.textContent =
+      saving
+        ? 'Recording…'
+        : 'Record Expense';
+
+  }
+
+
+  function setFormEnabled(
+    enabled
+  ) {
+
+    document
+      .querySelectorAll(
+        '#re1Root input, ' +
+        '#re1Root select, ' +
+        '#re1Root textarea, ' +
+        '#re1Root button'
+      )
+      .forEach(
+        function (control) {
+
+          if (
+            control.id ===
+            're1VoucherButton'
+          ) {
+
+            return;
+
+          }
+
+
+          control.disabled =
+            !enabled;
+
+        }
+      );
+
+  }
+
+
+  /* =========================================================
+     DATE LIMITS
+     ========================================================= */
+
+  function setDateLimits(
+    startDateIso,
+    endDateIso
+  ) {
+
+    [
+      el.re1ExpenseDate,
+      el.re1InvoiceDate
+    ].forEach(
+      function (input) {
+
+        if (!input) {
+
+          return;
+
+        }
+
+
+        input.min =
+          startDateIso ||
+          '';
+
+
+        input.max =
+          endDateIso ||
+          '';
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     MESSAGE
+     ========================================================= */
+
+  function showMessage(
+    message,
+    type
+  ) {
+
+    const text =
+      clean(
+        message
+      );
+
+
+    el.re1Message.className =
+      're1-message';
+
+
+    el.re1Message.textContent =
+      text;
+
+
+    if (!text) {
+
+      return;
+
+    }
+
+
+    if (type === 'success') {
+
+      el.re1Message
+        .classList.add(
+          're1-message-success'
+        );
+
+    } else if (type === 'error') {
+
+      el.re1Message
+        .classList.add(
+          're1-message-error'
+        );
+
+    } else {
+
+      el.re1Message
+        .classList.add(
+          're1-message-info'
+        );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+
+  function clean(
+    value
+  ) {
+
+    return String(
+
+      value === null ||
+      value === undefined
+        ? ''
+        : value
+
+    ).trim();
+
+  }
+
+
+  function formatAmount(
+    value
+  ) {
+
+    return Number(
+      value || 0
+    ).toLocaleString(
+      'en-IN',
+      {
+        minimumFractionDigits:
+          2,
+
+        maximumFractionDigits:
+          2
+      }
+    );
+
+  }
+
+
+  function escapeHtml(
+    value
+  ) {
+
+    return clean(
+      value
+    )
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      )
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+      .replace(
+        /'/g,
+        '&#039;'
+      );
+
+  }
+
+
+  function getErrorMessage(
+    error
+  ) {
+
+    if (
+      error &&
+      error.message
+    ) {
+
+      return error.message;
+
+    }
+
+
+    return String(
+      error ||
+      'An unexpected Record Expenses error occurred.'
+    );
+
+  }
+
+
+  /* =========================================================
+     EXPOSE MODULE
+     ========================================================= */
+
+  window.KGMIS_RecordExpenses = {
+
+    activate:
+      activate,
+
+
+    refresh:
+      loadSetup,
+
+
+    reset:
+      function () {
+
+        resetForm(true);
+
+      }
+
+  };
+
+
+})();
+
+</script>

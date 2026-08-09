@@ -1,0 +1,3156 @@
+<!--
+  ============================================================
+  KEF Global Membership Information System (KGMIS)
+  Reports Portal Module
+  File Nane: 60.00_KGMIS_Module_Reports.html
+  Version: Enterprise Edition 1.0
+  Designed and Developed by: James Joseph Alenchery
+  ============================================================
+
+  Purpose:
+  - Provide the main Reports Portal inside KGMIS Main Portal
+  - Display report categories and planned report templates
+  - Provide the foundation for the KGMIS Report Builder
+  - Receive the authenticated KGMIS session context
+
+  Public interface:
+  - window.KGMIS_REPORTS_MODULE.activate(authContext)
+  - window.KGMIS_REPORTS_MODULE.reset()
+  ============================================================
+-->
+
+<style>
+  #kgmisReportsModule {
+    --rp-primary: #176c91;
+    --rp-primary-dark: #0d4e70;
+    --rp-primary-light: #e7f4f9;
+    --rp-secondary: #49a6c4;
+    --rp-accent: #0aa957;
+    --rp-background: #f3f7fa;
+    --rp-panel: #ffffff;
+    --rp-panel-soft: #f8fbfd;
+    --rp-border: #d5e0e8;
+    --rp-text: #1f2937;
+    --rp-muted: #64748b;
+    --rp-warning: #92400e;
+    --rp-warning-bg: #fff7ed;
+    --rp-shadow:
+      0 8px 24px rgba(13, 78, 112, 0.08);
+
+    width: 100%;
+    min-width: 0;
+    color: var(--rp-text);
+    background: var(--rp-background);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #kgmisReportsModule *,
+  #kgmisReportsModule *::before,
+  #kgmisReportsModule *::after {
+    box-sizing: border-box;
+  }
+
+  #kgmisReportsModule button,
+  #kgmisReportsModule input,
+  #kgmisReportsModule select {
+    font: inherit;
+  }
+
+  #kgmisReportsModule button {
+    cursor: pointer;
+  }
+
+  #kgmisReportsModule button:disabled {
+    cursor: not-allowed;
+  }
+
+  .rp-shell {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .rp-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .rp-page-heading {
+    min-width: 0;
+  }
+
+  .rp-page-kicker {
+    margin: 0 0 5px;
+    color: var(--rp-muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .rp-page-title {
+    margin: 0;
+    color: var(--rp-primary-dark);
+    font-size: 28px;
+    line-height: 1.15;
+  }
+
+  .rp-page-description {
+    max-width: 850px;
+    margin: 7px 0 0;
+    color: var(--rp-muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .rp-access-badge {
+    flex: 0 0 auto;
+    padding: 8px 13px;
+    border: 1px solid #add8e8;
+    border-radius: 999px;
+    color: var(--rp-primary-dark);
+    background: var(--rp-primary-light);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .rp-status-message {
+    display: none;
+    margin-bottom: 16px;
+    padding: 11px 13px;
+    border: 1px solid #b9d7e6;
+    border-radius: 10px;
+    color: #155c7b;
+    background: #eff8fc;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .rp-status-message.visible {
+    display: block;
+  }
+
+  .rp-status-message.error {
+    border-color: #fecdca;
+    color: #b42318;
+    background: #fef3f2;
+  }
+
+  .rp-summary-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .rp-summary-card {
+    min-width: 0;
+    min-height: 104px;
+    padding: 15px 16px;
+    border: 1px solid var(--rp-border);
+    border-radius: 13px;
+    background: var(--rp-panel);
+    box-shadow: var(--rp-shadow);
+  }
+
+  .rp-summary-label {
+    color: var(--rp-muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .rp-summary-value {
+    display: block;
+    margin-top: 8px;
+    color: var(--rp-primary-dark);
+    font-size: 25px;
+    font-weight: 900;
+  }
+
+  .rp-summary-note {
+    margin-top: 6px;
+    color: var(--rp-muted);
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .rp-section {
+    margin-bottom: 18px;
+    padding: 18px;
+    border: 1px solid var(--rp-border);
+    border-radius: 14px;
+    background: var(--rp-panel);
+    box-shadow: var(--rp-shadow);
+  }
+
+  .rp-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 15px;
+  }
+
+  .rp-section-title {
+    margin: 0;
+    color: var(--rp-primary-dark);
+    font-size: 20px;
+    line-height: 1.25;
+  }
+
+  .rp-section-description {
+    margin: 5px 0 0;
+    color: var(--rp-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .rp-coming-soon {
+    flex: 0 0 auto;
+    padding: 5px 8px;
+    border-radius: 999px;
+    color: var(--rp-warning);
+    background: var(--rp-warning-bg);
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .rp-category-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .rp-category-card {
+    min-width: 0;
+    min-height: 154px;
+    padding: 15px;
+    border: 1px solid var(--rp-border);
+    border-radius: 12px;
+    color: var(--rp-text);
+    background: var(--rp-panel-soft);
+    text-align: left;
+  }
+
+  .rp-category-card:hover:not(:disabled) {
+    border-color: var(--rp-primary);
+    background: var(--rp-primary-light);
+  }
+
+  .rp-category-card:focus-visible {
+    outline: 3px solid rgba(73, 166, 196, 0.25);
+    outline-offset: 2px;
+  }
+
+  .rp-category-icon {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 25px;
+    line-height: 1;
+  }
+
+  .rp-category-name {
+    display: block;
+    color: var(--rp-primary-dark);
+    font-size: 15px;
+    font-weight: 900;
+  }
+
+  .rp-category-description {
+    display: block;
+    margin-top: 7px;
+    color: var(--rp-muted);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+
+  .rp-builder-layout {
+    display: grid;
+    grid-template-columns:
+      minmax(250px, 0.78fr)
+      minmax(0, 1.22fr);
+    gap: 16px;
+  }
+
+  .rp-builder-panel {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--rp-border);
+    border-radius: 12px;
+    background: var(--rp-panel-soft);
+  }
+
+  .rp-builder-panel-title {
+    margin: 0 0 12px;
+    color: var(--rp-primary-dark);
+    font-size: 15px;
+  }
+
+  .rp-field-group {
+    margin-bottom: 13px;
+  }
+
+  .rp-field-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .rp-field-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--rp-muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .rp-select {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid var(--rp-border);
+    border-radius: 9px;
+    color: var(--rp-text);
+    background: #ffffff;
+    outline: none;
+  }
+
+  .rp-select:focus {
+    border-color: var(--rp-secondary);
+    box-shadow:
+      0 0 0 3px rgba(73, 166, 196, 0.14);
+  }
+
+  .rp-builder-placeholder {
+    min-height: 212px;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    border: 1px dashed #b7cbd6;
+    border-radius: 11px;
+    color: var(--rp-muted);
+    background: #ffffff;
+    text-align: center;
+  }
+
+  .rp-builder-placeholder strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--rp-primary-dark);
+    font-size: 16px;
+  }
+
+  .rp-builder-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 14px;
+  }
+
+  .rp-primary-button,
+  .rp-secondary-button {
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-weight: 900;
+  }
+
+  .rp-primary-button {
+    border: 1px solid var(--rp-primary);
+    color: #ffffff;
+    background: var(--rp-primary);
+  }
+
+  .rp-primary-button:hover:not(:disabled) {
+    background: var(--rp-primary-dark);
+  }
+
+  .rp-secondary-button {
+    border: 1px solid var(--rp-border);
+    color: var(--rp-primary-dark);
+    background: #ffffff;
+  }
+
+  .rp-secondary-button:hover:not(:disabled) {
+    border-color: var(--rp-primary);
+    background: var(--rp-primary-light);
+  }
+
+  .rp-primary-button:disabled,
+  .rp-secondary-button:disabled {
+    opacity: 0.52;
+  }
+
+  .rp-template-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .rp-template-card {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--rp-border);
+    border-radius: 11px;
+    background: #ffffff;
+  }
+
+  .rp-template-title {
+    margin: 0;
+    color: var(--rp-primary-dark);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .rp-template-description {
+    margin: 7px 0 12px;
+    color: var(--rp-muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .rp-template-button {
+    min-height: 36px;
+    padding: 7px 11px;
+    border: 1px solid var(--rp-border);
+    border-radius: 8px;
+    color: var(--rp-primary-dark);
+    background: var(--rp-panel-soft);
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .rp-template-button:hover:not(:disabled) {
+    border-color: var(--rp-primary);
+    background: var(--rp-primary-light);
+  }
+
+  .rp-empty-state {
+    padding: 22px;
+    border: 1px dashed var(--rp-border);
+    border-radius: 11px;
+    color: var(--rp-muted);
+    background: var(--rp-panel-soft);
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+.rp-report-viewer {
+  min-width: 0;
+}
+
+.rp-report-output {
+  padding: 22px;
+  border: 1px solid #c9dbe5;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
+  box-shadow:
+    0 14px 34px rgba(13, 78, 112, 0.12);
+}
+
+.rp-report-output-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  color: #ffffff;
+  background:
+    linear-gradient(
+      135deg,
+      #0d4e70 0%,
+      #176c91 58%,
+      #49a6c4 100%
+    );
+  box-shadow:
+    0 10px 24px rgba(13, 78, 112, 0.18);
+}
+
+.rp-report-output-header h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 24px;
+}
+
+.rp-report-output-header p {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 11px;
+}
+
+.rp-report-generated-by {
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 11px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.rp-report-hero-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.rp-report-hero-card {
+  min-width: 0;
+  min-height: 118px;
+  padding: 17px;
+  border-radius: 14px;
+  color: #ffffff;
+  box-shadow:
+    0 10px 22px rgba(31, 41, 55, 0.12);
+}
+
+.rp-report-hero-card.blue {
+  background: linear-gradient(135deg, #0d4e70, #176c91);
+}
+
+.rp-report-hero-card.green {
+  background: linear-gradient(135deg, #087f5b, #0aa957);
+}
+
+.rp-report-hero-card.gold {
+  background: linear-gradient(135deg, #b7791f, #e6a700);
+}
+
+.rp-report-hero-card.purple {
+  background: linear-gradient(135deg, #6b46c1, #9f7aea);
+}
+
+.rp-report-hero-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.rp-report-hero-value {
+  display: block;
+  margin-top: 10px;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.rp-report-hero-note {
+  display: block;
+  margin-top: 9px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.rp-report-visual-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(260px, 0.8fr)
+    minmax(0, 1.2fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.rp-report-chart-card,
+.rp-report-detail-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--rp-border);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.rp-report-card-title {
+  margin: 0 0 14px;
+  color: var(--rp-primary-dark);
+  font-size: 15px;
+}
+
+.rp-donut-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.rp-donut {
+  width: 168px;
+  height: 168px;
+  position: relative;
+  flex: 0 0 168px;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      #176c91 0 var(--rp-primary-share),
+      #7c3aed var(--rp-primary-share) var(--rp-spouse-share),
+      #f59e0b var(--rp-spouse-share) 100%
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 10px 24px rgba(13, 78, 112, 0.15);
+}
+
+.rp-donut::after {
+  content: '';
+  position: absolute;
+  inset: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--rp-border);
+}
+
+.rp-donut-center {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.rp-donut-center strong {
+  color: var(--rp-primary-dark);
+  font-size: 27px;
+  line-height: 1;
+}
+
+.rp-donut-center span {
+  margin-top: 5px;
+  color: var(--rp-muted);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.rp-chart-legend {
+  min-width: 180px;
+  display: grid;
+  gap: 10px;
+}
+
+.rp-chart-legend-row {
+  display: grid;
+  grid-template-columns: 11px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--rp-text);
+  font-size: 11px;
+}
+
+.rp-legend-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.rp-legend-dot.blue { background: #176c91; }
+.rp-legend-dot.green { background: #0aa957; }
+.rp-legend-dot.purple { background: #7c3aed; }
+.rp-legend-dot.gold { background: #f59e0b; }
+
+.rp-chart-legend-row strong {
+  color: var(--rp-primary-dark);
+  font-size: 12px;
+}
+
+.rp-status-bars {
+  display: grid;
+  gap: 13px;
+}
+
+.rp-status-bar-row {
+  display: grid;
+  grid-template-columns: 135px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 10px;
+}
+
+.rp-status-bar-label {
+  color: var(--rp-muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.rp-status-bar-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7eef3;
+}
+
+.rp-status-bar-fill {
+  height: 100%;
+  min-width: 3px;
+  border-radius: inherit;
+}
+
+.rp-status-bar-fill.green {
+  background: linear-gradient(90deg, #0aa957, #55c98a);
+}
+
+.rp-status-bar-fill.blue {
+  background: linear-gradient(90deg, #176c91, #49a6c4);
+}
+
+.rp-status-bar-fill.orange {
+  background: linear-gradient(90deg, #f59e0b, #f7c948);
+}
+
+.rp-status-bar-fill.red {
+  background: linear-gradient(90deg, #c2410c, #ef4444);
+}
+
+.rp-status-bar-value {
+  color: var(--rp-primary-dark);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.rp-report-stat-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.rp-report-stat-card {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--rp-border);
+  border-top: 4px solid var(--stat-accent, #176c91);
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgba(13, 78, 112, 0.07);
+}
+
+.rp-report-stat-card span {
+  display: block;
+  color: var(--rp-muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.rp-report-stat-card strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--rp-primary-dark);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.rp-report-subheading {
+  margin: 22px 0 11px;
+  padding-left: 10px;
+  border-left: 4px solid var(--rp-secondary);
+  color: var(--rp-primary-dark);
+  font-size: 14px;
+}
+
+
+/* ==========================================================
+   Subscription Summary Dashboard
+   ========================================================== */
+
+.rp-subscription-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rp-subscription-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.rp-subscription-donut {
+  width: 168px;
+  height: 168px;
+  position: relative;
+  flex: 0 0 168px;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      #0aa957 0 var(--rp-paid-share),
+      #f59e0b var(--rp-paid-share) 100%
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 10px 24px rgba(13, 78, 112, 0.15);
+}
+
+.rp-subscription-donut::after {
+  content: '';
+  position: absolute;
+  inset: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--rp-border);
+}
+
+.rp-subscription-progress-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--rp-border);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, #ffffff 0%, #f0fbf5 100%);
+}
+
+.rp-subscription-progress-value {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 4px 0 16px;
+  color: #087f5b;
+}
+
+.rp-subscription-progress-value strong {
+  font-size: 42px;
+  line-height: 1;
+}
+
+.rp-subscription-progress-value span {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.rp-subscription-progress-track {
+  height: 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dcebe3;
+  box-shadow: inset 0 1px 3px rgba(31, 41, 55, 0.12);
+}
+
+.rp-subscription-progress-fill {
+  height: 100%;
+  min-width: 3px;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, #087f5b 0%, #0aa957 55%, #55c98a 100%);
+}
+
+.rp-subscription-progress-caption {
+  margin: 11px 0 0;
+  color: var(--rp-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.rp-subscription-financial-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rp-subscription-financial-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--rp-border);
+  border-top: 5px solid var(--finance-accent, #176c91);
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 7px 18px rgba(13, 78, 112, 0.08);
+}
+
+.rp-subscription-financial-card span {
+  display: block;
+  color: var(--rp-muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rp-subscription-financial-card strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--rp-primary-dark);
+  font-size: 27px;
+  line-height: 1.1;
+}
+
+.rp-subscription-financial-card small {
+  display: block;
+  margin-top: 8px;
+  color: var(--rp-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+  @media (max-width: 1100px) {
+    .rp-summary-grid,
+    .rp-category-grid {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+
+    .rp-template-grid {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+      .rp-report-stat-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    }
+
+    .rp-report-hero-grid {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+
+    .rp-report-visual-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .rp-subscription-financial-grid {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 760px) {
+    .rp-page-header,
+    .rp-section-header {
+      flex-direction: column;
+    }
+
+    .rp-builder-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .rp-summary-grid,
+    .rp-category-grid,
+    .rp-template-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .rp-section {
+      padding: 14px;
+    }
+
+    .rp-page-title {
+      font-size: 24px;
+    }
+
+    .rp-builder-actions {
+      flex-direction: column;
+    }
+
+    .rp-primary-button,
+    .rp-secondary-button {
+      width: 100%;
+    }
+
+    .rp-report-stat-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .rp-report-output-header {
+      flex-direction: column;
+    }
+
+    .rp-report-generated-by {
+      text-align: left;
+    }
+
+    .rp-report-hero-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .rp-report-output {
+      padding: 14px;
+    }
+
+    .rp-report-output-header {
+      padding: 15px;
+    }
+
+    .rp-donut-wrap {
+      gap: 16px;
+    }
+
+    .rp-status-bar-row {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+
+    .rp-status-bar-value {
+      text-align: left;
+    }
+
+    .rp-subscription-financial-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .rp-subscription-progress-value strong {
+      font-size: 36px;
+    }
+
+  }
+</style>
+
+<section
+  id="kgmisReportsModule"
+  class="rp-shell"
+>
+
+  <div
+    id="rpStatusMessage"
+    class="rp-status-message"
+    aria-live="polite"
+  ></div>
+
+
+
+  <section class="rp-section">
+    <div class="rp-section-header">
+      <div>
+        <h2 class="rp-section-title">
+          Report Builder
+        </h2>
+
+        <p class="rp-section-description">
+          Select a report area, fields, filters and sorting
+          options to create a customised report.
+        </p>
+      </div>
+
+      <span class="rp-coming-soon">
+        Phase 1
+      </span>
+    </div>
+
+    <div class="rp-builder-layout">
+      <div class="rp-builder-panel">
+        <h3 class="rp-builder-panel-title">
+          Report Setup
+        </h3>
+
+        <div class="rp-field-group">
+          <label
+            class="rp-field-label"
+            for="rpReportArea"
+          >
+            Report Area
+          </label>
+
+          <select
+            id="rpReportArea"
+            class="rp-select"
+          >
+            <option value="">
+              Select report area
+            </option>
+
+            <option value="membership">
+              Membership
+            </option>
+
+            <option value="subscription">
+              Subscription
+            </option>
+
+            <option value="communication">
+              Communication
+            </option>
+
+            <option value="administration">
+              Administration
+            </option>
+          </select>
+        </div>
+
+        <div class="rp-field-group">
+          <label
+            class="rp-field-label"
+            for="rpReportTemplate"
+          >
+            Report Template
+          </label>
+
+          <select
+            id="rpReportTemplate"
+            class="rp-select"
+            disabled
+          >
+            <option value="">
+              Select a report area first
+            </option>
+          </select>
+        </div>
+
+        <div class="rp-field-group">
+          <label
+            class="rp-field-label"
+            for="rpSortOrder"
+          >
+            Sort Order
+          </label>
+
+          <select
+            id="rpSortOrder"
+            class="rp-select"
+            disabled
+          >
+            <option value="">
+              Configure after selecting a report
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="rp-builder-panel">
+        <h3 class="rp-builder-panel-title">
+          Report Configuration
+        </h3>
+
+        <div
+          id="rpBuilderPlaceholder"
+          class="rp-builder-placeholder"
+        >
+          <div>
+            <strong>
+              Select a report category
+            </strong>
+
+            The available fields, filters and sorting options
+            will appear here.
+          </div>
+        </div>
+
+        <div class="rp-builder-actions">
+          <button
+            id="rpResetBuilderButton"
+            class="rp-secondary-button"
+            type="button"
+          >
+            Reset
+          </button>
+
+          <button
+            id="rpPreviewReportButton"
+            class="rp-primary-button"
+            type="button"
+            disabled
+          >
+            Preview Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="rp-section">
+
+  <div class="rp-section-header">
+
+    <div>
+
+      <h2 class="rp-section-title">
+        Report Viewer
+      </h2>
+
+      <p class="rp-section-description">
+        Generated reports will appear here.
+      </p>
+
+    </div>
+
+  </div>
+
+  <div
+      id="rpReportViewer"
+      class="rp-empty-state">
+
+      Select a report and click
+      <strong>Preview Report</strong>.
+
+  </div>
+
+</section>
+
+  <section class="rp-section">
+    <div class="rp-section-header">
+      <div>
+        <h2 class="rp-section-title">
+          Suggested Report Templates
+        </h2>
+
+        <p class="rp-section-description">
+          Frequently used reports will be available as
+          predefined templates.
+        </p>
+      </div>
+    </div>
+
+    <div class="rp-template-grid">
+      <article class="rp-template-card">
+        <h3 class="rp-template-title">
+          Active Membership Summary
+        </h3>
+
+        <p class="rp-template-description">
+          Total active members and families with zone,
+          association and category summaries.
+        </p>
+
+        <button
+          class="rp-template-button"
+          type="button"
+          data-rp-template="active-membership-summary"
+        >
+          Configure
+        </button>
+      </article>
+
+      <article class="rp-template-card">
+        <h3 class="rp-template-title">
+          Outstanding Subscription List
+        </h3>
+
+        <p class="rp-template-description">
+          Families and members with pending subscription,
+          grouped by Zone.
+        </p>
+
+        <button
+          class="rp-template-button"
+          type="button"
+          data-rp-template="outstanding-subscription"
+        >
+          Configure
+        </button>
+      </article>
+
+      <article class="rp-template-card">
+        <h3 class="rp-template-title">
+          Paid Members Not in WhatsApp
+        </h3>
+
+        <p class="rp-template-description">
+          Paid members who are not currently marked as
+          official WhatsApp-group members.
+        </p>
+
+        <button
+          class="rp-template-button"
+          type="button"
+          data-rp-template="paid-not-whatsapp"
+        >
+          Configure
+        </button>
+      </article>
+
+      <article class="rp-template-card">
+        <h3 class="rp-template-title">
+          Incomplete Member Profiles
+        </h3>
+
+        <p class="rp-template-description">
+          Records with missing mobile, email, location,
+          personal or consent information.
+        </p>
+
+        <button
+          class="rp-template-button"
+          type="button"
+          data-rp-template="incomplete-profiles"
+        >
+          Configure
+        </button>
+      </article>
+
+      <article class="rp-template-card">
+        <h3 class="rp-template-title">
+          Upcoming Birthdays
+        </h3>
+
+        <p class="rp-template-description">
+          Member and spouse birthdays during a selected
+          date range.
+        </p>
+
+        <button
+          class="rp-template-button"
+          type="button"
+          data-rp-template="upcoming-birthdays"
+        >
+          Configure
+        </button>
+      </article>
+
+      <article class="rp-template-card">
+        <h3 class="rp-template-title">
+          New Members During Period
+        </h3>
+
+        <p class="rp-template-description">
+          New membership records created during a selected
+          date range.
+        </p>
+
+        <button
+          class="rp-template-button"
+          type="button"
+          data-rp-template="new-members-period"
+        >
+          Configure
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <section class="rp-section">
+    <div class="rp-section-header">
+      <div>
+        <h2 class="rp-section-title">
+          Recent Reports
+        </h2>
+
+        <p class="rp-section-description">
+          Reports generated during the current session
+          will appear here.
+        </p>
+      </div>
+    </div>
+
+    <div
+      id="rpRecentReports"
+      class="rp-empty-state"
+    >
+      No reports have been generated during this session.
+    </div>
+  </section>
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  const state = {
+    auth: null,
+    sessionToken: '',
+    activeCategory: '',
+    selectedTemplate: '',
+    initialised: false
+  };
+
+  const el = {};
+
+  const reportTemplates = {
+    membership: [
+      {
+        value: 'active-membership-summary',
+        label: 'Active Membership Summary'
+      },
+      {
+        value: 'new-members-period',
+        label: 'New Members During Period'
+      },
+      {
+        value: 'zone-membership-statistics',
+        label: 'Zone-wise Membership Statistics'
+      },
+      {
+        value: 'association-membership',
+        label: 'Association-wise Membership'
+      }
+    ],
+
+    subscription: [
+      {
+        value: 'subscription-summary',
+        label: 'Subscription Summary'
+      },
+      {
+        value: 'outstanding-subscription',
+        label: 'Outstanding Subscription by Zone'
+      },
+      {
+        value: 'members-due-renewal',
+        label: 'Members Due for Renewal'
+      },
+      {
+        value: 'year-wise-subscription',
+        label: 'Year-wise Subscription Status'
+      }
+    ],
+
+    communication: [
+      {
+        value: 'paid-not-whatsapp',
+        label: 'Paid Members Not in WhatsApp'
+      },
+      {
+        value: 'whatsapp-not-paid',
+        label: 'WhatsApp Members Not Paid'
+      },
+      {
+        value: 'missing-contact-details',
+        label: 'Missing Mobile or Email'
+      },
+      {
+        value: 'incomplete-profiles',
+        label: 'Incomplete Member Profiles'
+      }
+    ],
+
+    administration: [
+      {
+        value: 'member-directory-export',
+        label: 'Member Directory Export'
+      },
+      {
+        value: 'upcoming-birthdays',
+        label: 'Upcoming Birthdays'
+      },
+      {
+        value: 'upcoming-anniversaries',
+        label: 'Upcoming Anniversaries'
+      },
+      {
+        value: 'membership-growth',
+        label: 'Membership Growth Trends'
+      }
+    ]
+  };
+
+  function initialise() {
+    if (state.initialised) {
+      return;
+    }
+
+    [
+      'kgmisReportsModule',
+      'rpAccessBadge',
+      'rpStatusMessage',
+      'rpReportArea',
+      'rpReportTemplate',
+      'rpSortOrder',
+      'rpBuilderPlaceholder',
+      'rpResetBuilderButton',
+      'rpPreviewReportButton',
+      'rpRecentReports',
+      'rpReportViewer'
+    ].forEach(function (id) {
+      el[id] = document.getElementById(id);
+    });
+
+    if (!el.kgmisReportsModule) {
+      return;
+    }
+
+    bindEvents();
+    state.initialised = true;
+  }
+
+  function bindEvents() {
+    el.kgmisReportsModule.addEventListener(
+      'click',
+      function (event) {
+        const categoryButton =
+          event.target.closest(
+            '[data-rp-category]'
+          );
+
+        if (categoryButton) {
+          selectCategory(
+            categoryButton.getAttribute(
+              'data-rp-category'
+            )
+          );
+
+          return;
+        }
+
+        const templateButton =
+          event.target.closest(
+            '[data-rp-template]'
+          );
+
+        if (templateButton) {
+          selectTemplate(
+            templateButton.getAttribute(
+              'data-rp-template'
+            )
+          );
+        }
+      }
+    );
+
+    if (el.rpReportArea) {
+      el.rpReportArea.addEventListener(
+        'change',
+        function () {
+          selectCategory(
+            el.rpReportArea.value
+          );
+        }
+      );
+    }
+
+    if (el.rpReportTemplate) {
+      el.rpReportTemplate.addEventListener(
+        'change',
+        function () {
+          state.selectedTemplate =
+            String(
+              el.rpReportTemplate.value || ''
+            ).trim();
+
+          updateBuilderState();
+        }
+      );
+    }
+
+    if (el.rpResetBuilderButton) {
+      el.rpResetBuilderButton.addEventListener(
+        'click',
+        resetBuilder
+      );
+    }
+
+    if (el.rpPreviewReportButton) {
+      el.rpPreviewReportButton.addEventListener(
+        'click',
+        previewSelectedReport
+      );
+    }
+  }
+
+  function activate(authContext) {
+    initialise();
+
+    const auth =
+      authContext || {};
+
+    const sessionToken =
+      String(
+        auth.sessionToken || ''
+      ).trim();
+
+    if (!sessionToken) {
+      showStatus(
+        'The Reports session is missing. Please sign in again.',
+        true
+      );
+
+      return;
+    }
+
+    state.auth = auth;
+    state.sessionToken = sessionToken;
+
+    updateAccessBadge(
+      auth.user || {}
+    );
+
+    clearStatus();
+  }
+
+  function updateAccessBadge(user) {
+    if (!el.rpAccessBadge) {
+      return;
+    }
+
+    const role =
+      String(
+        user.role || 'Reports User'
+      )
+        .toLowerCase()
+        .replace(/_/g, ' ')
+        .replace(
+          /\b\w/g,
+          function (letter) {
+            return letter.toUpperCase();
+          }
+        );
+
+    el.rpAccessBadge.textContent =
+      role + ' Access';
+  }
+
+  function selectCategory(categoryName) {
+    const category =
+      String(
+        categoryName || ''
+      ).trim();
+
+    state.activeCategory = category;
+    state.selectedTemplate = '';
+
+    if (el.rpReportArea) {
+      el.rpReportArea.value = category;
+    }
+
+    populateTemplateOptions(category);
+    updateBuilderState();
+
+    if (category) {
+      showStatus(
+        formatLabel(category) +
+        ' reports selected.'
+      );
+    } else {
+      clearStatus();
+    }
+  }
+
+  function populateTemplateOptions(category) {
+    if (!el.rpReportTemplate) {
+      return;
+    }
+
+    const templates =
+      reportTemplates[category] || [];
+
+    if (!templates.length) {
+      el.rpReportTemplate.innerHTML =
+        '<option value="">' +
+        'Select a report area first' +
+        '</option>';
+
+      el.rpReportTemplate.disabled = true;
+      return;
+    }
+
+    el.rpReportTemplate.innerHTML =
+      '<option value="">' +
+      'Select report template' +
+      '</option>' +
+      templates.map(function (template) {
+        return (
+          '<option value="' +
+          escapeHtml(template.value) +
+          '">' +
+          escapeHtml(template.label) +
+          '</option>'
+        );
+      }).join('');
+
+    el.rpReportTemplate.disabled = false;
+  }
+
+  function selectTemplate(templateName) {
+    const template =
+      String(
+        templateName || ''
+      ).trim();
+
+    const category =
+      findTemplateCategory(template);
+
+    if (category) {
+      selectCategory(category);
+
+      state.selectedTemplate = template;
+
+      if (el.rpReportTemplate) {
+        el.rpReportTemplate.value = template;
+      }
+
+      updateBuilderState();
+    }
+  }
+
+  function findTemplateCategory(templateName) {
+    return Object.keys(reportTemplates)
+      .find(function (category) {
+        return reportTemplates[category]
+          .some(function (template) {
+            return template.value === templateName;
+          });
+      }) || '';
+  }
+
+  function updateBuilderState() {
+    const hasCategory =
+      Boolean(state.activeCategory);
+
+    const hasTemplate =
+      Boolean(state.selectedTemplate);
+
+    if (el.rpSortOrder) {
+      el.rpSortOrder.disabled =
+        !hasTemplate;
+
+      el.rpSortOrder.innerHTML =
+        hasTemplate
+          ? (
+              '<option value="name">' +
+              'Member Name' +
+              '</option>' +
+              '<option value="zone">' +
+              'Zone' +
+              '</option>' +
+              '<option value="association">' +
+              'Alumni Association' +
+              '</option>' +
+              '<option value="family-id">' +
+              'Family ID' +
+              '</option>'
+            )
+          : (
+              '<option value="">' +
+              'Configure after selecting a report' +
+              '</option>'
+            );
+    }
+
+    if (el.rpPreviewReportButton) {
+      el.rpPreviewReportButton.disabled =
+        !hasTemplate;
+    }
+
+    if (!el.rpBuilderPlaceholder) {
+      return;
+    }
+
+    if (!hasCategory) {
+      el.rpBuilderPlaceholder.innerHTML =
+        '<div>' +
+          '<strong>Select a report category</strong>' +
+          'The available fields, filters and sorting options ' +
+          'will appear here.' +
+        '</div>';
+
+      return;
+    }
+
+    if (!hasTemplate) {
+      el.rpBuilderPlaceholder.innerHTML =
+        '<div>' +
+          '<strong>' +
+            escapeHtml(
+              formatLabel(
+                state.activeCategory
+              )
+            ) +
+            ' Reports' +
+          '</strong>' +
+          'Select a report template to continue.' +
+        '</div>';
+
+      return;
+    }
+
+    el.rpBuilderPlaceholder.innerHTML =
+      '<div>' +
+        '<strong>' +
+          escapeHtml(
+            getTemplateLabel(
+              state.activeCategory,
+              state.selectedTemplate
+            )
+          ) +
+        '</strong>' +
+        'Field selection and filters will be added in the ' +
+        'next Report Builder implementation step.' +
+      '</div>';
+  }
+
+  function getTemplateLabel(
+    category,
+    templateValue
+  ) {
+    const templates =
+      reportTemplates[category] || [];
+
+    const match =
+      templates.find(function (template) {
+        return template.value === templateValue;
+      });
+
+    return match
+      ? match.label
+      : formatLabel(templateValue);
+  }
+
+  function resetBuilder() {
+    state.activeCategory = '';
+    state.selectedTemplate = '';
+
+    if (el.rpReportArea) {
+      el.rpReportArea.value = '';
+    }
+
+    populateTemplateOptions('');
+    updateBuilderState();
+    clearStatus();
+  }
+
+function previewSelectedReport() {
+
+  if (!state.selectedTemplate) {
+    showStatus(
+      'Select a report template first.',
+      true
+    );
+
+    return;
+  }
+
+  if (!state.sessionToken) {
+    showStatus(
+      'The Reports session is missing. Please sign in again.',
+      true
+    );
+
+    return;
+  }
+
+  if (
+    state.selectedTemplate !==
+      'active-membership-summary' &&
+    state.selectedTemplate !==
+      'subscription-summary'
+    ) {
+    showStatus(
+      'This report template is not yet connected.',
+        true
+    );
+
+    return;
+  }
+
+  if (el.rpPreviewReportButton) {
+    el.rpPreviewReportButton.disabled = true;
+    el.rpPreviewReportButton.textContent =
+      'Generating...';
+  }
+
+  showStatus(
+    state.selectedTemplate === 'subscription-summary'
+      ? 'Generating Subscription Summary...'
+      : 'Generating Membership Summary...'
+  );
+
+  if (el.rpReportViewer) {
+    el.rpReportViewer.innerHTML =
+      '<div>' +
+        '<strong>Generating report...</strong>' +
+        '<br>' +
+        'Please wait while KGMIS reads the current database.' +
+      '</div>';
+  }
+
+  google.script.run
+    .withSuccessHandler(
+      function (response) {
+
+        restorePreviewButton();
+
+        if (
+          !response ||
+          response.success !== true
+        ) {
+          showStatus(
+            'The selected report could not be generated.',
+            true
+          );
+
+          renderReportError(
+            'The report service returned an invalid response.'
+          );
+
+          return;
+        }
+
+        if (
+          state.selectedTemplate ===
+          'subscription-summary'
+        ) {
+
+          renderSubscriptionSummary(
+            response
+          );
+
+          showStatus(
+            'Subscription Summary generated successfully.'
+           );
+
+}        else {
+
+          renderMembershipSummary(
+            response
+          );
+
+          showStatus(
+            'Membership Summary generated successfully.'
+          );
+
+        }
+      }
+    )
+    .withFailureHandler(
+      function (error) {
+
+        restorePreviewButton();
+
+        const message =
+          error && error.message
+            ? error.message
+            : 'The selected report could not be generated.';
+
+        showStatus(
+          message,
+          true
+        );
+
+        renderReportError(
+          message
+        );
+      }
+    )
+
+    
+    .KGMIS_REPORTS_RunReport(
+      state.sessionToken,
+
+      state.selectedTemplate === 'subscription-summary'
+        ? 'subscription-summary'
+        : 'membership-summary',
+
+      {}
+  );
+}
+
+function restorePreviewButton() {
+
+  if (!el.rpPreviewReportButton) {
+    return;
+  }
+
+  el.rpPreviewReportButton.textContent =
+    'Preview Report';
+
+  el.rpPreviewReportButton.disabled =
+    !state.selectedTemplate;
+}
+
+
+function renderMembershipSummary(
+  response
+) {
+
+  if (!el.rpReportViewer) {
+    return;
+  }
+
+  const reportData =
+    response.reportData || {};
+
+  const master =
+    reportData.masterDatabase || {};
+
+  const familyMembers =
+    reportData.familyMembers || {};
+
+  const combined =
+    reportData.combined || {};
+
+  const generatedBy =
+    response.generatedBy || {};
+
+  const generatedOn =
+    response.generatedOn
+      ? new Date(response.generatedOn)
+      : new Date();
+
+  const generatedDateText =
+    isNaN(generatedOn.getTime())
+      ? ''
+      : generatedOn.toLocaleString(
+          'en-IN',
+          {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          }
+        );
+
+  const primaryMembers =
+    toReportNumber(master.primaryMembers);
+
+  const alumniSpouses =
+    toReportNumber(master.alumniSpouseMembers);
+
+  const nonAlumniSpouses =
+    toReportNumber(master.nonAlumniSpouses);
+
+  const categoryTotal =
+    primaryMembers +
+    alumniSpouses +
+    nonAlumniSpouses;
+
+  const primaryShare =
+    calculateReportPercent(
+      primaryMembers,
+      categoryTotal
+    );
+
+  const alumniEndShare =
+    Math.min(
+      100,
+      primaryShare +
+      calculateReportPercent(
+        alumniSpouses,
+        categoryTotal
+      )
+    );
+
+  const activePeople =
+    toReportNumber(combined.activePeople);
+
+  const totalPeople =
+    toReportNumber(combined.totalPeople);
+
+  const activePercent =
+    calculateReportPercent(
+      activePeople,
+      totalPeople
+    );
+
+  el.rpReportViewer.className =
+    'rp-report-viewer';
+
+  el.rpReportViewer.innerHTML =
+    '<div class="rp-report-output">' +
+
+      '<div class="rp-report-output-header">' +
+        '<div>' +
+          '<h3>' +
+            escapeHtml(
+              response.reportTitle ||
+              'Membership Summary'
+            ) +
+          '</h3>' +
+
+          '<p>' +
+            'Generated on ' +
+            escapeHtml(generatedDateText) +
+          '</p>' +
+        '</div>' +
+
+        '<div class="rp-report-generated-by">' +
+          escapeHtml(
+            generatedBy.userName ||
+            generatedBy.email ||
+            ''
+          ) +
+        '</div>' +
+      '</div>' +
+
+      '<div class="rp-report-hero-grid">' +
+        createHeroReportCard(
+          'Total Families',
+          master.totalFamilies,
+          'Registered KGMIS families',
+          'blue'
+        ) +
+        createHeroReportCard(
+          'Total Member Records',
+          master.totalMemberRecords,
+          'Primary and spouse records',
+          'green'
+        ) +
+        createHeroReportCard(
+          'Family Members',
+          familyMembers.totalFamilyMembers,
+          'Children and other dependants',
+          'gold'
+        ) +
+        createHeroReportCard(
+          'Total People',
+          combined.totalPeople,
+          'Combined KGMIS population',
+          'purple'
+        ) +
+      '</div>' +
+
+      '<div class="rp-report-visual-grid">' +
+        '<div class="rp-report-chart-card">' +
+          '<h4 class="rp-report-card-title">' +
+            'Member Category Composition' +
+          '</h4>' +
+          '<div class="rp-donut-wrap">' +
+            '<div class="rp-donut" ' +
+              'style="--rp-primary-share:' +
+              primaryShare +
+              '%;--rp-spouse-share:' +
+              alumniEndShare +
+              '%;">' +
+              '<div class="rp-donut-center">' +
+                '<strong>' +
+                  formatReportNumber(categoryTotal) +
+                '</strong>' +
+                '<span>Member Records</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="rp-chart-legend">' +
+              createLegendRow(
+                'blue',
+                'Primary Members',
+                primaryMembers
+              ) +
+              createLegendRow(
+                'purple',
+                'Alumni Spouses',
+                alumniSpouses
+              ) +
+              createLegendRow(
+                'gold',
+                'Non-Alumni Spouses',
+                nonAlumniSpouses
+              ) +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="rp-report-detail-card">' +
+          '<h4 class="rp-report-card-title">' +
+            'Database Status Overview' +
+          '</h4>' +
+          '<div class="rp-status-bars">' +
+            createStatusBar(
+              'Active People',
+              activePeople,
+              totalPeople,
+              'green'
+            ) +
+            createStatusBar(
+              'Active Members',
+              master.activeMemberRecords,
+              master.totalMemberRecords,
+              'blue'
+            ) +
+            createStatusBar(
+              'Active Families',
+              master.activeFamilies,
+              master.totalFamilies,
+              'orange'
+            ) +
+            createStatusBar(
+              'Archived Records',
+              master.archivedMemberRecords,
+              master.totalMemberRecords,
+              'red'
+            ) +
+          '</div>' +
+          '<p style="margin:16px 0 0;color:var(--rp-muted);' +
+            'font-size:10px;line-height:1.45;">' +
+            'Active population currently represents ' +
+            formatReportNumber(activePercent) +
+            '% of the combined population, based on RECORD_STATUS.' +
+          '</p>' +
+        '</div>' +
+      '</div>' +
+
+      '<h4 class="rp-report-subheading">' +
+        'Master Database Details' +
+      '</h4>' +
+
+      '<div class="rp-report-stat-grid">' +
+        createReportStatCard(
+          'Active Families',
+          master.activeFamilies,
+          '#0aa957'
+        ) +
+        createReportStatCard(
+          'Active Member Records',
+          master.activeMemberRecords,
+          '#176c91'
+        ) +
+        createReportStatCard(
+          'Primary Members',
+          master.primaryMembers,
+          '#2563eb'
+        ) +
+        createReportStatCard(
+          'Alumni Spouse Members',
+          master.alumniSpouseMembers,
+          '#7c3aed'
+        ) +
+        createReportStatCard(
+          'Non-Alumni Spouses',
+          master.nonAlumniSpouses,
+          '#f59e0b'
+        ) +
+        createReportStatCard(
+          'Archived Member Records',
+          master.archivedMemberRecords,
+          '#ef4444'
+        ) +
+      '</div>' +
+
+      '<h4 class="rp-report-subheading">' +
+        'Family Members Database' +
+      '</h4>' +
+
+      '<div class="rp-report-stat-grid">' +
+        createReportStatCard(
+          'Total Family Members',
+          familyMembers.totalFamilyMembers,
+          '#0891b2'
+        ) +
+        createReportStatCard(
+          'Active Family Members',
+          familyMembers.activeFamilyMembers,
+          '#0aa957'
+        ) +
+        createReportStatCard(
+          'Children',
+          familyMembers.children,
+          '#ec4899'
+        ) +
+        createReportStatCard(
+          'Other Family Members',
+          familyMembers.otherFamilyMembers,
+          '#6366f1'
+        ) +
+      '</div>' +
+
+    '</div>';
+
+  el.rpReportViewer.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+
+
+function renderSubscriptionSummary(
+  response
+) {
+
+  if (!el.rpReportViewer) {
+    return;
+  }
+
+  const reportData =
+    response.reportData || {};
+
+  const summary =
+    reportData.subscriptionSummary || {};
+
+  const generatedBy =
+    response.generatedBy || {};
+
+  const generatedOn =
+    response.generatedOn
+      ? new Date(response.generatedOn)
+      : new Date();
+
+  const generatedDateText =
+    isNaN(generatedOn.getTime())
+      ? ''
+      : generatedOn.toLocaleString(
+          'en-IN',
+          {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          }
+        );
+
+  const totalFamilies =
+    toReportNumber(
+      summary.totalFamilies
+    );
+
+  const paidThisYear =
+    toReportNumber(
+      summary.paidThisYear
+    );
+
+  const paidPreviousYear =
+    toReportNumber(
+      summary.paidPreviousYear
+    );
+
+  const pendingMembership =
+    toReportNumber(
+      summary.pendingMembership
+    );
+
+  const subscriptionProgress =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        toReportNumber(
+          summary.subscriptionProgress
+        )
+      )
+    );
+
+  const renewalRate =
+    toReportNumber(
+      summary.renewalRate
+    );
+
+  const yearOnYearChange =
+    toReportNumber(
+      summary.yearOnYearChange
+    );
+
+  const yearOnYearChangePercent =
+    toReportNumber(
+      summary.yearOnYearChangePercent
+    );
+
+  const paidShare =
+    calculateReportPercent(
+      paidThisYear,
+      totalFamilies
+    );
+
+  const membershipFeeText =
+    Number(
+      summary.membershipFee || 0
+    ).toLocaleString(
+      'en-IN',
+      {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }
+    );
+
+  const subscriptionReceivedText =
+    Number(
+      summary.subscriptionReceived || 0
+    ).toLocaleString(
+      'en-IN',
+      {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }
+    );
+
+  const changePrefix =
+    yearOnYearChange > 0
+      ? '+'
+      : '';
+
+  const changePercentPrefix =
+    yearOnYearChangePercent > 0
+      ? '+'
+      : '';
+
+  const changeDescription =
+    yearOnYearChange > 0
+      ? 'Increase over previous year'
+      : (
+          yearOnYearChange < 0
+            ? 'Decrease from previous year'
+            : 'No change from previous year'
+        );
+
+  const changeColour =
+    yearOnYearChange > 0
+      ? '#0aa957'
+      : (
+          yearOnYearChange < 0
+            ? '#ef4444'
+            : '#64748b'
+        );
+
+  el.rpReportViewer.className =
+    'rp-report-viewer';
+
+  el.rpReportViewer.innerHTML =
+    '<div class="rp-report-output">' +
+
+      '<div class="rp-report-output-header">' +
+        '<div>' +
+          '<h3>' +
+            escapeHtml(
+              response.reportTitle ||
+              'Subscription Summary'
+            ) +
+          '</h3>' +
+
+          '<p>' +
+            'Financial Year ' +
+            escapeHtml(
+              summary.financialYear || ''
+            ) +
+            ' · Generated on ' +
+            escapeHtml(
+              generatedDateText
+            ) +
+          '</p>' +
+        '</div>' +
+
+        '<div class="rp-report-generated-by">' +
+          escapeHtml(
+            generatedBy.userName ||
+            generatedBy.email ||
+            ''
+          ) +
+        '</div>' +
+      '</div>' +
+
+
+      /*
+       * ======================================================
+       * PRIMARY KPI CARDS
+       * ======================================================
+       */
+
+      '<div class="rp-report-hero-grid">' +
+
+        createHeroReportCard(
+          'Total Families',
+          totalFamilies,
+          'Unique families in the Master Database',
+          'blue'
+        ) +
+
+        createHeroReportCard(
+          'Paid This Year',
+          paidThisYear,
+          'Paid for ' +
+            String(
+              summary.financialYear || ''
+            ),
+          'green'
+        ) +
+
+        createHeroReportCard(
+          'Pending Membership',
+          pendingMembership,
+          'Families not yet renewed',
+          'gold'
+        ) +
+
+        createHeroReportCard(
+          'Paid Previous Year',
+          paidPreviousYear,
+          'Paid for ' +
+            String(
+              summary.previousFinancialYear ||
+              '2025-26'
+            ),
+          'purple'
+        ) +
+
+      '</div>' +
+
+
+      /*
+       * ======================================================
+       * PAID / PENDING VISUAL AND SUBSCRIPTION PROGRESS
+       * ======================================================
+       */
+
+      '<div class="rp-report-visual-grid">' +
+
+        '<div class="rp-report-chart-card">' +
+
+          '<h4 class="rp-report-card-title">' +
+            'Paid and Pending Membership' +
+          '</h4>' +
+
+          '<div class="rp-donut-wrap">' +
+
+            '<div class="rp-donut" ' +
+              'style="' +
+                '--rp-primary-share:' +
+                paidShare +
+                '%;' +
+                '--rp-spouse-share:' +
+                paidShare +
+                '%;' +
+                'background:conic-gradient(' +
+                  '#0aa957 0 ' +
+                  paidShare +
+                  '%,' +
+                  '#f59e0b ' +
+                  paidShare +
+                  '% 100%' +
+                ');' +
+              '">' +
+
+              '<div class="rp-donut-center">' +
+                '<strong>' +
+                  formatReportNumber(
+                    totalFamilies
+                  ) +
+                '</strong>' +
+                '<span>Total Families</span>' +
+              '</div>' +
+
+            '</div>' +
+
+            '<div class="rp-chart-legend">' +
+
+              createLegendRow(
+                'blue',
+                'Paid This Year',
+                paidThisYear
+              ) +
+
+              createLegendRow(
+                'gold',
+                'Pending Membership',
+                pendingMembership
+              ) +
+
+            '</div>' +
+
+          '</div>' +
+
+        '</div>' +
+
+
+        '<div class="rp-report-detail-card">' +
+
+          '<h4 class="rp-report-card-title">' +
+            'Subscription Progress' +
+          '</h4>' +
+
+          '<div style="' +
+            'display:flex;' +
+            'align-items:flex-end;' +
+            'justify-content:space-between;' +
+            'gap:14px;' +
+            'margin-bottom:12px;' +
+          '">' +
+
+            '<div>' +
+              '<strong style="' +
+                'display:block;' +
+                'color:var(--rp-primary-dark);' +
+                'font-size:34px;' +
+                'line-height:1;' +
+              '">' +
+                formatReportNumber(
+                  subscriptionProgress
+                ) +
+                '%' +
+              '</strong>' +
+
+              '<span style="' +
+                'display:block;' +
+                'margin-top:7px;' +
+                'color:var(--rp-muted);' +
+                'font-size:10px;' +
+              '">' +
+                formatReportNumber(
+                  paidThisYear
+                ) +
+                ' of ' +
+                formatReportNumber(
+                  totalFamilies
+                ) +
+                ' families renewed' +
+              '</span>' +
+            '</div>' +
+
+            '<div style="' +
+              'color:var(--rp-muted);' +
+              'font-size:10px;' +
+              'font-weight:800;' +
+              'text-align:right;' +
+            '">' +
+              escapeHtml(
+                summary.financialYear || ''
+              ) +
+            '</div>' +
+
+          '</div>' +
+
+          '<div class="rp-status-bar-track" ' +
+            'style="height:18px;">' +
+
+            '<div class="rp-status-bar-fill green" ' +
+              'style="width:' +
+                subscriptionProgress +
+                '%;">' +
+            '</div>' +
+
+          '</div>' +
+
+          '<div style="' +
+            'display:grid;' +
+            'grid-template-columns:' +
+              'repeat(2,minmax(0,1fr));' +
+            'gap:10px;' +
+            'margin-top:18px;' +
+          '">' +
+
+            '<div style="' +
+              'padding:12px;' +
+              'border:1px solid var(--rp-border);' +
+              'border-radius:10px;' +
+              'background:var(--rp-panel-soft);' +
+            '">' +
+              '<span style="' +
+                'display:block;' +
+                'color:var(--rp-muted);' +
+                'font-size:9px;' +
+                'font-weight:900;' +
+                'text-transform:uppercase;' +
+              '">' +
+                'Membership Fee' +
+              '</span>' +
+
+              '<strong style="' +
+                'display:block;' +
+                'margin-top:7px;' +
+                'color:var(--rp-primary-dark);' +
+                'font-size:20px;' +
+              '">' +
+                escapeHtml(
+                  membershipFeeText
+                ) +
+              '</strong>' +
+            '</div>' +
+
+            '<div style="' +
+              'padding:12px;' +
+              'border:1px solid var(--rp-border);' +
+              'border-radius:10px;' +
+              'background:var(--rp-panel-soft);' +
+            '">' +
+              '<span style="' +
+                'display:block;' +
+                'color:var(--rp-muted);' +
+                'font-size:9px;' +
+                'font-weight:900;' +
+                'text-transform:uppercase;' +
+              '">' +
+                'Subscription Received' +
+              '</span>' +
+
+              '<strong style="' +
+                'display:block;' +
+                'margin-top:7px;' +
+                'color:#0a7a46;' +
+                'font-size:20px;' +
+              '">' +
+                escapeHtml(
+                  subscriptionReceivedText
+                ) +
+              '</strong>' +
+            '</div>' +
+
+          '</div>' +
+
+        '</div>' +
+
+      '</div>' +
+
+
+      /*
+       * ======================================================
+       * CURRENT YEAR VS PREVIOUS YEAR
+       * ======================================================
+       */
+
+      '<h4 class="rp-report-subheading">' +
+        'Current Year vs Previous Year' +
+      '</h4>' +
+
+      '<div class="rp-report-stat-grid">' +
+
+        createReportStatCard(
+          'Paid This Year',
+          paidThisYear,
+          '#0aa957'
+        ) +
+
+        createReportStatCard(
+          'Paid Previous Year',
+          paidPreviousYear,
+          '#7c3aed'
+        ) +
+
+        createReportStatCard(
+          'Family Change',
+          changePrefix +
+            formatReportNumber(
+              yearOnYearChange
+            ),
+          changeColour
+        ) +
+
+        createReportStatCard(
+          'Percentage Change',
+          changePercentPrefix +
+            formatReportNumber(
+              yearOnYearChangePercent
+            ) +
+            '%',
+          changeColour
+        ) +
+
+      '</div>' +
+
+
+      /*
+       * ======================================================
+       * RENEWAL PERFORMANCE
+       * ======================================================
+       */
+
+      '<div class="rp-report-detail-card" ' +
+        'style="margin-top:18px;">' +
+
+        '<h4 class="rp-report-card-title">' +
+          'Renewal Performance' +
+        '</h4>' +
+
+        '<div style="' +
+          'display:flex;' +
+          'align-items:center;' +
+          'justify-content:space-between;' +
+          'gap:16px;' +
+          'flex-wrap:wrap;' +
+        '">' +
+
+          '<div>' +
+            '<strong style="' +
+              'display:block;' +
+              'color:' +
+                changeColour +
+                ';' +
+              'font-size:30px;' +
+              'line-height:1;' +
+            '">' +
+              formatReportNumber(
+                renewalRate
+              ) +
+              '%' +
+            '</strong>' +
+
+            '<span style="' +
+              'display:block;' +
+              'margin-top:7px;' +
+              'color:var(--rp-muted);' +
+              'font-size:10px;' +
+            '">' +
+              'Paid this year compared with ' +
+              'paid previous year' +
+            '</span>' +
+          '</div>' +
+
+          '<div style="' +
+            'padding:8px 12px;' +
+            'border-radius:999px;' +
+            'color:' +
+              changeColour +
+              ';' +
+            'background:#f8fafc;' +
+            'font-size:10px;' +
+            'font-weight:900;' +
+          '">' +
+            escapeHtml(
+              changeDescription
+            ) +
+          '</div>' +
+
+        '</div>' +
+
+      '</div>' +
+
+    '</div>';
+
+  el.rpReportViewer.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+
+function createSubscriptionHeroCard(
+  label,
+  value,
+  note,
+  colourClass,
+  isCurrency
+) {
+
+  const displayValue =
+    isCurrency
+      ? formatReportCurrency(value)
+      : formatReportNumber(value);
+
+  return (
+    '<div class="rp-report-hero-card ' +
+      escapeHtml(colourClass) +
+    '">' +
+      '<span class="rp-report-hero-label">' +
+        escapeHtml(label) +
+      '</span>' +
+      '<strong class="rp-report-hero-value">' +
+        displayValue +
+      '</strong>' +
+      '<span class="rp-report-hero-note">' +
+        escapeHtml(note) +
+      '</span>' +
+    '</div>'
+  );
+}
+
+
+function createSubscriptionFinancialCard(
+  label,
+  value,
+  note,
+  accentColour
+) {
+
+  return (
+    '<div class="rp-subscription-financial-card" ' +
+      'style="--finance-accent:' +
+      escapeHtml(accentColour || '#176c91') +
+      ';">' +
+      '<span>' +
+        escapeHtml(label) +
+      '</span>' +
+      '<strong>' +
+        formatReportCurrency(value) +
+      '</strong>' +
+      '<small>' +
+        escapeHtml(note) +
+      '</small>' +
+    '</div>'
+  );
+}
+
+function createHeroReportCard(
+  label,
+  value,
+  note,
+  colourClass
+) {
+
+  return (
+    '<div class="rp-report-hero-card ' +
+      escapeHtml(colourClass) +
+    '">' +
+      '<span class="rp-report-hero-label">' +
+        escapeHtml(label) +
+      '</span>' +
+      '<strong class="rp-report-hero-value">' +
+        formatReportNumber(value) +
+      '</strong>' +
+      '<span class="rp-report-hero-note">' +
+        escapeHtml(note) +
+      '</span>' +
+    '</div>'
+  );
+}
+
+
+function createLegendRow(
+  colourClass,
+  label,
+  value
+) {
+
+  return (
+    '<div class="rp-chart-legend-row">' +
+      '<span class="rp-legend-dot ' +
+        escapeHtml(colourClass) +
+      '"></span>' +
+      '<span>' +
+        escapeHtml(label) +
+      '</span>' +
+      '<strong>' +
+        formatReportNumber(value) +
+      '</strong>' +
+    '</div>'
+  );
+}
+
+
+function createStatusBar(
+  label,
+  value,
+  total,
+  colourClass
+) {
+
+  const safeValue =
+    toReportNumber(value);
+
+  const percent =
+    calculateReportPercent(
+      safeValue,
+      total
+    );
+
+  return (
+    '<div class="rp-status-bar-row">' +
+      '<span class="rp-status-bar-label">' +
+        escapeHtml(label) +
+      '</span>' +
+      '<div class="rp-status-bar-track">' +
+        '<div class="rp-status-bar-fill ' +
+          escapeHtml(colourClass) +
+        '" style="width:' +
+          percent +
+        '%;"></div>' +
+      '</div>' +
+      '<span class="rp-status-bar-value">' +
+        formatReportNumber(safeValue) +
+      '</span>' +
+    '</div>'
+  );
+}
+
+
+function calculateReportPercent(
+  value,
+  total
+) {
+
+  const safeValue =
+    toReportNumber(value);
+
+  const safeTotal =
+    toReportNumber(total);
+
+  if (safeTotal <= 0) {
+    return 0;
+  }
+
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      Number(
+        (
+          safeValue /
+          safeTotal *
+          100
+        ).toFixed(1)
+      )
+    )
+  );
+}
+
+
+function toReportNumber(value) {
+
+  const number = Number(value);
+
+  return Number.isFinite(number)
+    ? number
+    : 0;
+}
+
+
+function formatReportNumber(value) {
+
+  return toReportNumber(value)
+    .toLocaleString('en-IN');
+}
+
+
+
+function formatReportCurrency(value) {
+
+  return toReportNumber(value)
+    .toLocaleString(
+      'en-IN',
+      {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }
+    );
+}
+
+
+function formatReportDecimal(value) {
+
+  const safeValue =
+    toReportNumber(value);
+
+  return Number.isInteger(safeValue)
+    ? safeValue.toLocaleString('en-IN')
+    : safeValue.toLocaleString(
+        'en-IN',
+        {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 2
+        }
+      );
+}
+
+
+function createReportStatCard(
+  label,
+  value,
+  accentColour
+) {
+
+  return (
+    '<div class="rp-report-stat-card" ' +
+      'style="--stat-accent:' +
+      escapeHtml(
+        accentColour || '#176c91'
+      ) +
+      ';">' +
+      '<span>' +
+        escapeHtml(label) +
+      '</span>' +
+      '<strong>' +
+        formatReportNumber(value) +
+      '</strong>' +
+    '</div>'
+  );
+}
+
+
+function renderReportError(
+  message
+) {
+
+  if (!el.rpReportViewer) {
+    return;
+  }
+
+  el.rpReportViewer.className =
+    'rp-empty-state';
+
+  el.rpReportViewer.innerHTML =
+    '<div>' +
+      '<strong>Report generation failed</strong>' +
+      '<br>' +
+      escapeHtml(message) +
+    '</div>';
+}
+
+  function showStatus(
+    message,
+    isError
+  ) {
+    if (!el.rpStatusMessage) {
+      return;
+    }
+
+    el.rpStatusMessage.textContent =
+      String(message || '');
+
+    el.rpStatusMessage.className =
+      'rp-status-message visible' +
+      (isError ? ' error' : '');
+  }
+
+  function clearStatus() {
+    if (!el.rpStatusMessage) {
+      return;
+    }
+
+    el.rpStatusMessage.textContent = '';
+    el.rpStatusMessage.className =
+      'rp-status-message';
+  }
+
+  function reset() {
+    state.auth = null;
+    state.sessionToken = '';
+
+    if (state.initialised) {
+      resetBuilder();
+
+      if (el.rpAccessBadge) {
+        el.rpAccessBadge.textContent =
+          'Reports Access';
+      }
+    }
+  }
+
+  function formatLabel(value) {
+    return String(value || '')
+      .replace(/-/g, ' ')
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(
+        /\b\w/g,
+        function (letter) {
+          return letter.toUpperCase();
+        }
+      );
+  }
+
+  function escapeHtml(value) {
+    return String(
+      value === null ||
+      value === undefined
+        ? ''
+        : value
+    )
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  window.KGMIS_REPORTS_MODULE = {
+    activate: activate,
+    reset: reset
+  };
+
+  if (
+    document.readyState === 'loading'
+  ) {
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialise
+    );
+  } else {
+    initialise();
+  }
+})();
+</script>

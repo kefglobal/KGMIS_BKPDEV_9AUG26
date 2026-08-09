@@ -1,0 +1,2595 @@
+<!--
+============================================================
+  KEF Global Membership Information System (KGMIS)
+  Embedded Administration Module
+
+  File: 37.00_KGMIS_Module_Admin.html
+  Version: 0.1
+  Developed by: James J0seph Alenchery
+============================================================
+-->
+
+<style>
+  #kgmisAdminModuleHost {
+    --ad-primary: #176c91;
+    --ad-primary-dark: #0d4e70;
+    --ad-primary-light: #e7f4f9;
+    --ad-border: #d5e0e8;
+    --ad-panel: #ffffff;
+    --ad-background: #f3f7fa;
+    --ad-text: #1f2937;
+    --ad-muted: #64748b;
+    --ad-shadow: 0 5px 18px rgba(15, 76, 105, 0.08);
+    width: 100%;
+    min-width: 0;
+    color: var(--ad-text);
+    background: var(--ad-background);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #kgmisAdminModuleHost *,
+  #kgmisAdminModuleHost *::before,
+  #kgmisAdminModuleHost *::after {
+    box-sizing: border-box;
+  }
+
+  #kgmisAdminModuleHost button,
+  #kgmisAdminModuleHost select {
+    font: inherit;
+  }
+
+  #kgmisAdminModuleHost button {
+    cursor: pointer;
+  }
+
+  #kgmisAdminModuleHost button:disabled {
+    cursor: not-allowed;
+  }
+
+  .ad-shell {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ad-navigation {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    margin-bottom: 16px;
+    padding: 10px;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: var(--ad-shadow);
+    backdrop-filter: blur(8px);
+  }
+
+  .ad-navigation-label {
+    margin: 0 0 8px;
+    color: var(--ad-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ad-desktop-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .ad-nav-button {
+    min-height: 38px;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: var(--ad-primary-dark);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .ad-nav-button:hover:not(:disabled) {
+    border-color: #b9d7e6;
+    background: var(--ad-primary-light);
+  }
+
+  .ad-nav-button.active {
+    border-color: var(--ad-primary);
+    color: #ffffff;
+    background: var(--ad-primary);
+  }
+
+  .ad-nav-button:disabled {
+    opacity: 0.48;
+  }
+
+  .ad-nav-icon {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .ad-coming-soon {
+    margin-left: 3px;
+    padding: 2px 5px;
+    border-radius: 999px;
+    color: var(--ad-muted);
+    background: #eef2f5;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .ad-mobile-nav {
+    display: none;
+  }
+
+  .ad-mobile-select {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: 9px;
+    color: var(--ad-primary-dark);
+    background: #ffffff;
+    font-weight: 800;
+  }
+
+  .ad-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ad-global-message {
+    display: none;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+  }
+
+  .ad-global-message.error {
+    display: block;
+    border: 1px solid #fecdca;
+    color: #b42318;
+    background: #fef3f2;
+  }
+
+  .ad-portal-module {
+    display: none;
+  }
+
+  .ad-portal-module.active {
+    display: block;
+  }
+
+  .ad-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+  }
+
+  .ad-page-title {
+    margin: 0;
+    color: var(--ad-primary-dark);
+    font-size: 25px;
+    line-height: 1.15;
+  }
+
+  .ad-page-description {
+    margin: 5px 0 0;
+    color: var(--ad-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ad-edition-badge {
+    min-width: 168px;
+    padding: 9px 14px;
+    border: 1px solid #a8d7e8;
+    border-radius: 11px;
+    color: var(--ad-primary-dark);
+    background: var(--ad-primary-light);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .ad-edition-label {
+    color: var(--ad-muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ad-edition-value {
+    margin-top: 4px;
+    color: var(--ad-primary-dark);
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .ad-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .ad-dashboard-card {
+    min-width: 0;
+    min-height: 110px;
+    padding: 15px 16px;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    background: var(--ad-panel);
+    box-shadow: var(--ad-shadow);
+  }
+
+  .ad-card-label {
+    color: var(--ad-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  .ad-card-value {
+    display: block;
+    margin-top: 8px;
+    color: var(--ad-primary-dark);
+    font-size: 25px;
+    font-weight: 800;
+  }
+
+  .ad-card-note {
+    margin-top: 6px;
+    color: var(--ad-muted);
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .ad-panel {
+    padding: 18px;
+    margin-bottom: 18px;
+    border: 1px solid var(--ad-border);
+    border-radius: 14px;
+    background: var(--ad-panel);
+    box-shadow: var(--ad-shadow);
+  }
+
+  .ad-panel-title {
+    margin: 0 0 5px;
+    color: var(--ad-primary-dark);
+    font-size: 19px;
+  }
+
+  .ad-panel-description {
+    margin: 0;
+    color: var(--ad-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ad-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .ad-quick-action {
+    min-height: 86px;
+    padding: 13px;
+    border: 1px solid var(--ad-border);
+    border-radius: 11px;
+    color: var(--ad-primary-dark);
+    background: #f8fbfd;
+    text-align: left;
+    font-weight: 800;
+  }
+
+  .ad-quick-action:hover:not(:disabled) {
+    border-color: var(--ad-primary);
+    background: var(--ad-primary-light);
+  }
+
+  .ad-quick-action:disabled {
+    opacity: 0.52;
+    background: #f5f7f9;
+  }
+
+  .ad-quick-action-icon {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 20px;
+  }
+
+  .ad-quick-action-note {
+    display: block;
+    margin-top: 5px;
+    color: var(--ad-muted);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .ad-generator-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .ad-generator-icon {
+    width: 76px;
+    height: 76px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #b9d7e6;
+    border-radius: 16px;
+    background: var(--ad-primary-light);
+    font-size: 38px;
+  }
+
+  .ad-generator-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    padding: 7px 10px;
+    border: 1px solid #a7e6bd;
+    border-radius: 999px;
+    color: #166534;
+    background: #ecfdf3;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .ad-generator-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #16a34a;
+  }
+
+
+  .ad-search-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .ad-search-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 11px 14px;
+    border: 1px solid var(--ad-border);
+    border-radius: 10px;
+    color: var(--ad-text);
+    background: #ffffff;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .ad-search-input:focus {
+    border-color: var(--ad-primary);
+    box-shadow: 0 0 0 3px rgba(23, 108, 145, 0.12);
+  }
+
+  .ad-search-button {
+    min-width: 120px;
+    min-height: 44px;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 10px;
+    color: #ffffff;
+    background: var(--ad-primary);
+    font-weight: 800;
+  }
+
+  .ad-search-button:hover:not(:disabled) {
+    background: var(--ad-primary-dark);
+  }
+
+  .ad-search-button:disabled {
+    opacity: 0.65;
+  }
+
+  .ad-search-status {
+    min-height: 20px;
+    margin-top: 12px;
+    color: var(--ad-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ad-search-status.error {
+    color: #b42318;
+  }
+
+  .ad-search-results {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .ad-result-card {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    padding: 15px;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .ad-result-photo {
+    width: 72px;
+    height: 72px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    color: var(--ad-primary-dark);
+    background: var(--ad-primary-light);
+    font-size: 28px;
+    font-weight: 800;
+  }
+
+  .ad-result-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ad-result-name {
+    margin: 0;
+    color: var(--ad-primary-dark);
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .ad-result-type {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    color: var(--ad-primary-dark);
+    background: var(--ad-primary-light);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .ad-result-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 16px;
+    margin-top: 11px;
+    color: var(--ad-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .ad-result-details strong {
+    color: var(--ad-text);
+  }
+
+  .ad-result-card-state {
+    min-width: 150px;
+    text-align: right;
+  }
+
+  .ad-card-status-badge {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .ad-card-status-badge.not-issued {
+    color: #92400e;
+    background: #fff7ed;
+  }
+
+  .ad-card-status-badge.active {
+    color: #166534;
+    background: #ecfdf3;
+  }
+
+  .ad-card-status-badge.extended {
+    color: #1d4ed8;
+    background: #eff6ff;
+  }
+
+  .ad-card-status-badge.revoked {
+    color: #b42318;
+    background: #fef3f2;
+  }
+
+  .ad-result-action {
+    min-width: 120px;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid var(--ad-primary);
+    border-radius: 9px;
+    color: #ffffff;
+    background: var(--ad-primary);
+    font-weight: 800;
+  }
+
+  .ad-result-action.secondary {
+    color: var(--ad-primary-dark);
+    background: #ffffff;
+  }
+
+  .ad-card-action-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  }
+
+  .ad-card-action-group .ad-result-action {
+  width: 190px;
+  min-width: 190px;
+  }
+
+  .ad-empty-results {
+    padding: 22px;
+    border: 1px dashed var(--ad-border);
+    border-radius: 12px;
+    color: var(--ad-muted);
+    background: #fbfdfe;
+    text-align: center;
+    font-size: 13px;
+  }
+
+
+
+  .ad-review-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .ad-review-button {
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 1px solid var(--ad-primary);
+    border-radius: 9px;
+    color: #ffffff;
+    background: var(--ad-primary);
+    font-weight: 800;
+  }
+
+  .ad-review-button.secondary {
+    color: var(--ad-primary-dark);
+    background: #ffffff;
+  }
+
+  .ad-review-button.approve {
+    border-color: #15803d;
+    background: #15803d;
+  }
+
+  .ad-review-button:hover:not(:disabled) {
+    filter: brightness(0.96);
+  }
+
+  .ad-review-button:disabled {
+    opacity: 0.62;
+  }
+
+  .ad-review-status {
+    min-height: 20px;
+    color: var(--ad-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ad-review-status.error {
+    color: #b42318;
+  }
+
+  .ad-request-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .ad-request-card {
+    padding: 14px;
+    border: 1px solid var(--ad-border);
+    border-radius: 11px;
+    background: #ffffff;
+  }
+
+  .ad-request-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .ad-request-title {
+    margin: 0;
+    color: var(--ad-primary-dark);
+    font-size: 16px;
+  }
+
+  .ad-request-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px 16px;
+    margin-top: 9px;
+    color: var(--ad-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .ad-request-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    color: #92400e;
+    background: #fff7ed;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .ad-request-detail {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .ad-request-detail.active {
+    display: block;
+  }
+
+  .ad-review-summary {
+    margin-bottom: 14px;
+    padding: 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: 10px;
+    color: var(--ad-muted);
+    background: #f8fbfd;
+    font-size: 12px;
+    white-space: pre-wrap;
+  }
+
+  .ad-change-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--ad-border);
+    border-radius: 10px;
+  }
+
+  .ad-change-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    background: #ffffff;
+  }
+
+  .ad-change-table th,
+  .ad-change-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ad-border);
+    text-align: left;
+    vertical-align: top;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .ad-change-table th {
+    color: var(--ad-primary-dark);
+    background: var(--ad-primary-light);
+    font-weight: 800;
+  }
+
+  .ad-change-table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .ad-old-value {
+    color: var(--ad-muted);
+  }
+
+  .ad-new-value {
+    color: #166534;
+    font-weight: 700;
+  }
+
+  .ad-review-remarks {
+    width: 100%;
+    min-height: 86px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: 9px;
+    color: var(--ad-text);
+    background: #ffffff;
+    font: inherit;
+    resize: vertical;
+  }
+
+  @media (max-width: 1100px) {
+    .ad-dashboard-grid,
+    .ad-quick-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .ad-navigation {
+      position: static;
+      padding: 9px;
+    }
+
+    .ad-desktop-nav {
+      display: none;
+    }
+
+    .ad-mobile-nav {
+      display: block;
+    }
+
+    .ad-page-header {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ad-edition-badge {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .ad-dashboard-grid,
+    .ad-quick-actions,
+    .ad-generator-intro {
+      grid-template-columns: 1fr;
+    }
+
+    .ad-page-title {
+      font-size: 22px;
+    }
+
+    .ad-panel {
+      padding: 14px;
+    }
+
+    .ad-search-bar {
+      flex-direction: column;
+    }
+
+    .ad-search-button {
+      width: 100%;
+    }
+
+    .ad-result-card {
+      grid-template-columns: 58px minmax(0, 1fr);
+    }
+
+    .ad-result-photo {
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
+      font-size: 23px;
+    }
+
+    .ad-result-details {
+      grid-template-columns: 1fr;
+    }
+
+    .ad-result-card-state {
+      grid-column: 1 / -1;
+      width: 100%;
+      text-align: left;
+    }
+
+    .ad-result-action {
+      width: 100%;
+    }
+
+    .ad-request-card-header,
+    .ad-review-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .ad-request-meta {
+      grid-template-columns: 1fr;
+    }
+
+    .ad-review-button {
+      width: 100%;
+    }
+  }
+</style>
+
+<div id="kgmisAdminModuleHost" class="ad-shell">
+  <div class="ad-navigation">
+    <p class="ad-navigation-label">Administration Functions</p>
+
+    <nav class="ad-desktop-nav" aria-label="Administration navigation">
+      <button class="ad-nav-button active" type="button"
+        data-ad-module="dashboard">
+        <span class="ad-nav-icon">🏠</span>Dashboard
+      </button>
+
+      <button class="ad-nav-button" type="button"
+        data-ad-module="digital-id-generator">
+        <span class="ad-nav-icon">🪪</span>Digital ID Generator
+      </button>
+
+      <button class="ad-nav-button" type="button"
+        data-ad-module="member-management">
+        <span class="ad-nav-icon">👥</span>Member Management
+      </button>
+
+      <button class="ad-nav-button" type="button" disabled>
+        <span class="ad-nav-icon">🔐</span>Access Control
+        <span class="ad-coming-soon">Soon</span>
+      </button>
+
+      <button class="ad-nav-button" type="button" disabled>
+        <span class="ad-nav-icon">⚙️</span>System Settings
+        <span class="ad-coming-soon">Soon</span>
+      </button>
+
+      <button class="ad-nav-button" type="button" disabled>
+        <span class="ad-nav-icon">📋</span>Audit Logs
+        <span class="ad-coming-soon">Soon</span>
+      </button>
+
+      <button class="ad-nav-button" type="button" disabled>
+        <span class="ad-nav-icon">🧹</span>Maintenance
+        <span class="ad-coming-soon">Soon</span>
+      </button>
+    </nav>
+
+    <div class="ad-mobile-nav">
+      <select id="kgmisAdminMobileNav" class="ad-mobile-select">
+        <option value="dashboard">🏠 Dashboard</option>
+        <option value="digital-id-generator">🪪 Digital ID Generator</option>
+        <option value="member-management">👥 Member Management</option>
+        <option disabled>🔐 Access Control — Coming Soon</option>
+        <option disabled>⚙️ System Settings — Coming Soon</option>
+        <option disabled>📋 Audit Logs — Coming Soon</option>
+        <option disabled>🧹 Maintenance — Coming Soon</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="ad-content">
+    <div id="kgmisAdminGlobalMessage" class="ad-global-message"></div>
+
+    <section id="kgmisAdminDashboardModule"
+      class="ad-portal-module active">
+      <div class="ad-page-header">
+        <div>
+          <h2 class="ad-page-title">Administration Dashboard</h2>
+          <p class="ad-page-description">
+            Central access to KGMIS administrative functions and system-management tools.
+          </p>
+        </div>
+
+        <div class="ad-edition-badge">
+          <div class="ad-edition-label">KGMIS</div>
+          <div class="ad-edition-value">Enterprise Edition 1.0</div>
+        </div>
+      </div>
+
+      <div class="ad-dashboard-grid">
+        <div class="ad-dashboard-card">
+          <span class="ad-card-label">Digital Card Records</span>
+          <span class="ad-card-value">—</span>
+          <div class="ad-card-note">Total records in KEFG_MEMBER_CARDS</div>
+        </div>
+
+        <div class="ad-dashboard-card">
+          <span class="ad-card-label">Active Cards</span>
+          <span class="ad-card-value">—</span>
+          <div class="ad-card-note">Cards with ACTIVE status</div>
+        </div>
+
+        <div class="ad-dashboard-card">
+          <span class="ad-card-label">Extended Cards</span>
+          <span class="ad-card-value">—</span>
+          <div class="ad-card-note">Cards with EXTENDED status</div>
+        </div>
+
+        <div class="ad-dashboard-card">
+          <span class="ad-card-label">Revoked Cards</span>
+          <span class="ad-card-value">—</span>
+          <div class="ad-card-note">Cards with REVOKED status</div>
+        </div>
+      </div>
+
+      <section class="ad-panel">
+        <h3 class="ad-panel-title">Quick Actions</h3>
+        <p class="ad-panel-description">
+          Select an Administration function.
+        </p>
+
+        <div class="ad-quick-actions">
+          <button class="ad-quick-action" type="button"
+            data-ad-quick-module="digital-id-generator">
+            <span class="ad-quick-action-icon">🪪</span>
+            Digital ID Generator
+            <span class="ad-quick-action-note">
+              Search members and create digital membership-card records.
+            </span>
+          </button>
+
+          <button class="ad-quick-action" type="button"
+            data-ad-quick-module="member-management">
+            <span class="ad-quick-action-icon">👥</span>
+            Member Management
+            <span class="ad-quick-action-note">
+            Review profile updates, add new members and manage member records.
+            </span>
+          </button>
+
+          <button class="ad-quick-action" type="button" disabled>
+            <span class="ad-quick-action-icon">🔐</span>
+            Access Control
+            <span class="ad-quick-action-note">Coming soon</span>
+          </button>
+
+          <button class="ad-quick-action" type="button" disabled>
+            <span class="ad-quick-action-icon">⚙️</span>
+            System Settings
+            <span class="ad-quick-action-note">Coming soon</span>
+          </button>
+
+          <button class="ad-quick-action" type="button" disabled>
+            <span class="ad-quick-action-icon">📋</span>
+            Audit Logs
+            <span class="ad-quick-action-note">Coming soon</span>
+          </button>
+
+          <button class="ad-quick-action" type="button" disabled>
+            <span class="ad-quick-action-icon">🧹</span>
+            Maintenance
+            <span class="ad-quick-action-note">Coming soon</span>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <section id="kgmisAdminDigitalIdGeneratorModule" 
+      class="ad-portal-module">
+      <div class="ad-page-header">
+        <div>
+          <h2 class="ad-page-title">Digital ID Generator</h2>
+          <p class="ad-page-description">
+            Search an eligible member and create the digital membership-card
+            record in KEFG_MEMBER_CARDS.
+          </p>
+        </div>
+
+        <div class="ad-edition-badge">
+          <div class="ad-edition-label">Module Status</div>
+          <div class="ad-edition-value">Active</div>
+        </div>
+      </div>
+
+      <section class="ad-panel">
+        <h3 class="ad-panel-title">Search Member</h3>
+        <p class="ad-panel-description">
+          Search by KEFG ID, Family ID, Card Number, Name, Mobile Number or Email Address.
+        </p>
+
+        <div class="ad-search-bar">
+          <input
+            id="adCardSearchText"
+            class="ad-search-input"
+            type="text"
+            autocomplete="off"
+            placeholder="Enter search value"
+          >
+
+          <button
+            id="adCardSearchButton"
+            class="ad-search-button"
+            type="button"
+          >
+            🔍 Search
+          </button>
+        </div>
+
+        <div
+          id="adSearchStatus"
+          class="ad-search-status"
+          aria-live="polite"
+        ></div>
+
+          <div
+            id="adSearchResults"
+            class="ad-search-results"
+          ></div>
+        </section>
+      </section>
+
+      <section
+        id="kgmisAdminMemberManagementModule"
+        class="ad-portal-module"
+      >
+        <div class="ad-page-header">
+          <div>
+            <h2 class="ad-page-title">Profile Review</h2>
+            <p class="ad-page-description">
+              Review pending Family Profile update requests and approve submitted changes.
+            </p>
+          </div>
+
+          <div class="ad-edition-badge">
+            <div class="ad-edition-label">Review Stage</div>
+            <div class="ad-edition-value">Approve</div>
+          </div>
+        </div>
+
+        <section class="ad-panel">
+          <h3 class="ad-panel-title">Pending Profile Requests</h3>
+          <p class="ad-panel-description">
+            Select a request to compare the existing and submitted values before approval.
+          </p>
+
+          <div class="ad-review-toolbar">
+            <div id="adProfileReviewStatus" class="ad-review-status" aria-live="polite"></div>
+            <button id="adRefreshProfileRequests" class="ad-review-button secondary" type="button">
+              ↻ Refresh Requests
+            </button>
+          </div>
+
+          <div id="adProfileRequestList" class="ad-request-list"></div>
+        </section>
+
+        <section id="adProfileRequestDetail" class="ad-panel ad-request-detail">
+          <h3 id="adProfileRequestDetailTitle" class="ad-panel-title">Request Details</h3>
+          <p id="adProfileRequestDetailMeta" class="ad-panel-description"></p>
+
+          <div id="adProfileRequestSummary" class="ad-review-summary"></div>
+          <div id="adProfileChangesTable"></div>
+
+          <textarea
+            id="adProfileReviewRemarks"
+            class="ad-review-remarks"
+            placeholder="Optional review remarks"
+          ></textarea>
+
+          <div class="ad-review-toolbar">
+            <button id="adBackToProfileRequests" class="ad-review-button secondary" type="button">
+              ← Back to Requests
+            </button>
+            <button id="adApproveProfileRequest" class="ad-review-button approve" type="button">
+              ✓ Approve Request
+            </button>
+          </div>
+        </section>
+      </section>
+
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  const state = {
+    auth: null,
+    sessionToken: '',
+    initialised: false,
+    activeModule: 'dashboard',
+    profileRequestsLoaded: false,
+    selectedProfileRequestId: '',
+    domInitialised: false,
+    eventsBound: false
+  };
+
+  const el = {};
+
+  function cacheElements() {
+    [
+      'kgmisAdminModuleHost',
+      'kgmisAdminMobileNav',
+      'kgmisAdminGlobalMessage',
+      'kgmisAdminDashboardModule',
+      'kgmisAdminDigitalIdGeneratorModule',
+      'kgmisAdminMemberManagementModule',
+      'adCardSearchText',
+      'adCardSearchButton',
+      'adSearchStatus',
+      'adSearchResults',
+      'adProfileReviewStatus',
+      'adRefreshProfileRequests',
+      'adProfileRequestList',
+      'adProfileRequestDetail',
+      'adProfileRequestDetailTitle',
+      'adProfileRequestDetailMeta',
+      'adProfileRequestSummary',
+      'adProfileChangesTable',
+      'adProfileReviewRemarks',
+      'adBackToProfileRequests',
+      'adApproveProfileRequest'
+    ].forEach(function (id) {
+      el[id] = document.getElementById(id);
+    });
+  }
+
+  function bindEvents() {
+    if (!el.kgmisAdminModuleHost || state.eventsBound) {
+      return;
+    }
+
+    state.eventsBound = true;
+
+    el.kgmisAdminModuleHost.addEventListener('click', function (event) {
+      const navButton = event.target.closest('[data-ad-module]');
+
+      if (navButton && !navButton.disabled) {
+        openModule(navButton.getAttribute('data-ad-module'));
+        return;
+      }
+
+      const quickButton =
+        event.target.closest('[data-ad-quick-module]');
+
+      if (quickButton && !quickButton.disabled) {
+        openModule(
+          quickButton.getAttribute('data-ad-quick-module')
+        );
+        return;
+      }
+
+      const profileRequestButton =
+        event.target.closest('[data-ad-profile-request]');
+
+      if (profileRequestButton && !profileRequestButton.disabled) {
+        openProfileRequest(
+          profileRequestButton.getAttribute('data-ad-profile-request') || ''
+        );
+        return;
+      }
+
+      const cardActionButton =
+        event.target.closest('[data-ad-card-action]');
+
+      if (cardActionButton && !cardActionButton.disabled) {
+        const action =
+          cardActionButton.getAttribute('data-ad-card-action');
+
+        if (action === 'issue-card') {
+          const candidateKey =
+            cardActionButton.getAttribute('data-candidate-key') || '';
+
+          issueDigitalCard(
+            candidateKey,
+            cardActionButton
+          );
+
+          return;
+        }
+
+      if (action === 'view-card') {
+
+  const cardId =
+    cardActionButton.getAttribute(
+      'data-card-id'
+    ) || '';
+
+  viewDigitalCard(
+    cardId,
+    cardActionButton
+  );
+
+  return;
+}
+
+      }
+    });
+
+    if (el.kgmisAdminMobileNav) {
+      el.kgmisAdminMobileNav.addEventListener('change', function () {
+        openModule(el.kgmisAdminMobileNav.value);
+      });
+    }
+
+    if (el.adCardSearchButton) {
+      el.adCardSearchButton.addEventListener(
+        'click',
+        searchDigitalCardCandidates
+      );
+    }
+
+    if (el.adCardSearchText) {
+      el.adCardSearchText.addEventListener(
+        'keydown',
+        function (event) {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            searchDigitalCardCandidates();
+          }
+        }
+      );
+    }
+
+
+    if (el.adRefreshProfileRequests) {
+      el.adRefreshProfileRequests.addEventListener(
+        'click',
+        loadPendingProfileRequests
+      );
+    }
+
+    if (el.adBackToProfileRequests) {
+      el.adBackToProfileRequests.addEventListener(
+        'click',
+        showProfileRequestList
+      );
+    }
+
+    if (el.adApproveProfileRequest) {
+      el.adApproveProfileRequest.addEventListener(
+        'click',
+        approveSelectedProfileRequest
+      );
+    }
+  }
+
+
+  function loadPendingProfileRequests() {
+    clearMessage();
+
+    if (!state.sessionToken) {
+      setProfileReviewError(
+        'The Administration session is missing. Please sign in again.'
+      );
+      return;
+    }
+
+    setProfileReviewBusy(true, 'Loading pending profile requests…');
+    showProfileRequestList();
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        setProfileReviewBusy(false);
+
+        if (!response || response.success !== true) {
+          setProfileReviewError(
+            response && response.message
+              ? response.message
+              : 'The pending profile requests could not be loaded.'
+          );
+          return;
+        }
+
+        state.profileRequestsLoaded = true;
+        renderPendingProfileRequests(response.requests || []);
+      })
+      .withFailureHandler(function (error) {
+        setProfileReviewBusy(false);
+        setProfileReviewError(error);
+      })
+      .KGMIS_Admin_GetPendingProfileRequests(
+        state.sessionToken
+      );
+  }
+
+  function renderPendingProfileRequests(requests) {
+    if (!el.adProfileRequestList) {
+      return;
+    }
+
+    const safeRequests = Array.isArray(requests) ? requests : [];
+
+    if (!safeRequests.length) {
+      setProfileReviewStatus('No pending Family Profile requests were found.');
+      el.adProfileRequestList.innerHTML =
+        '<div class="ad-empty-results">' +
+        'There are no pending Family Profile update requests.' +
+        '</div>';
+      return;
+    }
+
+    setProfileReviewStatus(
+      safeRequests.length +
+      (safeRequests.length === 1
+        ? ' pending request found.'
+        : ' pending requests found.')
+    );
+
+    el.adProfileRequestList.innerHTML = safeRequests
+      .map(function (request) {
+        return (
+          '<article class="ad-request-card">' +
+            '<div class="ad-request-card-header">' +
+              '<div>' +
+                '<h4 class="ad-request-title">' +
+                  escapeHtml(
+                    request.primaryMemberKefgId ||
+                    request.familyId ||
+                    request.requestId ||
+                    'Profile Request'
+                  ) +
+                '</h4>' +
+                '<div class="ad-request-meta">' +
+                  detailHtml('Request ID', request.requestId) +
+                  detailHtml('Family ID', request.familyId) +
+                  detailHtml('Submitted On', request.submittedOn) +
+                  detailHtml('Submitted By', request.submittedByEmail) +
+                  detailHtml('Changed Sections', request.changedSections) +
+                '</div>' +
+              '</div>' +
+              '<div>' +
+                '<span class="ad-request-badge">' +
+                  escapeHtml(request.requestStatus || 'PENDING') +
+                '</span>' +
+                '<br><br>' +
+                '<button type="button" class="ad-review-button" ' +
+                  'data-ad-profile-request="' +
+                  escapeHtml(request.requestId || '') +
+                  '">Review</button>' +
+              '</div>' +
+            '</div>' +
+          '</article>'
+        );
+      })
+      .join('');
+  }
+
+  function openProfileRequest(requestId) {
+    const safeRequestId = String(requestId || '').trim();
+
+    if (!safeRequestId) {
+      setProfileReviewError('The selected request ID is missing.');
+      return;
+    }
+
+    state.selectedProfileRequestId = safeRequestId;
+    setProfileReviewBusy(true, 'Loading request details…');
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        setProfileReviewBusy(false);
+
+        if (
+          !response ||
+          response.success !== true ||
+          !response.request
+        ) {
+          setProfileReviewError(
+            response && response.message
+              ? response.message
+              : 'The selected request could not be loaded.'
+          );
+          return;
+        }
+
+        renderProfileRequestDetail(response.request);
+      })
+      .withFailureHandler(function (error) {
+        setProfileReviewBusy(false);
+        setProfileReviewError(error);
+      })
+      .KGMIS_Admin_GetProfileRequest(
+        state.sessionToken,
+        safeRequestId
+      );
+  }
+
+  function renderProfileRequestDetail(request) {
+    state.selectedProfileRequestId = request.requestId || '';
+
+    if (el.adProfileRequestDetailTitle) {
+      el.adProfileRequestDetailTitle.textContent =
+        'Profile Request ' + (request.requestId || '');
+    }
+
+    if (el.adProfileRequestDetailMeta) {
+      el.adProfileRequestDetailMeta.textContent =
+        'Family ID: ' + (request.familyId || '—') +
+        ' | Primary Member: ' + (request.primaryMemberKefgId || '—') +
+        ' | Submitted: ' + (request.submittedOn || '—');
+    }
+
+    if (el.adProfileRequestSummary) {
+      el.adProfileRequestSummary.textContent =
+        request.changeSummary || 'No change summary was provided.';
+    }
+
+    renderProfileChangesTable(request.changes || []);
+
+    if (el.adProfileReviewRemarks) {
+      el.adProfileReviewRemarks.value = '';
+    }
+
+    if (el.adProfileRequestList) {
+      el.adProfileRequestList.style.display = 'none';
+    }
+
+    if (el.adProfileRequestDetail) {
+      el.adProfileRequestDetail.classList.add('active');
+      el.adProfileRequestDetail.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+
+    setProfileReviewStatus('Review the submitted values before approval.');
+  }
+
+  function renderProfileChangesTable(changes) {
+    if (!el.adProfileChangesTable) {
+      return;
+    }
+
+    const safeChanges = Array.isArray(changes) ? changes : [];
+
+    if (!safeChanges.length) {
+      el.adProfileChangesTable.innerHTML =
+        '<div class="ad-empty-results">No changed fields were found.</div>';
+      return;
+    }
+
+    el.adProfileChangesTable.innerHTML =
+      '<div class="ad-change-table-wrap">' +
+        '<table class="ad-change-table">' +
+          '<thead><tr>' +
+            '<th>Field</th>' +
+            '<th>Existing Value</th>' +
+            '<th>Submitted Value</th>' +
+          '</tr></thead>' +
+          '<tbody>' +
+            safeChanges.map(function (change) {
+              return (
+                '<tr>' +
+                  '<td><strong>' +
+                    escapeHtml(formatProfileFieldName(change.fieldName)) +
+                  '</strong></td>' +
+                  '<td class="ad-old-value">' +
+                    escapeHtml(change.oldValue || '—') +
+                  '</td>' +
+                  '<td class="ad-new-value">' +
+                    escapeHtml(change.submittedValue || '—') +
+                  '</td>' +
+                '</tr>'
+              );
+            }).join('') +
+          '</tbody>' +
+        '</table>' +
+      '</div>';
+  }
+
+  function approveSelectedProfileRequest() {
+    const requestId = String(
+      state.selectedProfileRequestId || ''
+    ).trim();
+
+    if (!requestId) {
+      setProfileReviewError('No Family Profile request is selected.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Approve this Family Profile request exactly as submitted?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const remarks = String(
+      el.adProfileReviewRemarks
+        ? el.adProfileReviewRemarks.value
+        : ''
+    ).trim();
+
+    setProfileReviewBusy(true, 'Applying the approved profile changes…');
+
+    google.script.run
+      .withSuccessHandler(function (response) {
+        setProfileReviewBusy(false);
+
+        if (!response || response.success !== true) {
+          setProfileReviewError(
+            response && response.message
+              ? response.message
+              : 'The request could not be approved.'
+          );
+          return;
+        }
+
+        state.selectedProfileRequestId = '';
+        showProfileRequestList();
+        setProfileReviewStatus(
+          response.message ||
+          'The Family Profile request was approved successfully.'
+        );
+        loadPendingProfileRequests();
+      })
+      .withFailureHandler(function (error) {
+        setProfileReviewBusy(false);
+        setProfileReviewError(error);
+      })
+      .KGMIS_Admin_ApproveProfileRequest(
+        state.sessionToken,
+        requestId,
+        remarks
+      );
+  }
+
+  function showProfileRequestList() {
+    state.selectedProfileRequestId = '';
+
+    if (el.adProfileRequestDetail) {
+      el.adProfileRequestDetail.classList.remove('active');
+    }
+
+    if (el.adProfileRequestList) {
+      el.adProfileRequestList.style.display = 'grid';
+    }
+  }
+
+  function setProfileReviewBusy(isBusy, message) {
+    const busy = Boolean(isBusy);
+
+    if (el.adRefreshProfileRequests) {
+      el.adRefreshProfileRequests.disabled = busy;
+      el.adRefreshProfileRequests.textContent = busy
+        ? 'Working…'
+        : '↻ Refresh Requests';
+    }
+
+    if (el.adApproveProfileRequest) {
+      el.adApproveProfileRequest.disabled = busy;
+      el.adApproveProfileRequest.textContent = busy
+        ? 'Applying…'
+        : '✓ Approve Request';
+    }
+
+    if (message) {
+      setProfileReviewStatus(message);
+    }
+  }
+
+  function setProfileReviewStatus(message) {
+    if (!el.adProfileReviewStatus) {
+      return;
+    }
+
+    el.adProfileReviewStatus.className = 'ad-review-status';
+    el.adProfileReviewStatus.textContent = String(message || '');
+  }
+
+  function setProfileReviewError(error) {
+    if (!el.adProfileReviewStatus) {
+      return;
+    }
+
+    const message = error && error.message
+      ? error.message
+      : String(error || 'An unexpected Profile Review error occurred.');
+
+    el.adProfileReviewStatus.className = 'ad-review-status error';
+    el.adProfileReviewStatus.textContent = message;
+  }
+
+  function formatProfileFieldName(fieldName) {
+    return String(fieldName || '')
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, function (letter) {
+        return letter.toUpperCase();
+      });
+  }
+
+  function searchDigitalCardCandidates() {
+    clearMessage();
+
+    const searchText =
+      String(
+        el.adCardSearchText
+          ? el.adCardSearchText.value
+          : ''
+      ).trim();
+
+    if (!state.sessionToken) {
+      showSearchError(
+        'The Administration session is missing. Please sign in again.'
+      );
+      return;
+    }
+
+    if (searchText.length < 2) {
+      showSearchError(
+        'Enter at least two characters to search.'
+      );
+      return;
+    }
+
+    setSearchBusy(true);
+    setSearchStatus('Searching KGMIS records…');
+    clearSearchResults();
+
+    const searchTimeout = window.setTimeout(function () {
+  setSearchBusy(false);
+  showSearchError(
+    'The search is taking too long. Please try again.'
+  );
+}, 30000);
+
+  google.script.run
+  .withSuccessHandler(function (response) {
+    window.clearTimeout(searchTimeout);
+    handleSearchSuccess(response);
+  })
+  .withFailureHandler(function (error) {
+    window.clearTimeout(searchTimeout);
+    handleSearchFailure(error);
+  })
+  .KGMIS_Admin_SearchDigitalCardCandidates(
+    state.sessionToken,
+    searchText
+  );
+  }
+  
+  /**
+ * Opens one issued Digital Membership Card.
+ */
+function viewDigitalCard(cardId, button) {
+
+  clearMessage();
+
+  const cleanCardId =
+    String(cardId || '')
+      .trim()
+      .toUpperCase();
+
+  if (!state.sessionToken) {
+
+    showSearchError(
+      'The Administration session is missing. Please sign in again.'
+    );
+
+    return;
+  }
+
+  if (!cleanCardId) {
+
+    showSearchError(
+      'The selected card has no Card ID.'
+    );
+
+    return;
+  }
+
+  /*
+   * Open the window immediately.
+   * This prevents the browser from blocking it as a popup
+   * while waiting for google.script.run.
+   */
+  const previewWindow =
+    window.open(
+      '',
+      '_blank'
+    );
+
+  if (!previewWindow) {
+
+    showSearchError(
+      'The Digital Card window was blocked by the browser. Please allow pop-ups for this portal.'
+    );
+
+    return;
+  }
+
+  previewWindow.document.open();
+
+  previewWindow.document.write(
+    '<!DOCTYPE html>' +
+    '<html>' +
+      '<head>' +
+        '<title>Loading Digital Card</title>' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '</head>' +
+      '<body style="' +
+        'font-family:Arial,Helvetica,sans-serif;' +
+        'padding:40px;' +
+        'text-align:center;' +
+      '">' +
+        '<p>Loading Digital Membership Card…</p>' +
+      '</body>' +
+    '</html>'
+  );
+
+  previewWindow.document.close();
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Opening…';
+  }
+
+  setSearchStatus(
+    'Opening Digital Membership Card ' +
+    cleanCardId +
+    '…'
+  );
+
+  google.script.run
+
+    .withSuccessHandler(function (response) {
+
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'View Digital ID';
+      }
+
+      if (
+        !response ||
+        response.success !== true ||
+        !response.html
+      ) {
+
+        if (
+          previewWindow &&
+          !previewWindow.closed
+        ) {
+          previewWindow.close();
+        }
+
+        showSearchError(
+          response && response.message
+            ? response.message
+            : 'The Digital Membership Card could not be rendered.'
+        );
+
+        return;
+      }
+
+      /*
+       * Make google.script.run available inside the card window.
+       * This is required by Generate and Save PNG.
+       */
+      previewWindow.google =
+        window.google;
+
+      previewWindow.document.open();
+
+      previewWindow.document.write(
+        response.html
+      );
+
+      previewWindow.document.close();
+
+      previewWindow.google =
+        window.google;
+
+      setSearchStatus(
+        'Digital Membership Card opened: ' +
+        cleanCardId
+      );
+
+    })
+
+    .withFailureHandler(function (error) {
+
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'View Difital ID';
+      }
+
+      if (
+        previewWindow &&
+        !previewWindow.closed
+      ) {
+        previewWindow.close();
+      }
+
+      showSearchError(error);
+
+    })
+
+    .KGMIS_Admin_RenderDigitalCardPreview(
+      state.sessionToken,
+      cleanCardId
+    );
+}
+  
+  /**
+   * Issues one Digital Membership Card.
+   */
+  
+  function issueDigitalCard(candidateKey, button) {
+    clearMessage();
+
+    const cleanCandidateKey =
+      String(candidateKey || '').trim();
+
+    if (!state.sessionToken) {
+      showSearchError(
+        'The Administration session is missing. Please sign in again.'
+      );
+      return;
+    }
+
+    if (!cleanCandidateKey) {
+      showSearchError(
+        'The selected member reference is missing. Please search again.'
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Issue a Digital Membership Card for this person?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIssueButtonBusy(button, true);
+    setSearchStatus('Creating the Digital Membership Card record…');
+
+    const issueTimeout = window.setTimeout(function () {
+    setIssueButtonBusy(button, false);
+
+      showSearchError(
+    'Card issuance is taking too long. Please check KEFG_MEMBER_CARDS before trying again.'
+  );
+}, 45000);
+
+    google.script.run
+    .withSuccessHandler(function (response) {
+    window.clearTimeout(issueTimeout);
+    handleIssueCardSuccess(response, button);
+  })
+  .withFailureHandler(function (error) {
+    window.clearTimeout(issueTimeout);
+    handleIssueCardFailure(error, button);
+  })
+  .KGMIS_Admin_IssueDigitalCard(
+    state.sessionToken,
+    cleanCandidateKey
+  );
+  }
+
+
+ /**
+ * Handles successful card issuance.
+ */
+function handleIssueCardSuccess(
+  response,
+  button
+) {
+
+  setIssueButtonBusy(
+    button,
+    false
+  );
+
+  if (
+    !response ||
+    response.success !== true
+  ) {
+
+    handleIssueCardFailure(
+
+      new Error(
+        response && response.message
+          ? response.message
+          : 'The card could not be issued.'
+      ),
+
+      button
+    );
+
+    return;
+  }
+
+  setSearchStatus(
+    response.message ||
+    'Digital Membership Card issued successfully.'
+  );
+
+  if (!button) {
+    return;
+  }
+
+  const resultCard =
+    button.closest(
+      '.ad-result-card'
+    );
+
+  if (!resultCard) {
+    return;
+  }
+
+  const statusBadge =
+    resultCard.querySelector(
+      '.ad-card-status-badge'
+    );
+
+  if (statusBadge) {
+
+    statusBadge.className =
+      'ad-card-status-badge active';
+
+    statusBadge.textContent =
+      'ACTIVE';
+  }
+
+  const detailsContainer =
+    resultCard.querySelector(
+      '.ad-result-details'
+    );
+
+  if (detailsContainer) {
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Card Number',
+      response.cardId
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Membership Year',
+      response.membershipYear
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Valid Until',
+      response.validUntil
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Version',
+      response.cardVersion
+    );
+  }
+
+  const actionGroup =
+    document.createElement('div');
+
+  actionGroup.className =
+    'ad-card-action-group';
+
+  actionGroup.innerHTML =
+
+    '<button type="button" ' +
+      'class="ad-result-action secondary" ' +
+      'data-ad-card-action="view-card" ' +
+      'data-card-id="' +
+      escapeHtml(response.cardId || '') +
+      '">' +
+      'View Digital ID' +
+    '</button>' +
+
+    '<button type="button" ' +
+      'class="ad-result-action secondary" ' +
+      'data-ad-card-action="card-management" ' +
+      'data-card-id="' +
+      escapeHtml(response.cardId || '') +
+      '">' +
+      'Card Management ▾' +
+    '</button>';
+
+  button.replaceWith(
+    actionGroup
+  );
+}
+
+
+  /**
+   * Handles failed card issuance.
+   */
+  function handleIssueCardFailure(error, button) {
+    setIssueButtonBusy(button, false);
+    showSearchError(error);
+  }
+
+  /**
+   * Shows a busy state on the selected Issue Card button.
+   */
+  function setIssueButtonBusy(button, isBusy) {
+    if (!button) {
+      return;
+    }
+
+    button.disabled = Boolean(isBusy);
+    button.textContent = isBusy
+      ? 'Issuing…'
+      : (
+          button.getAttribute('data-ad-card-action') === 'view-card'
+            ? 'View Digital ID'
+            : 'Issue Card'
+        );
+  }
+
+  /**
+   * Updates the visible result card after successful issuance.
+   */
+  function updateIssuedCardResult(button, response) {
+    if (!button) {
+      return;
+    }
+
+    const resultCard = button.closest('.ad-result-card');
+
+    if (!resultCard) {
+      return;
+    }
+
+    const statusBadge = resultCard.querySelector(
+      '.ad-card-status-badge'
+    );
+
+    if (statusBadge) {
+      statusBadge.className = 'ad-card-status-badge active';
+      statusBadge.textContent = 'ACTIVE';
+    }
+
+    const detailsContainer = resultCard.querySelector(
+      '.ad-result-details'
+    );
+
+    if (!detailsContainer) {
+      return;
+    }
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Card Number',
+      response.cardId
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Membership Year',
+      response.membershipYear
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Valid Until',
+      response.validUntil
+    );
+
+    appendOrUpdateDetail(
+      detailsContainer,
+      'Version',
+      response.cardVersion
+    );
+  }
+
+  /**
+   * Adds or updates one detail displayed inside a result card.
+   */
+  function appendOrUpdateDetail(container, label, value) {
+    const safeValue = String(value || '').trim();
+
+    if (!safeValue) {
+      return;
+    }
+
+    const detailItems = Array.prototype.slice.call(
+      container.children
+    );
+
+    const existingItem = detailItems.find(function (item) {
+      const strong = item.querySelector('strong');
+
+      return (
+        strong &&
+        strong.textContent.replace(':', '').trim() === label
+      );
+    });
+
+    if (existingItem) {
+      existingItem.innerHTML =
+        '<strong>' +
+        escapeHtml(label) +
+        ':</strong> ' +
+        escapeHtml(safeValue);
+      return;
+    }
+
+    const newItem = document.createElement('div');
+    newItem.innerHTML =
+      '<strong>' +
+      escapeHtml(label) +
+      ':</strong> ' +
+      escapeHtml(safeValue);
+
+    container.appendChild(newItem);
+  }
+
+  function handleSearchSuccess(response) {
+    setSearchBusy(false);
+
+    if (!response || response.success !== true) {
+      handleSearchFailure(
+        new Error(
+          response && response.message
+            ? response.message
+            : 'The search did not return a valid response.'
+        )
+      );
+      return;
+    }
+
+    const results =
+      Array.isArray(response.results)
+        ? response.results
+        : [];
+
+    if (!results.length) {
+      setSearchStatus('No matching records found.');
+      el.adSearchResults.innerHTML =
+        '<div class="ad-empty-results">' +
+        'No member, dependant or card record matched this search.' +
+        '</div>';
+      return;
+    }
+
+    setSearchStatus(
+      results.length +
+      (results.length === 1 ? ' result found.' : ' results found.')
+    );
+
+    renderSearchResults(results);
+  }
+
+  function handleSearchFailure(error) {
+    setSearchBusy(false);
+    showSearchError(error);
+  }
+
+  function renderSearchResults(results) {
+    if (!el.adSearchResults) {
+      return;
+    }
+
+    el.adSearchResults.innerHTML =
+      results.map(renderSearchResultCard).join('');
+  }
+
+
+function renderSearchResultCard(result) {
+
+  const cardIssued =
+    Boolean(result.cardIssued);
+
+  const cardStatus =
+    String(result.cardStatus || '')
+      .trim()
+      .toUpperCase();
+
+  const displayStatus =
+    cardIssued
+      ? (cardStatus || 'ISSUED')
+      : 'NOT ISSUED';
+
+  const statusClass =
+    cardIssued
+      ? normaliseCssClass(
+          cardStatus || 'active'
+        )
+      : 'not-issued';
+
+  const photoHtml =
+    result.photoUrl
+      ? (
+          '<img src="' +
+          escapeHtml(result.photoUrl) +
+          '" alt="">'
+        )
+      : escapeHtml(
+          String(result.name || '?')
+            .trim()
+            .charAt(0)
+            .toUpperCase() || '?'
+        );
+
+  let actionHtml = '';
+
+  if (cardIssued) {
+
+    actionHtml =
+
+      '<div class="ad-card-action-group">' +
+
+        '<button type="button" ' +
+          'class="ad-result-action secondary" ' +
+          'data-ad-card-action="view-card" ' +
+          'data-card-id="' +
+            escapeHtml(result.cardId || '') +
+          '" ' +
+          'data-card-image-file-id="' +
+            escapeHtml(result.cardImageFileId || '') +
+          '" ' +
+          'data-card-image-url="' +
+            escapeHtml(result.cardImageUrl || '') +
+          '">' +
+          'View Digital ID' +
+        '</button>' +
+
+        '<button type="button" ' +
+          'class="ad-result-action secondary" ' +
+          'data-ad-card-action="card-management" ' +
+          'data-card-id="' +
+            escapeHtml(result.cardId || '') +
+          '">' +
+          'Card Management ▾' +
+        '</button>' +
+
+      '</div>';
+
+  } else {
+
+    actionHtml =
+
+      '<button type="button" ' +
+        'class="ad-result-action" ' +
+        'data-ad-card-action="issue-card" ' +
+        'data-candidate-key="' +
+          escapeHtml(result.candidateKey || '') +
+        '">' +
+        'Issue Card' +
+      '</button>';
+  }
+
+  return (
+
+    '<article class="ad-result-card">' +
+
+      '<div class="ad-result-photo">' +
+        photoHtml +
+      '</div>' +
+
+      '<div>' +
+
+        '<h4 class="ad-result-name">' +
+          escapeHtml(
+            result.name ||
+            'Unnamed Record'
+          ) +
+        '</h4>' +
+
+        '<span class="ad-result-type">' +
+          escapeHtml(
+            result.cardholderType ||
+            result.memberCategory ||
+            'Member'
+          ) +
+        '</span>' +
+
+        '<div class="ad-result-details">' +
+
+          detailHtml(
+            'Family ID',
+            result.familyId
+          ) +
+
+          detailHtml(
+            'KEFG / Person ID',
+            result.kefgId ||
+            result.personId
+          ) +
+
+          detailHtml(
+            'Mobile',
+            result.phone
+          ) +
+
+          detailHtml(
+            'Email',
+            result.email
+          ) +
+
+          detailHtml(
+            'Membership Type',
+            result.membershipType
+          ) +
+
+          detailHtml(
+            'Membership Year',
+            result.membershipYear
+          ) +
+
+          detailHtml(
+            'Membership Status',
+            result.membershipStatus
+          ) +
+
+          detailHtml(
+            'Card Number',
+            result.cardId
+          ) +
+
+          detailHtml(
+            'Valid Until',
+            result.validUntil
+          ) +
+
+          detailHtml(
+            'Version',
+            result.cardVersion
+          ) +
+
+        '</div>' +
+
+      '</div>' +
+
+      '<div class="ad-result-card-state">' +
+
+        '<span class="ad-card-status-badge ' +
+          statusClass +
+        '">' +
+          escapeHtml(displayStatus) +
+        '</span>' +
+
+        '<br>' +
+
+        actionHtml +
+
+      '</div>' +
+
+    '</article>'
+  );
+}
+
+  function detailHtml(label, value) {
+    const safeValue =
+      String(value || '').trim();
+
+    if (!safeValue) {
+      return '';
+    }
+
+    return (
+      '<div><strong>' +
+      escapeHtml(label) +
+      ':</strong> ' +
+      escapeHtml(safeValue) +
+      '</div>'
+    );
+  }
+
+  function setSearchBusy(isBusy) {
+    if (el.adCardSearchButton) {
+      el.adCardSearchButton.disabled = Boolean(isBusy);
+      el.adCardSearchButton.textContent =
+        isBusy
+          ? 'Searching…'
+          : '🔍 Search';
+    }
+
+    if (el.adCardSearchText) {
+      el.adCardSearchText.disabled = Boolean(isBusy);
+    }
+  }
+
+  function setSearchStatus(message) {
+    if (!el.adSearchStatus) {
+      return;
+    }
+
+    el.adSearchStatus.className = 'ad-search-status';
+    el.adSearchStatus.textContent = String(message || '');
+  }
+
+  function showSearchError(error) {
+    if (!el.adSearchStatus) {
+      return;
+    }
+
+    const message =
+      error && error.message
+        ? error.message
+        : String(error || 'An unexpected search error occurred.');
+
+    el.adSearchStatus.className = 'ad-search-status error';
+    el.adSearchStatus.textContent = message;
+  }
+
+  function clearSearchResults() {
+    if (el.adSearchResults) {
+      el.adSearchResults.innerHTML = '';
+    }
+  }
+
+  function normaliseCssClass(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-');
+  }
+
+  function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function activate(authContext) {
+    initialise();
+
+    const auth = authContext || {};
+    const sessionToken =
+      String(auth.sessionToken || '').trim();
+
+    if (!sessionToken) {
+      showError(
+        'The Administration session is missing. Please sign out and sign in again.'
+      );
+      return;
+    }
+
+    state.auth = auth;
+    state.sessionToken = sessionToken;
+
+    if (!state.initialised) {
+      state.initialised = true;
+      openModule('dashboard');
+      return;
+    }
+
+    openModule(state.activeModule || 'dashboard');
+  }
+
+  function openModule(moduleName) {
+    initialise();
+    clearMessage();
+    hideAllModules();
+    setActiveNavigation(moduleName);
+
+    state.activeModule = moduleName;
+
+    if (moduleName === 'dashboard') {
+      if (!el.kgmisAdminDashboardModule) {
+        showError('The Administration Dashboard could not be loaded.');
+        return;
+      }
+      el.kgmisAdminDashboardModule.classList.add('active');
+      return;
+    }
+
+    if (moduleName === 'digital-id-generator') {
+      if (!el.kgmisAdminDigitalIdGeneratorModule) {
+        showError('The Digital ID Generator could not be loaded.');
+        return;
+      }
+      el.kgmisAdminDigitalIdGeneratorModule.classList.add('active');
+      return;
+    }
+
+    if (moduleName === 'member-management') {
+      if (!el.kgmisAdminMemberManagementModule) {
+        showError('The Member Management module could not be loaded.');
+        return;
+      }
+      el.kgmisAdminMemberManagementModule.classList.add('active');
+
+      if (!state.profileRequestsLoaded) {
+        loadPendingProfileRequests();
+      }
+
+      return;
+    }
+    showError(
+      'The selected Administration function is not available.'
+    );
+  }
+
+  function hideAllModules() {
+    [
+      el.kgmisAdminDashboardModule,
+      el.kgmisAdminDigitalIdGeneratorModule,
+      el.kgmisAdminMemberManagementModule,
+    ].forEach(function (section) {
+      if (section) {
+        section.classList.remove('active');
+      }
+    });
+  }
+
+  function setActiveNavigation(moduleName) {
+    if (!el.kgmisAdminModuleHost) {
+      return;
+    }
+
+    el.kgmisAdminModuleHost
+      .querySelectorAll('[data-ad-module]')
+      .forEach(function (button) {
+        button.classList.toggle(
+          'active',
+          button.getAttribute('data-ad-module') === moduleName
+        );
+      });
+
+    if (el.kgmisAdminMobileNav) {
+      el.kgmisAdminMobileNav.value = moduleName;
+    }
+  }
+
+  function clearMessage() {
+    if (!el.kgmisAdminGlobalMessage) {
+      return;
+    }
+
+    el.kgmisAdminGlobalMessage.className =
+      'ad-global-message';
+    el.kgmisAdminGlobalMessage.textContent = '';
+  }
+
+  function showError(error) {
+    if (!el.kgmisAdminGlobalMessage) {
+      return;
+    }
+
+    const text =
+      error && error.message
+        ? error.message
+        : String(error || 'An unexpected error occurred.');
+
+    el.kgmisAdminGlobalMessage.className =
+      'ad-global-message error';
+    el.kgmisAdminGlobalMessage.textContent = text;
+  }
+
+  function initialise() {
+    if (state.domInitialised && el.kgmisAdminModuleHost) {
+      return;
+    }
+
+    cacheElements();
+
+    if (!el.kgmisAdminModuleHost) {
+      return;
+    }
+
+    state.domInitialised = true;
+    bindEvents();
+  }
+
+  window.KGMIS_ADMIN_MODULE = {
+    activate: activate,
+    openModule: openModule
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialise
+    );
+  } else {
+    initialise();
+  }
+})();
+</script>

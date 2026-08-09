@@ -1,0 +1,226 @@
+<!--
+============================================================
+KEFG Membership Information System (KGMIS)
+Module        : Member Management
+File          : KGMIS_Module_Member_Management.html
+Version       : Enterprise Edition 1.0
+Status        : Development
+Designed and Developed by: James Joseph Alenchery
+============================================================
+-->
+
+<div id="kgmisMemberManagementModule">
+
+    <!-- ======================================================
+         Page Header
+    ======================================================= -->
+
+    <div class="mm-page-header">
+
+        <div>
+
+            <h2 class="mm-title">
+                Member Management
+            </h2>
+
+            <p class="mm-subtitle">
+                Manage member records and review submitted requests.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================================
+         Top Navigation Tabs
+    ======================================================= -->
+
+    <div class="mm-tabs">
+
+        <button
+            id="mmTabReview"
+            class="mm-tab active"
+            type="button">
+
+            Review Requests
+
+        </button>
+
+        <button
+            id="mmTabMember"
+            class="mm-tab"
+            type="button">
+
+            Add / Edit Member
+
+        </button>
+
+        <button
+            id="mmTabFamily"
+            class="mm-tab"
+            type="button">
+
+            Add / Edit Family Member
+
+        </button>
+
+    </div>
+
+
+    <!-- ======================================================
+         Tab Content Area
+    ======================================================= -->
+
+    <div
+        id="mmContent"
+        class="mm-content">
+
+        <div class="mm-placeholder">
+
+            Review Requests content will appear here.
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+#kgmisMemberManagementModule{
+    width:100%;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+.mm-page-header{
+    margin-bottom:20px;
+}
+
+.mm-title{
+    margin:0;
+    font-size:28px;
+    color:#0d4e70;
+}
+
+.mm-subtitle{
+    margin-top:6px;
+    color:#64748b;
+    font-size:14px;
+}
+
+.mm-tabs{
+    display:flex;
+    gap:10px;
+    margin:20px 0;
+    border-bottom:1px solid #d5e0e8;
+    padding-bottom:10px;
+}
+
+.mm-tab{
+
+    padding:10px 18px;
+
+    border:1px solid #d5e0e8;
+
+    border-radius:8px;
+
+    background:#ffffff;
+
+    color:#176c91;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+.mm-tab.active{
+
+    background:#176c91;
+
+    color:#ffffff;
+
+}
+
+.mm-content{
+
+    margin-top:20px;
+
+}
+
+.mm-placeholder{
+
+    min-height:450px;
+
+    border:1px dashed #cbd5e1;
+
+    border-radius:10px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    color:#64748b;
+
+    font-size:16px;
+
+    background:#fafcfd;
+
+}
+
+</style>
+
+
+<script>
+
+(function(){
+
+"use strict";
+
+const tabs=document.querySelectorAll(".mm-tab");
+const content=document.getElementById("mmContent");
+
+tabs.forEach(function(tab){
+
+    tab.addEventListener("click",function(){
+
+        tabs.forEach(function(t){
+
+            t.classList.remove("active");
+
+        });
+
+        tab.classList.add("active");
+
+        if(tab.id==="mmTabReview"){
+
+            content.innerHTML=
+                '<div class="mm-placeholder">Review Requests content will appear here.</div>';
+
+        }
+
+        if(tab.id==="mmTabMember"){
+
+            content.innerHTML=
+                '<div class="mm-placeholder">Add / Edit Member module coming soon.</div>';
+
+        }
+
+        if(tab.id==="mmTabFamily"){
+
+            content.innerHTML=
+                '<div class="mm-placeholder">Add / Edit Family Member module coming soon.</div>';
+
+        }
+
+    });
+
+});
+
+})();
+
+</script>

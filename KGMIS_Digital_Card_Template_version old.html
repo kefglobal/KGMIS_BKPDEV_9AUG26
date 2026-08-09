@@ -1,0 +1,1437 @@
+<!--
+  =====================================================================
+  KEF Global Membership Information System (KGMIS)
+  Premium Digital Membership Card Template
+
+  File: KGMIS_Digital_Card_Template.html
+  Designed and Developed by: James Joseph Alenchery (JJA Global Systems)
+  ========================================================================
+
+  Purpose:
+  - Reusable premium card renderer
+  - Front and reverse card views
+  - Safe dynamic population through:
+      window.KGMIS_DIGITAL_CARD_TEMPLATE.render(data)
+  - Designed for use inside KGMIS modules
+  - CR80 ratio: 1012 × 638
+-->
+
+<div
+  id="kgmisDigitalCardTemplate"
+  class="kdc-template"
+  hidden
+>
+  <div class="kdc-stage">
+
+    <!-- =====================================================
+         FRONT
+         ===================================================== -->
+    <article
+      id="kdcFront"
+      class="kdc-card kdc-front"
+      aria-label="KEF Global Digital Membership Card front"
+    >
+      <div class="kdc-blueprint-grid"></div>
+      <div class="kdc-network-pattern"></div>
+      <div class="kdc-watermark">KEF GLOBAL</div>
+      <div class="kdc-gold-wave"></div>
+      <div class="kdc-glass-highlight"></div>
+
+      <header class="kdc-card-header">
+        <div class="kdc-brand-block">
+          <div
+            id="kdcLogoMark"
+            class="kdc-logo-mark"
+            aria-hidden="true"
+          >
+            KEF
+          </div>
+
+          <div>
+            <div class="kdc-brand-name">KEF GLOBAL</div>
+            <div class="kdc-brand-subtitle">
+              Digital Membership Card
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="kdcStatusRibbon"
+          class="kdc-status-ribbon kdc-status-active"
+        >
+          ACTIVE
+        </div>
+      </header>
+
+      <div class="kdc-gold-divider"></div>
+
+      <section class="kdc-card-body">
+        <div class="kdc-photo-column">
+          <div class="kdc-photo-frame">
+            <img
+              id="kdcPhoto"
+              alt="Cardholder photograph"
+              hidden
+            >
+
+            <div
+              id="kdcPhotoPlaceholder"
+              class="kdc-photo-placeholder"
+            >
+              <span>PHOTO</span>
+            </div>
+          </div>
+
+          <div class="kdc-security-chip">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="kdc-identity-column">
+          <p class="kdc-card-label">Cardholder</p>
+
+          <h1 id="kdcCardholderName">
+            Member Name
+          </h1>
+
+          <p
+            id="kdcCardholderType"
+            class="kdc-cardholder-type"
+          >
+            Primary Member
+          </p>
+
+          <div class="kdc-card-number-block">
+            <span>Card Number</span>
+            <strong id="kdcCardId">
+              KEFG00000001
+            </strong>
+          </div>
+
+          <div class="kdc-detail-grid">
+            <div>
+              <span>Membership</span>
+              <strong id="kdcMembershipType">
+                Annual
+              </strong>
+            </div>
+
+            <div>
+              <span>Membership Year</span>
+              <strong id="kdcMembershipYear">
+                2026-27
+              </strong>
+            </div>
+
+            <div>
+              <span>Membership Status</span>
+              <strong id="kdcMembershipStatus">
+                Paid
+              </strong>
+            </div>
+
+            <div>
+              <span>Valid Until</span>
+              <strong id="kdcValidUntil">
+                31 Mar 2027
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <aside class="kdc-qr-column">
+          <div class="kdc-qr-frame">
+            <img
+              id="kdcQrImage"
+              alt="Membership verification QR code"
+              hidden
+            >
+
+            <div
+              id="kdcQrPlaceholder"
+              class="kdc-qr-placeholder"
+            >
+              QR
+            </div>
+          </div>
+
+          <p>Scan to verify</p>
+        </aside>
+      </section>
+
+      <footer class="kdc-card-footer">
+        <div>
+          <span class="kdc-footer-label">Issued</span>
+          <strong id="kdcIssueDate">—</strong>
+        </div>
+
+        <div class="kdc-footer-center">
+          <span class="kdc-microtext">
+            KEF GLOBAL • KEF GLOBAL • KEF GLOBAL • KEF GLOBAL
+          </span>
+        </div>
+
+        <div class="kdc-version">
+          Version <strong id="kdcCardVersion">1.0</strong>
+        </div>
+      </footer>
+    </article>
+
+
+    <!-- =====================================================
+         REVERSE
+         ===================================================== -->
+    <article
+      id="kdcBack"
+      class="kdc-card kdc-back"
+      aria-label="KEF Global Digital Membership Card reverse"
+    >
+      <div class="kdc-blueprint-grid"></div>
+      <div class="kdc-network-pattern"></div>
+      <div class="kdc-watermark kdc-watermark-back">
+        KEF GLOBAL
+      </div>
+      <div class="kdc-gold-wave kdc-gold-wave-back"></div>
+      <div class="kdc-glass-highlight"></div>
+
+      <header class="kdc-back-header">
+        <div class="kdc-brand-block">
+          <div class="kdc-logo-mark" aria-hidden="true">
+            KEF
+          </div>
+
+          <div>
+            <div class="kdc-brand-name">KEF GLOBAL</div>
+            <div class="kdc-brand-subtitle">
+              Official Digital Credential
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="kdc-gold-divider"></div>
+
+      <section class="kdc-back-body">
+        <div class="kdc-back-copy">
+          <h2>Membership Verification</h2>
+
+          <p>
+            Scan the QR code on the front of this card to confirm
+            the current membership and card status.
+          </p>
+
+          <div class="kdc-verification-note">
+            This card remains the property of KEF Global.
+            It may be revoked when membership or card eligibility
+            is withdrawn.
+          </div>
+
+          <div class="kdc-back-info-grid">
+            <div>
+              <span>Card Number</span>
+              <strong id="kdcBackCardId">
+                KEFG00000001
+              </strong>
+            </div>
+
+            <div>
+              <span>Card Status</span>
+              <strong id="kdcBackStatus">
+                ACTIVE
+              </strong>
+            </div>
+
+            <div>
+              <span>Valid Until</span>
+              <strong id="kdcBackValidUntil">
+                31 Mar 2027
+              </strong>
+            </div>
+
+            <div>
+              <span>Version</span>
+              <strong id="kdcBackVersion">
+                1.0
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <aside class="kdc-back-emblem">
+          <div class="kdc-emblem-ring">
+            <span>KEF</span>
+          </div>
+
+          <p id="kdcWebsite">
+            www.kefglobal.org
+          </p>
+        </aside>
+      </section>
+
+      <footer class="kdc-back-footer">
+        <span>
+          Secure Digital Membership Credential
+        </span>
+
+        <span>
+          KEF Global Membership Information System
+        </span>
+      </footer>
+    </article>
+  </div>
+</div>
+
+<div id="kdcGenerationControls" style="display:none;max-width:1012px;margin:18px auto;padding:14px;border:1px solid #d5e0e8;border-radius:12px;background:#fff;font-family:Arial;text-align:center"><button id="kdcGeneratePngButton" type="button" style="min-height:42px;padding:9px 18px;border:0;border-radius:9px;color:#fff;background:#176c91;cursor:pointer;font-weight:800">Generate and Save PNG</button><div id="kdcGenerationMessage" style="margin-top:10px;color:#475569;font-size:13px"></div></div>
+<style>
+  .kdc-template {
+    --kdc-navy-1: #071f36;
+    --kdc-navy-2: #0b3558;
+    --kdc-navy-3: #124c7a;
+    --kdc-gold-1: #f2d58a;
+    --kdc-gold-2: #c9a227;
+    --kdc-white: #ffffff;
+    --kdc-soft-white: rgba(255, 255, 255, .86);
+    --kdc-muted-white: rgba(255, 255, 255, .62);
+    --kdc-active: #138a4b;
+    --kdc-extended: #1a73e8;
+    --kdc-revoked: #d93025;
+    font-family:
+      Inter,
+      Arial,
+      Helvetica,
+      sans-serif;
+  }
+
+  .kdc-template *,
+  .kdc-template *::before,
+  .kdc-template *::after {
+    box-sizing: border-box;
+  }
+
+  .kdc-stage {
+    display: grid;
+    gap: 26px;
+  }
+
+  .kdc-card {
+    position: relative;
+    width: min(100%, 1012px);
+    aspect-ratio: 1012 / 638;
+    overflow: hidden;
+    border: 2px solid rgba(242, 213, 138, .78);
+    border-radius: 28px;
+    color: var(--kdc-white);
+    background:
+      radial-gradient(
+        circle at 87% 14%,
+        rgba(66, 153, 225, .28),
+        transparent 27%
+      ),
+      linear-gradient(
+        135deg,
+        var(--kdc-navy-1) 0%,
+        var(--kdc-navy-2) 48%,
+        var(--kdc-navy-3) 100%
+      );
+    box-shadow:
+      0 24px 65px rgba(4, 20, 35, .30),
+      inset 0 1px 0 rgba(255, 255, 255, .15);
+  }
+
+  .kdc-blueprint-grid {
+    position: absolute;
+    inset: 0;
+    opacity: .09;
+    background-image:
+      linear-gradient(
+        rgba(255, 255, 255, .22) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, .22) 1px,
+        transparent 1px
+      );
+    background-size: 38px 38px;
+    pointer-events: none;
+  }
+
+  .kdc-network-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: .12;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        circle at 18% 22%,
+        rgba(255, 255, 255, .75) 0 2px,
+        transparent 3px
+      ),
+      radial-gradient(
+        circle at 72% 34%,
+        rgba(255, 255, 255, .75) 0 2px,
+        transparent 3px
+      ),
+      radial-gradient(
+        circle at 88% 68%,
+        rgba(255, 255, 255, .75) 0 2px,
+        transparent 3px
+      ),
+      linear-gradient(
+        24deg,
+        transparent 0 44%,
+        rgba(255, 255, 255, .35) 45% 45.6%,
+        transparent 46% 100%
+      ),
+      linear-gradient(
+        152deg,
+        transparent 0 58%,
+        rgba(255, 255, 255, .28) 59% 59.5%,
+        transparent 60% 100%
+      );
+  }
+
+  .kdc-watermark {
+    position: absolute;
+    left: 50%;
+    top: 53%;
+    transform:
+      translate(-50%, -50%)
+      rotate(-16deg);
+    color: rgba(255, 255, 255, .045);
+    font-size: clamp(64px, 12vw, 146px);
+    font-weight: 900;
+    letter-spacing: .08em;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .kdc-gold-wave {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: 7%;
+    height: 24%;
+    border-top: 3px solid rgba(242, 213, 138, .48);
+    border-radius: 50%;
+    transform: rotate(-4deg);
+    opacity: .9;
+    pointer-events: none;
+  }
+
+  .kdc-gold-wave::after {
+    content: "";
+    position: absolute;
+    inset: 14px 0 auto;
+    border-top: 1px solid rgba(242, 213, 138, .22);
+  }
+
+  .kdc-glass-highlight {
+    position: absolute;
+    top: -36%;
+    left: -8%;
+    width: 64%;
+    height: 82%;
+    transform: rotate(-21deg);
+    background:
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, .12),
+        rgba(255, 255, 255, .02)
+      );
+    pointer-events: none;
+  }
+
+  .kdc-card-header,
+  .kdc-back-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 34px 38px 22px;
+  }
+
+  .kdc-brand-block {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .kdc-logo-mark {
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(242, 213, 138, .78);
+    border-radius: 18px;
+    color: var(--kdc-gold-1);
+    background:
+      linear-gradient(
+        145deg,
+        rgba(255, 255, 255, .15),
+        rgba(255, 255, 255, .025)
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, .18);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: .08em;
+  }
+
+  .kdc-brand-name {
+    color: var(--kdc-gold-1);
+    font-size: 25px;
+    font-weight: 900;
+    letter-spacing: .12em;
+  }
+
+  .kdc-brand-subtitle {
+    margin-top: 4px;
+    color: var(--kdc-muted-white);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .kdc-status-ribbon {
+    min-width: 132px;
+    padding: 10px 18px;
+    border: 1px solid rgba(255, 255, 255, .32);
+    border-radius: 999px;
+    color: #fff;
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, .18),
+      inset 0 1px 0 rgba(255, 255, 255, .22);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: .12em;
+  }
+
+  .kdc-status-active {
+    background:
+      linear-gradient(
+        135deg,
+        #0e6b3a,
+        var(--kdc-active)
+      );
+  }
+
+  .kdc-status-extended {
+    background:
+      linear-gradient(
+        135deg,
+        #155c9d,
+        var(--kdc-extended)
+      );
+  }
+
+  .kdc-status-revoked {
+    background:
+      linear-gradient(
+        135deg,
+        #9f2019,
+        var(--kdc-revoked)
+      );
+  }
+
+  .kdc-gold-divider {
+    position: relative;
+    z-index: 2;
+    height: 1px;
+    margin: 0 38px;
+    background:
+      linear-gradient(
+        90deg,
+        transparent,
+        rgba(242, 213, 138, .92),
+        transparent
+      );
+  }
+
+  .kdc-card-body {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns:
+      170px
+      minmax(0, 1fr)
+      170px;
+    gap: 28px;
+    align-items: center;
+    padding: 30px 38px 22px;
+  }
+
+  .kdc-photo-column {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+  }
+
+  .kdc-photo-frame {
+    width: 142px;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, .84);
+    border-radius: 20px;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(255, 255, 255, .18),
+        rgba(255, 255, 255, .05)
+      );
+    box-shadow:
+      0 18px 34px rgba(0, 0, 0, .24),
+      inset 0 1px 0 rgba(255, 255, 255, .22);
+  }
+
+  .kdc-photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .kdc-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: rgba(255, 255, 255, .46);
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: .10em;
+  }
+
+  .kdc-security-chip {
+    width: 74px;
+    height: 45px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 7px;
+    border: 1px solid rgba(242, 213, 138, .72);
+    border-radius: 10px;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(242, 213, 138, .46),
+        rgba(201, 162, 39, .14)
+      );
+  }
+
+  .kdc-security-chip span {
+    border: 1px solid rgba(242, 213, 138, .66);
+    border-radius: 3px;
+  }
+
+  .kdc-card-label,
+  .kdc-card-number-block span,
+  .kdc-detail-grid span,
+  .kdc-footer-label,
+  .kdc-back-info-grid span {
+    display: block;
+    color: var(--kdc-muted-white);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+  }
+
+  .kdc-identity-column h1 {
+    margin: 7px 0 5px;
+    color: var(--kdc-white);
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.06;
+  }
+
+  .kdc-cardholder-type {
+    margin: 0;
+    color: var(--kdc-gold-1);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: .04em;
+  }
+
+  .kdc-card-number-block {
+    margin-top: 27px;
+  }
+
+  .kdc-card-number-block strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--kdc-white);
+    font-family:
+      "SFMono-Regular",
+      Consolas,
+      "Liberation Mono",
+      monospace;
+    font-size: clamp(22px, 3vw, 31px);
+    letter-spacing: .08em;
+  }
+
+  .kdc-detail-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 16px 26px;
+    margin-top: 24px;
+  }
+
+  .kdc-detail-grid strong,
+  .kdc-back-info-grid strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--kdc-soft-white);
+    font-size: 14px;
+  }
+
+  .kdc-qr-column {
+    display: grid;
+    justify-items: center;
+  }
+
+  .kdc-qr-frame {
+    width: 144px;
+    height: 144px;
+    display: grid;
+    place-items: center;
+    padding: 10px;
+    border: 1px solid rgba(242, 213, 138, .78);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow:
+      0 18px 34px rgba(0, 0, 0, .24);
+  }
+
+  .kdc-qr-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .kdc-qr-placeholder {
+    color: #15344d;
+    font-size: 34px;
+    font-weight: 900;
+  }
+
+  .kdc-qr-column p {
+    margin: 10px 0 0;
+    color: var(--kdc-muted-white);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .kdc-card-footer,
+  .kdc-back-footer {
+    position: absolute;
+    z-index: 2;
+    left: 38px;
+    right: 38px;
+    bottom: 23px;
+    display: grid;
+    grid-template-columns:
+      auto
+      minmax(0, 1fr)
+      auto;
+    gap: 16px;
+    align-items: end;
+    color: var(--kdc-muted-white);
+    font-size: 10px;
+  }
+
+  .kdc-card-footer strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--kdc-soft-white);
+    font-size: 12px;
+  }
+
+  .kdc-footer-center {
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .kdc-microtext {
+    display: block;
+    opacity: .42;
+    white-space: nowrap;
+    letter-spacing: .12em;
+  }
+
+  .kdc-version {
+    text-align: right;
+  }
+
+  .kdc-version strong {
+    display: inline;
+  }
+
+  .kdc-back-body {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1.45fr)
+      minmax(220px, .55fr);
+    gap: 42px;
+    align-items: center;
+    padding: 45px 55px 70px;
+  }
+
+  .kdc-back-copy h2 {
+    margin: 0;
+    color: var(--kdc-gold-1);
+    font-size: 32px;
+  }
+
+  .kdc-back-copy > p {
+    max-width: 590px;
+    margin: 15px 0 0;
+    color: var(--kdc-soft-white);
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .kdc-verification-note {
+    max-width: 610px;
+    margin-top: 23px;
+    padding: 16px 18px;
+    border: 1px solid rgba(242, 213, 138, .28);
+    border-radius: 14px;
+    color: var(--kdc-muted-white);
+    background: rgba(255, 255, 255, .055);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .kdc-back-info-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 18px 28px;
+    margin-top: 26px;
+  }
+
+  .kdc-back-emblem {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+  }
+
+  .kdc-emblem-ring {
+    width: 176px;
+    height: 176px;
+    display: grid;
+    place-items: center;
+    border: 2px solid rgba(242, 213, 138, .66);
+    border-radius: 50%;
+    box-shadow:
+      inset 0 0 0 11px rgba(242, 213, 138, .06),
+      inset 0 0 0 13px rgba(242, 213, 138, .26);
+  }
+
+  .kdc-emblem-ring span {
+    color: var(--kdc-gold-1);
+    font-size: 45px;
+    font-weight: 900;
+    letter-spacing: .08em;
+  }
+
+  .kdc-back-emblem p {
+    margin: 0;
+    color: var(--kdc-soft-white);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .kdc-watermark-back {
+    top: 56%;
+  }
+
+  .kdc-gold-wave-back {
+    bottom: 3%;
+    transform: rotate(4deg);
+  }
+
+  .kdc-back-footer {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto;
+    padding-top: 14px;
+    border-top: 1px solid rgba(242, 213, 138, .22);
+  }
+
+  @media (max-width: 760px) {
+    .kdc-card {
+      border-radius: 20px;
+    }
+
+    .kdc-card-header,
+    .kdc-back-header {
+      padding:
+        clamp(16px, 4vw, 28px)
+        clamp(16px, 4vw, 30px)
+        15px;
+    }
+
+    .kdc-logo-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    .kdc-brand-name {
+      font-size: clamp(15px, 4vw, 21px);
+    }
+
+    .kdc-brand-subtitle {
+      font-size: clamp(8px, 2vw, 11px);
+    }
+
+    .kdc-status-ribbon {
+      min-width: 92px;
+      padding: 7px 10px;
+      font-size: 9px;
+    }
+
+    .kdc-gold-divider {
+      margin:
+        0
+        clamp(16px, 4vw, 30px);
+    }
+
+    .kdc-card-body {
+      grid-template-columns:
+        22%
+        minmax(0, 1fr)
+        22%;
+      gap: 3%;
+      padding:
+        clamp(15px, 4vw, 25px)
+        clamp(16px, 4vw, 30px);
+    }
+
+    .kdc-photo-frame {
+      width: 100%;
+      border-radius: 14px;
+    }
+
+    .kdc-security-chip {
+      display: none;
+    }
+
+    .kdc-identity-column h1 {
+      font-size: clamp(17px, 4.4vw, 29px);
+    }
+
+    .kdc-cardholder-type {
+      font-size: clamp(9px, 2.4vw, 13px);
+    }
+
+    .kdc-card-number-block {
+      margin-top: clamp(10px, 3vw, 20px);
+    }
+
+    .kdc-card-number-block strong {
+      font-size: clamp(13px, 3.2vw, 22px);
+    }
+
+    .kdc-detail-grid {
+      gap: 8px 12px;
+      margin-top: clamp(10px, 3vw, 18px);
+    }
+
+    .kdc-detail-grid span,
+    .kdc-card-label,
+    .kdc-card-number-block span {
+      font-size: clamp(6px, 1.4vw, 9px);
+    }
+
+    .kdc-detail-grid strong {
+      font-size: clamp(8px, 2vw, 12px);
+    }
+
+    .kdc-qr-frame {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+      padding: 7px;
+      border-radius: 13px;
+    }
+
+    .kdc-qr-column p {
+      font-size: clamp(6px, 1.4vw, 9px);
+    }
+
+    .kdc-card-footer,
+    .kdc-back-footer {
+      left: clamp(16px, 4vw, 30px);
+      right: clamp(16px, 4vw, 30px);
+      bottom: clamp(10px, 2.5vw, 18px);
+      font-size: clamp(6px, 1.4vw, 9px);
+    }
+
+    .kdc-back-body {
+      gap: 5%;
+      padding:
+        clamp(20px, 5vw, 38px)
+        clamp(20px, 5vw, 42px)
+        clamp(50px, 9vw, 68px);
+    }
+
+    .kdc-back-copy h2 {
+      font-size: clamp(19px, 4vw, 28px);
+    }
+
+    .kdc-back-copy > p {
+      margin-top: 8px;
+      font-size: clamp(9px, 2.1vw, 14px);
+    }
+
+    .kdc-verification-note {
+      margin-top: 11px;
+      padding: 9px 11px;
+      font-size: clamp(7px, 1.8vw, 11px);
+    }
+
+    .kdc-back-info-grid {
+      gap: 9px 14px;
+      margin-top: 14px;
+    }
+
+    .kdc-back-info-grid span {
+      font-size: clamp(6px, 1.4vw, 9px);
+    }
+
+    .kdc-back-info-grid strong {
+      font-size: clamp(8px, 1.9vw, 12px);
+    }
+
+    .kdc-emblem-ring {
+      width: min(100%, 140px);
+      height: auto;
+      aspect-ratio: 1;
+    }
+
+    .kdc-emblem-ring span {
+      font-size: clamp(22px, 6vw, 38px);
+    }
+
+    .kdc-back-emblem p {
+      font-size: clamp(7px, 1.8vw, 11px);
+    }
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const root =
+    document.getElementById(
+      'kgmisDigitalCardTemplate'
+    );
+
+  if (!root) {
+    return;
+  }
+
+  const el = {};
+
+  [
+    'kdcPhoto',
+    'kdcPhotoPlaceholder',
+    'kdcQrImage',
+    'kdcQrPlaceholder',
+    'kdcStatusRibbon',
+    'kdcCardholderName',
+    'kdcCardholderType',
+    'kdcCardId',
+    'kdcMembershipType',
+    'kdcMembershipYear',
+    'kdcMembershipStatus',
+    'kdcValidUntil',
+    'kdcIssueDate',
+    'kdcCardVersion',
+    'kdcBackCardId',
+    'kdcBackStatus',
+    'kdcBackValidUntil',
+    'kdcBackVersion',
+    'kdcWebsite'
+  ].forEach(function (id) {
+    el[id] =
+      document.getElementById(id);
+  });
+
+
+  let currentCard = null;
+
+  function render(data) {
+    const card =
+      data || {};
+
+    currentCard = card;
+
+    const status =
+      normaliseStatus(
+        card.cardStatus
+      );
+
+    setText(
+      el.kdcCardholderName,
+      card.cardholderName,
+      'Member Name'
+    );
+
+    setText(
+      el.kdcCardholderType,
+      displayText(
+        card.cardholderType
+      ),
+      'Member'
+    );
+
+    setText(
+      el.kdcCardId,
+      card.cardId,
+      'KEFG00000001'
+    );
+
+    setText(
+      el.kdcMembershipType,
+      displayText(
+        card.membershipType
+      ),
+      '—'
+    );
+
+    setText(
+      el.kdcMembershipYear,
+      card.membershipYear,
+      '—'
+    );
+
+    setText(
+      el.kdcMembershipStatus,
+      displayText(
+        card.membershipStatus
+      ),
+      '—'
+    );
+
+    setText(
+      el.kdcValidUntil,
+      formatDate(
+        card.validUntil
+      ),
+      '—'
+    );
+
+    setText(
+      el.kdcIssueDate,
+      formatDate(
+        card.issueDate
+      ),
+      '—'
+    );
+
+    setText(
+      el.kdcCardVersion,
+      card.cardVersion,
+      '1.0'
+    );
+
+    setText(
+      el.kdcBackCardId,
+      card.cardId,
+      'KEFG00000001'
+    );
+
+    setText(
+      el.kdcBackStatus,
+      status,
+      'ACTIVE'
+    );
+
+    setText(
+      el.kdcBackValidUntil,
+      formatDate(
+        card.validUntil
+      ),
+      '—'
+    );
+
+    setText(
+      el.kdcBackVersion,
+      card.cardVersion,
+      '1.0'
+    );
+
+    setText(
+      el.kdcWebsite,
+      card.website,
+      'www.kefglobal.org'
+    );
+
+    applyStatus(status);
+    applyImage(
+      el.kdcPhoto,
+      el.kdcPhotoPlaceholder,
+      card.photoUrl
+    );
+
+    applyImage(
+      el.kdcQrImage,
+      el.kdcQrPlaceholder,
+      card.qrImageUrl
+    );
+
+    root.hidden =
+      false;
+  }
+
+
+  function applyStatus(status) {
+    el.kdcStatusRibbon.textContent =
+      status;
+
+    el.kdcStatusRibbon.className =
+      'kdc-status-ribbon ' +
+      (
+        status === 'EXTENDED'
+          ? 'kdc-status-extended'
+          : status === 'REVOKED'
+            ? 'kdc-status-revoked'
+            : 'kdc-status-active'
+      );
+  }
+
+
+  function applyImage(
+    image,
+    placeholder,
+    url
+  ) {
+    const source =
+      String(
+        url || ''
+      ).trim();
+
+    if (!source) {
+      image.hidden =
+        true;
+
+      image.removeAttribute(
+        'src'
+      );
+
+      placeholder.hidden =
+        false;
+
+      return;
+    }
+
+    image.onload =
+      function () {
+        placeholder.hidden =
+          true;
+
+        image.hidden =
+          false;
+      };
+
+    image.onerror =
+      function () {
+        image.hidden =
+          true;
+
+        placeholder.hidden =
+          false;
+      };
+
+    image.src =
+      source;
+  }
+
+
+  function setText(
+    element,
+    value,
+    fallback
+  ) {
+    element.textContent =
+      String(
+        value || fallback || ''
+      ).trim();
+  }
+
+
+  function normaliseStatus(value) {
+    const status =
+      String(
+        value || 'ACTIVE'
+      )
+        .trim()
+        .toUpperCase();
+
+    if (
+      status === 'EXTENDED' ||
+      status === 'REVOKED'
+    ) {
+      return status;
+    }
+
+    return 'ACTIVE';
+  }
+
+
+  function displayText(value) {
+    return String(
+      value || ''
+    )
+      .trim()
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(
+        /\b\w/g,
+        function (letter) {
+          return letter.toUpperCase();
+        }
+      );
+  }
+
+
+  function formatDate(value) {
+    const text =
+      String(
+        value || ''
+      ).trim();
+
+    if (!text) {
+      return '';
+    }
+
+    const iso =
+      text.match(
+        /^(\d{4})-(\d{2})-(\d{2})$/
+      );
+
+    if (!iso) {
+      return text;
+    }
+
+    const date =
+      new Date(
+        Number(iso[1]),
+        Number(iso[2]) - 1,
+        Number(iso[3])
+      );
+
+    return date.toLocaleDateString(
+      'en-GB',
+      {
+        day:
+          '2-digit',
+
+        month:
+          'short',
+
+        year:
+          'numeric'
+      }
+    );
+  }
+
+
+  function captureFrontPng() {
+    const front = document.getElementById('kdcFront');
+    if (!front) return Promise.reject(new Error('Card front not found.'));
+    if (typeof window.html2canvas !== 'function') return Promise.reject(new Error('PNG capture library did not load.'));
+    const oldWidth = front.style.width;
+    const oldMaxWidth = front.style.maxWidth;
+    const oldHeight = front.style.height;
+    front.style.width = '1012px';
+    front.style.maxWidth = '1012px';
+    front.style.height = '638px';
+    const images = Array.from(front.querySelectorAll('img')).filter(i => !i.hidden && i.src);
+    return Promise.all(images.map(i => i.complete ? Promise.resolve() : new Promise(r => { i.addEventListener('load',r,{once:true}); i.addEventListener('error',r,{once:true}); })))
+      .then(() => window.html2canvas(front,{backgroundColor:null,scale:1,useCORS:true,allowTaint:false,logging:false,width:1012,height:638,windowWidth:1200,windowHeight:900}))
+      .then(canvas => canvas.toDataURL('image/png'))
+      .finally(() => { front.style.width=oldWidth; front.style.maxWidth=oldMaxWidth; front.style.height=oldHeight; });
+  }
+
+  function enablePngGeneration() {
+    const controls=document.getElementById('kdcGenerationControls');
+    const button=document.getElementById('kdcGeneratePngButton');
+    const message=document.getElementById('kdcGenerationMessage');
+    if (!controls || !button || !message) return;
+    controls.style.display='block';
+    button.onclick=function(){
+      if (!currentCard || !currentCard.cardId) { message.textContent='No CARD_ID is loaded.'; return; }
+      button.disabled=true; message.textContent='Creating PNG image…';
+      captureFrontPng().then(function(dataUrl){
+        message.textContent='Saving PNG to Google Drive…';
+        google.script.run.withSuccessHandler(function(result){button.disabled=false;message.textContent=result&&result.message?result.message:'PNG saved.';}).withFailureHandler(function(error){button.disabled=false;message.textContent=error&&error.message?error.message:String(error||'PNG generation failed.');}).KGMIS_DigitalCardRenderer_SaveGeneratedPng(currentCard.cardId,dataUrl);
+      }).catch(function(error){button.disabled=false;message.textContent=error&&error.message?error.message:String(error);});
+    };
+  }
+
+
+  function showFront() {
+    document
+      .getElementById(
+        'kdcFront'
+      )
+      .scrollIntoView({
+        behavior:
+          'smooth',
+
+        block:
+          'nearest'
+      });
+  }
+
+
+  function showBack() {
+    document
+      .getElementById(
+        'kdcBack'
+      )
+      .scrollIntoView({
+        behavior:
+          'smooth',
+
+        block:
+          'nearest'
+      });
+  }
+
+
+  window.KGMIS_DIGITAL_CARD_TEMPLATE = {
+    render:
+      render,
+
+    showFront:
+      showFront,
+
+    showBack:
+      showBack,
+
+    captureFrontPng:
+      captureFrontPng,
+
+    enablePngGeneration:
+      enablePngGeneration
+  };
+})();
+</script>

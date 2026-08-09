@@ -1,0 +1,3152 @@
+<!--
+  ============================================================
+  KGMIS Treasurer Module — Version 3.4
+  File: 90.00_KGMIS_Module_Treasurer.html
+  Embedded inside KGMIS Main Portal
+  ============================================================
+-->
+
+<style>
+  #kgmisTreasurerV3 {
+    --tr3-primary: #176c91;
+    --tr3-primary-dark: #0d4e70;
+    --tr3-primary-light: #e7f4f9;
+    --tr3-accent: #0aa957;
+    --tr3-background: #f3f7fa;
+    --tr3-panel: #ffffff;
+    --tr3-border: #d5e0e8;
+    --tr3-text: #1f2937;
+    --tr3-muted: #64748b;
+    --tr3-shadow: 0 7px 22px rgba(15, 76, 105, 0.09);
+
+    width: 100%;
+    min-width: 0;
+    color: var(--tr3-text);
+    background: var(--tr3-background);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #kgmisTreasurerV3 *,
+  #kgmisTreasurerV3 *::before,
+  #kgmisTreasurerV3 *::after {
+    box-sizing: border-box;
+  }
+
+  #kgmisTreasurerV3 button,
+  #kgmisTreasurerV3 input,
+  #kgmisTreasurerV3 select {
+    font: inherit;
+  }
+
+  #kgmisTreasurerV3 button {
+    cursor: pointer;
+  }
+
+  #kgmisTreasurerV3 [hidden] {
+    display: none !important;
+  }
+
+  .tr3-function-panel,
+  .tr3-panel {
+    margin-bottom: 18px;
+    padding: 18px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 14px;
+    background: var(--tr3-panel);
+    box-shadow: var(--tr3-shadow);
+  }
+
+  .tr3-function-panel {
+    padding: 12px 18px;
+  }
+
+  .tr3-function-heading {
+    margin: 0 0 12px;
+    color: var(--tr3-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .tr3-function-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 11px;
+  }
+
+  .tr3-function-button {
+    min-width: 0;
+    min-height: 48px;
+    padding: 13px 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 12px;
+    color: var(--tr3-primary-dark);
+    background: #f8fbfd;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  .tr3-function-button:hover {
+    border-color: var(--tr3-primary);
+    background: var(--tr3-primary-light);
+  }
+
+  .tr3-function-button.active {
+    border-color: var(--tr3-primary);
+    color: #ffffff;
+    background:
+      linear-gradient(
+        135deg,
+        var(--tr3-primary-dark),
+        var(--tr3-primary)
+      );
+  }
+
+  .tr3-function-icon {
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .tr3-loading,
+  .tr3-message {
+    margin-bottom: 15px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .tr3-loading {
+    display: none;
+    color: var(--tr3-primary-dark);
+    background: var(--tr3-primary-light);
+    border: 1px solid #b9d7e6;
+  }
+
+  .tr3-message {
+    display: none;
+  }
+
+  .tr3-message.info {
+    display: block;
+    color: #155c7b;
+    background: #eff8fc;
+    border: 1px solid #b9d7e6;
+  }
+
+  .tr3-message.success {
+    display: block;
+    color: #16723a;
+    background: #ecfdf3;
+    border: 1px solid #a7e6bd;
+  }
+
+  .tr3-message.error {
+    display: block;
+    color: #b42318;
+    background: #fef3f2;
+    border: 1px solid #fecdca;
+  }
+
+  .tr3-module {
+    display: none;
+  }
+
+  .tr3-module.active {
+    display: block;
+  }
+
+  .tr3-panel-title {
+    margin: 0 0 5px;
+    color: var(--tr3-primary-dark);
+    font-size: 21px;
+  }
+
+  .tr3-panel-description {
+    margin: 0 0 18px;
+    color: var(--tr3-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .tr3-year-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    border: 1px solid #b9d7e6;
+    border-radius: 999px;
+    color: var(--tr3-primary-dark);
+    background: var(--tr3-primary-light);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .tr3-input,
+  .tr3-select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #b7c4cf;
+    border-radius: 8px;
+    color: var(--tr3-text);
+    background: #ffffff;
+    outline: none;
+  }
+
+  .tr3-input:focus,
+  .tr3-select:focus {
+    border-color: var(--tr3-primary);
+    box-shadow:
+      0 0 0 3px rgba(23, 108, 145, 0.13);
+  }
+
+  .tr3-button {
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 8px;
+    color: #ffffff;
+    background: var(--tr3-primary);
+    font-weight: 800;
+  }
+
+  .tr3-button.download {
+    background: var(--tr3-accent);
+  }
+
+  .tr3-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .tr3-search-row {
+    display: grid;
+    grid-template-columns:
+      minmax(250px, 1fr)
+      auto;
+    gap: 10px;
+  }
+
+  .tr3-results {
+    display: grid;
+    gap: 16px;
+  }
+
+  .tr3-empty {
+    padding: 28px;
+    color: var(--tr3-muted);
+    text-align: center;
+  }
+
+  .tr3-family-card {
+    padding: 19px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .tr3-family-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 16px;
+  }
+
+  .tr3-family-title {
+    margin: 0;
+    color: var(--tr3-primary-dark);
+    font-size: 20px;
+  }
+
+  .tr3-status-stack {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 7px;
+  }
+
+  .tr3-badge {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .tr3-membership-badge {
+    color: #155c7b;
+    background: #e7f4f9;
+    border: 1px solid #a8d7e8;
+  }
+
+  .tr3-payment-badge {
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+  }
+
+  .tr3-payment-badge.unpaid {
+    color: #991b1b;
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+
+  .tr3-payment-badge.pending {
+    color: #92400e;
+    background: #fef3c7;
+    border-color: #fcd34d;
+  }
+
+  .tr3-person-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .tr3-person-card {
+    padding: 16px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 10px;
+    background: #f8fbfd;
+  }
+
+  .tr3-role {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--tr3-muted);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .tr3-person-name {
+    margin-bottom: 8px;
+    color: var(--tr3-primary-dark);
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .tr3-person-detail {
+    margin-top: 7px;
+    line-height: 1.45;
+  }
+
+  .tr3-family-zone {
+    margin-top: 15px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--tr3-primary-dark);
+    background: #e5f4fa;
+    font-weight: 700;
+  }
+
+  .tr3-family-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 17px;
+    padding-top: 17px;
+    border-top: 1px solid var(--tr3-border);
+  }
+
+  .tr3-family-actions button {
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 8px;
+    color: #ffffff;
+    background: var(--tr3-primary);
+    font-weight: 800;
+  }
+
+  .tr3-family-actions button.alt {
+    background: #526779;
+  }
+
+  .tr3-summary-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(6, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .tr3-summary-card {
+    padding: 15px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 10px;
+    background: #f8fbfd;
+  }
+
+  .tr3-summary-card strong {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--tr3-primary-dark);
+    font-size: 24px;
+  }
+
+  .tr3-summary-card span {
+    color: var(--tr3-muted);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .tr3-report-filters {
+    display: grid;
+    grid-template-columns:
+      minmax(180px, 1fr)
+      minmax(145px, .7fr)
+      minmax(165px, .8fr)
+      auto
+      auto;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .tr3-report-meta {
+    margin: 10px 0 14px;
+    color: var(--tr3-muted);
+    font-size: 13px;
+  }
+
+  .tr3-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--tr3-border);
+    border-radius: 10px;
+  }
+
+  .tr3-table {
+    width: 100%;
+    min-width: 1280px;
+    border-collapse: collapse;
+    background: #ffffff;
+  }
+
+  .tr3-table th,
+  .tr3-table td {
+    padding: 10px;
+    border-right: 1px solid var(--tr3-border);
+    border-bottom: 1px solid var(--tr3-border);
+    text-align: left;
+  }
+  
+/* Keep most report columns compact */
+.tr3-table th,
+.tr3-table td {
+  white-space: nowrap;
+}
+
+/* Primary Member */
+.tr3-table th:nth-child(4),
+.tr3-table td:nth-child(4) {
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.35;
+}
+
+/* Spouse */
+.tr3-table th:nth-child(7),
+.tr3-table td:nth-child(7) {
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.35;
+}
+
+/* Alumni columns may also wrap */
+.tr3-table th:nth-child(6),
+.tr3-table td:nth-child(6),
+.tr3-table th:nth-child(9),
+.tr3-table td:nth-child(9) {
+  max-width: 160px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.35;
+}
+  .tr3-table th {
+    color: #ffffff;
+    background: var(--tr3-primary-dark);
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  .tr3-table tbody tr:nth-child(even) {
+    background: #f8fbfd;
+  }
+
+  .tr3-placeholder {
+    padding: 42px 20px;
+    text-align: center;
+  }
+
+  .tr3-placeholder-icon {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 42px;
+  }
+
+  .tr3-placeholder h2 {
+    margin: 0 0 8px;
+    color: var(--tr3-primary-dark);
+  }
+
+  .tr3-placeholder p {
+    margin: 0;
+    color: var(--tr3-muted);
+  }
+
+  /* =========================================================
+     FINANCIAL YEAR SETUP
+     ========================================================= */
+
+  .tr3-fy-section {
+    display: grid;
+    gap: 16px;
+  }
+
+  .tr3-fy-group {
+    padding: 16px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 12px;
+    background: #f8fbfd;
+  }
+
+  .tr3-fy-group-title {
+    margin: 0 0 12px;
+    color: var(--tr3-primary-dark);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .tr3-fy-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .tr3-fy-field {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 9px;
+    background: #ffffff;
+  }
+
+  .tr3-fy-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--tr3-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .tr3-fy-value {
+    min-height: 20px;
+    color: var(--tr3-primary-dark);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  .tr3-fy-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .tr3-fy-edit-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--tr3-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .tr3-fy-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .tr3-fy-next {
+    border-color: #b9d7e6;
+    background: #f3f9fc;
+  }
+
+  .tr3-fy-note {
+    margin: 10px 0 0;
+    color: var(--tr3-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+
+
+  .tr3-fy-selector-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 360px) 1fr;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .tr3-fy-edit-grid.four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .tr3-fy-status-note {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--tr3-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+
+  /* =========================================================
+     VERSION 3.4 — UNIFORM FINANCIAL YEAR FIELD/CARD HEIGHTS
+     ========================================================= */
+
+  /* Make both editable and read-only Financial Year items use
+     one visual card system. */
+  .tr3-fy-field,
+  .tr3-fy-edit-field {
+    min-width: 0;
+    min-height: 82px;
+    padding: 12px;
+    border: 1px solid var(--tr3-border);
+    border-radius: 9px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tr3-fy-field label,
+  .tr3-fy-edit-field label {
+    display: block;
+    flex: 0 0 auto;
+    margin: 0 0 7px;
+    color: var(--tr3-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  /* Read-only values occupy the same vertical value area
+     as input/select controls. */
+  .tr3-fy-value {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    color: var(--tr3-primary-dark);
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  /* Inputs/selects fill the same 44px value area. */
+  .tr3-fy-edit-field .tr3-input,
+  .tr3-fy-edit-field .tr3-select,
+  .tr3-fy-field .tr3-input,
+  .tr3-fy-field .tr3-select {
+    min-height: 44px;
+    height: 44px;
+    margin: 0;
+  }
+
+  /* Ensure mixed read-only/editable grids line up exactly. */
+  .tr3-fy-grid,
+  .tr3-fy-edit-grid {
+    align-items: stretch;
+  }
+
+  .tr3-fy-grid > *,
+  .tr3-fy-edit-grid > * {
+    height: 100%;
+  }
+
+  /* Payment Open is an editable select inside System Control.
+     Give it the same card shell as Updated On / Updated By. */
+  .tr3-fy-system-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  @media (max-width: 1180px) {
+    .tr3-fy-system-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .tr3-fy-system-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+
+  @media (max-width: 1180px) {
+    .tr3-function-grid {
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    }
+
+    .tr3-summary-grid {
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    }
+
+    .tr3-report-filters {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+
+    .tr3-fy-grid,
+    .tr3-fy-edit-grid.four {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .tr3-function-grid,
+    .tr3-summary-grid {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+
+    .tr3-search-row,
+    .tr3-report-filters,
+    .tr3-person-grid,
+    .tr3-fy-grid,
+    .tr3-fy-edit-grid,
+    .tr3-fy-edit-grid.four,
+    .tr3-fy-selector-row {
+      grid-template-columns: 1fr;
+    }
+
+    .tr3-family-card-header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .tr3-status-stack {
+      justify-content: flex-start;
+    }
+
+    .tr3-button {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 460px) {
+    .tr3-function-grid,
+    .tr3-summary-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tr3-function-button {
+      min-height: 76px;
+      flex-direction: row;
+      justify-content: flex-start;
+    }
+  }
+</style>
+
+
+<div id="kgmisTreasurerV3">
+
+  <section class="tr3-function-panel">
+
+    <p class="tr3-function-heading">
+      Treasurer Functions
+    </p>
+
+    <div class="tr3-function-grid">
+
+      <button
+        class="tr3-function-button active"
+        type="button"
+        data-tr3-open="financial-summary"
+      >
+        <span class="tr3-function-icon">📈</span>
+        Financial Summary
+      </button>
+
+      <button
+        class="tr3-function-button"
+        type="button"
+        data-tr3-open="subscription-report"
+      >
+        <span class="tr3-function-icon">📊</span>
+        Subscription Report
+      </button>
+
+      <button
+        class="tr3-function-button"
+        type="button"
+        data-tr3-open="receive-payment"
+      >
+        <span class="tr3-function-icon">💰</span>
+        Receive Payment
+      </button>
+
+      <button
+        class="tr3-function-button"
+        type="button"
+        data-tr3-open="record-expense"
+      >
+        <span class="tr3-function-icon">💳</span>
+        Record Expenses
+      </button>
+
+      <button
+        class="tr3-function-button"
+        type="button"
+        data-tr3-open="receipt-register"
+      >
+        <span class="tr3-function-icon">🧾</span>
+        Receipt Register
+      </button>
+
+      <button
+        class="tr3-function-button"
+        type="button"
+        data-tr3-open="payment-register"
+      >
+        <span class="tr3-function-icon">📄</span>
+        Payment Register
+      </button>
+
+      <button
+        class="tr3-function-button"
+        type="button"
+        data-tr3-open="financial-year"
+      >
+        <span class="tr3-function-icon">📅</span>
+        Financial Year Setup
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <div
+    id="tr3Loading"
+    class="tr3-loading"
+  >
+    Loading…
+  </div>
+
+  <div
+    id="tr3Message"
+    class="tr3-message"
+  ></div>
+
+
+  <!-- =====================================================
+       FIND A FAMILY
+       ===================================================== -->
+
+  <section
+    class="tr3-module"
+    data-tr3-section="family-search"
+  >
+
+    <div class="tr3-panel">
+
+      <h2 class="tr3-panel-title">
+        Find a Family
+      </h2>
+
+      <div
+        id="tr3SearchYear"
+        class="tr3-year-chip"
+      >
+        Current Financial Year: —
+      </div>
+
+      <div class="tr3-search-row">
+
+        <input
+          id="tr3SearchInput"
+          class="tr3-input"
+          type="search"
+          autocomplete="off"
+          placeholder="Enter Family ID, KEFG ID, name, mobile, Zone or alumni detail"
+        >
+
+        <button
+          id="tr3SearchButton"
+          class="tr3-button"
+          type="button"
+        >
+          Search
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="tr3ResultsPanel"
+      class="tr3-panel"
+      hidden
+    >
+
+      <h2 class="tr3-panel-title">
+        Search Results
+      </h2>
+
+      <div
+        id="tr3Results"
+        class="tr3-results"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       TREASURER FINANCIAL SUMMARY
+       ===================================================== -->
+
+  <section
+    class="tr3-module active"
+    data-tr3-section="financial-summary"
+  >
+    <?!= include('94.00_KGMIS_Module_Treasurer_Financial_Summary'); ?>
+  </section>
+
+
+  <!-- =====================================================
+       SUBSCRIPTION REPORT
+       ===================================================== -->
+
+  <section
+    class="tr3-module"
+    data-tr3-section="subscription-report"
+  >
+
+    <div class="tr3-panel">
+
+      <h2 class="tr3-panel-title">
+        Subscription Report
+      </h2>
+
+      <div
+        id="tr3ReportYear"
+        class="tr3-year-chip"
+      >
+        Current Financial Year: —
+      </div>
+
+      <div class="tr3-summary-grid">
+
+        <div class="tr3-summary-card">
+          <strong id="tr3SummaryTotal">0</strong>
+          <span>Total Families</span>
+        </div>
+
+        <div class="tr3-summary-card">
+          <strong id="tr3SummaryCurrent">0</strong>
+          <span>Current Subscription</span>
+        </div>
+
+        <div class="tr3-summary-card">
+          <strong id="tr3SummaryPending">0</strong>
+          <span>Subscription Pending</span>
+        </div>
+
+        <div class="tr3-summary-card">
+          <strong id="tr3SummaryLifetime">0</strong>
+          <span>Lifetime Member</span>
+        </div>
+
+        <div class="tr3-summary-card">
+          <strong id="tr3SummaryExempt">0</strong>
+          <span>Exempt</span>
+        </div>
+
+        <div class="tr3-summary-card">
+          <strong id="tr3SummaryZone">ALL ZONES</strong>
+          <span>Zone</span>
+        </div>
+
+      </div>
+
+
+      <div class="tr3-report-filters">
+
+        <input
+          id="tr3ReportSearch"
+          class="tr3-input"
+          type="search"
+          placeholder="Search within report"
+        >
+
+        <select
+          id="tr3ReportZone"
+          class="tr3-select"
+        >
+          <option value="">All Zones</option>
+        </select>
+
+        <select
+          id="tr3SubscriptionStatus"
+          class="tr3-select"
+        >
+          <option value="">All Subscription Statuses</option>
+          <option value="PAID">PAID</option>
+          <option value="PENDING">PENDING</option>
+        </select>
+
+        <button
+          id="tr3ApplyFilters"
+          class="tr3-button"
+          type="button"
+        >
+          Apply Filters
+        </button>
+
+        <button
+          id="tr3DownloadCsv"
+          class="tr3-button download"
+          type="button"
+        >
+          Download CSV
+        </button>
+
+      </div>
+
+
+      <div
+        id="tr3ReportMeta"
+        class="tr3-report-meta"
+      >
+        No report loaded.
+      </div>
+
+
+      <div class="tr3-table-wrapper">
+
+        <table
+          id="tr3ReportTable"
+          class="tr3-table"
+        >
+
+          <thead>
+            <tr>
+              <th>Family ID</th>
+              <th>Subscription Status</th>
+              <th>Zone</th>
+              <th>Primary Member</th>
+              <th>Mobile Number</th>
+              <th>Alumni</th>
+              <th>Spouse</th>
+              <th>Spouse Mobile</th>
+              <th>Spouse Alumni</th>
+              <th>Payment Date</th>
+            </tr>
+          </thead>
+
+          <tbody></tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       RECEIVE PAYMENT
+       ===================================================== -->
+
+  <section
+    class="tr3-module"
+    data-tr3-section="receive-payment"
+  >
+    <?!= include('KGMIS_Receive_Payment_Embedded'); ?>
+  </section>
+
+
+  <!-- =====================================================
+       PLACEHOLDERS
+       ===================================================== -->
+
+  <section
+    class="tr3-module"
+    data-tr3-section="record-expense"
+  >
+    <?!= include('91.00_KGMIS_Module_Record_Expenses'); ?>
+  </section>
+
+
+  <section
+    class="tr3-module"
+    data-tr3-section="receipt-register"
+  >
+    <?!= include('92.00_KGMIS_Module_Receipt_Register'); ?>
+  </section>
+
+
+  <section
+    class="tr3-module"
+    data-tr3-section="payment-register"
+  >
+    <?!= include('93.00_KGMIS_Module_Payment_Register'); ?>
+  </section>
+
+
+  <!-- =====================================================
+       FINANCIAL YEAR SETUP
+       ===================================================== -->
+
+  <section
+    class="tr3-module"
+    data-tr3-section="financial-year"
+  >
+
+    <div class="tr3-panel">
+
+      <h2 class="tr3-panel-title">
+        Financial Year Setup
+      </h2>
+
+      <p
+        id="tr3FyStatusText"
+        class="tr3-panel-description"
+      >
+        Loading financial-year information…
+      </p>
+
+      <div class="tr3-fy-section">
+
+        <div class="tr3-fy-group">
+          <h3 class="tr3-fy-group-title">Financial Year Selection</h3>
+          <div class="tr3-fy-selector-row">
+            <div class="tr3-fy-edit-field">
+              <label for="tr3FySelectedYear">Financial Year</label>
+              <select id="tr3FySelectedYear" class="tr3-select"></select>
+            </div>
+            <div id="tr3FySelectedYearNote" class="tr3-fy-status-note">
+              Select a financial year to view its configuration.
+            </div>
+          </div>
+        </div>
+
+        <div class="tr3-fy-group">
+          <h3 class="tr3-fy-group-title">Selected Financial Year</h3>
+          <div class="tr3-fy-grid">
+            <div class="tr3-fy-field"><label>Financial Year</label><div id="tr3FyYear" class="tr3-fy-value">—</div></div>
+            <div class="tr3-fy-field"><label>Start Date</label><div id="tr3FyStartDate" class="tr3-fy-value">—</div></div>
+            <div class="tr3-fy-field"><label>End Date</label><div id="tr3FyEndDate" class="tr3-fy-value">—</div></div>
+            <div class="tr3-fy-field"><label>Status</label><div id="tr3FyStatus" class="tr3-fy-value">—</div></div>
+          </div>
+        </div>
+
+        <div class="tr3-fy-group">
+          <h3 class="tr3-fy-group-title">Receipt &amp; Voucher Control</h3>
+          <div class="tr3-fy-grid">
+            <div class="tr3-fy-field"><label>Receipt Prefix</label><div id="tr3FyReceiptPrefix" class="tr3-fy-value">—</div></div>
+            <div class="tr3-fy-field"><label>Last Receipt No.</label><div id="tr3FyLastReceiptNo" class="tr3-fy-value">—</div></div>
+            <div class="tr3-fy-field"><label>Payment Voucher Prefix</label><div id="tr3FyVoucherPrefix" class="tr3-fy-value">—</div></div>
+            <div class="tr3-fy-field"><label>Last Payment Voucher No.</label><div id="tr3FyLastVoucherNo" class="tr3-fy-value">—</div></div>
+          </div>
+        </div>
+
+        <div class="tr3-fy-group">
+          <h3 class="tr3-fy-group-title">Membership &amp; Digital ID Settings</h3>
+          <div class="tr3-fy-edit-grid four">
+            <div class="tr3-fy-edit-field"><label for="tr3FyMembershipFee">Membership Fee</label><input id="tr3FyMembershipFee" class="tr3-input" type="number" min="0" step="1"></div>
+            <div class="tr3-fy-field">
+              <label>Membership Type</label>
+              <div id="tr3FyMembershipType" class="tr3-fy-value">FAMILY</div>
+            </div>
+            <div class="tr3-fy-edit-field"><label for="tr3FyGracePeriodEnd">Grace Period End</label><input id="tr3FyGracePeriodEnd" class="tr3-input" type="date"></div>
+            <div class="tr3-fy-edit-field"><label for="tr3FyCardVersion">Digital ID Version</label><input id="tr3FyCardVersion" class="tr3-input" type="text" maxlength="20"></div>
+          </div>
+          <div class="tr3-fy-actions">
+            <button id="tr3FySaveButton" class="tr3-button" type="button">Save Settings</button>
+          </div>
+        </div>
+
+        <div class="tr3-fy-group tr3-fy-next">
+          <h3 class="tr3-fy-group-title">System Control</h3>
+          <div class="tr3-fy-system-grid">
+            <div class="tr3-fy-edit-field">
+              <label for="tr3FyPaymentOpen">Payment Open</label>
+              <select id="tr3FyPaymentOpen" class="tr3-select">
+                <option value="YES">YES</option>
+                <option value="CLOSED">CLOSED</option>
+              </select>
+            </div>
+            <div class="tr3-fy-field"><label>Updated On</label><div id="tr3FyUpdatedOn" class="tr3-fy-value">—</div></div>
+            <div class="tr3-fy-field"><label>Updated By</label><div id="tr3FyUpdatedBy" class="tr3-fy-value">—</div></div>
+          </div>
+          <div class="tr3-fy-actions">
+            <button id="tr3FyCreateButton" class="tr3-button download" type="button" disabled>Create Next Financial Year</button>
+          </div>
+          <p id="tr3FyCreateNote" class="tr3-fy-note"></p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<script>
+(function () {
+  'use strict';
+
+
+  const state = {
+    auth: null,
+    sessionToken: '',
+    activeModule: 'financial-summary',
+    initialised: false,
+    configurationLoaded: false,
+    financialYear: '',
+    subscriptionStatuses: [],
+    zones: [],
+    currentReportRows: [],
+    financialYearSetup: null
+  };
+
+
+  const el = {};
+
+
+  function cacheElements() {
+
+    [
+      'kgmisTreasurerV3',
+      'tr3Loading',
+      'tr3Message',
+
+      'tr3SearchYear',
+      'tr3SearchInput',
+      'tr3SearchButton',
+      'tr3ResultsPanel',
+      'tr3Results',
+
+      'tr3ReportYear',
+      'tr3ReportSearch',
+      'tr3ReportZone',
+      'tr3SubscriptionStatus',
+      'tr3ApplyFilters',
+      'tr3DownloadCsv',
+      'tr3ReportMeta',
+      'tr3ReportTable',
+
+      'tr3SummaryTotal',
+      'tr3SummaryCurrent',
+      'tr3SummaryPending',
+      'tr3SummaryLifetime',
+      'tr3SummaryExempt',
+      'tr3SummaryZone',
+
+      'tr3FyStatusText',
+      'tr3FySelectedYear',
+      'tr3FySelectedYearNote',
+      'tr3FyYear',
+      'tr3FyStartDate',
+      'tr3FyEndDate',
+      'tr3FyStatus',
+      'tr3FyReceiptPrefix',
+      'tr3FyLastReceiptNo',
+      'tr3FyVoucherPrefix',
+      'tr3FyLastVoucherNo',
+      'tr3FyPaymentOpen',
+      'tr3FyCardVersion',
+      'tr3FyUpdatedOn',
+      'tr3FyUpdatedBy',
+      'tr3FyMembershipFee',
+      'tr3FyMembershipType',
+      'tr3FyGracePeriodEnd',
+      'tr3FySaveButton',
+      'tr3FyCreateButton',
+      'tr3FyCreateNote'
+    ].forEach(
+      function (id) {
+        el[id] =
+          document.getElementById(id);
+      }
+    );
+  }
+
+
+  function bindEvents() {
+
+    el.kgmisTreasurerV3
+      .addEventListener(
+        'click',
+        function (event) {
+
+          const button =
+            event.target.closest(
+              '[data-tr3-open]'
+            );
+
+          if (!button) {
+            return;
+          }
+
+          openModule(
+            button.getAttribute(
+              'data-tr3-open'
+            )
+          );
+        }
+      );
+
+
+    el.tr3SearchButton
+      .addEventListener(
+        'click',
+        searchFamilies
+      );
+
+
+    el.tr3SearchInput
+      .addEventListener(
+        'keydown',
+        function (event) {
+
+          if (
+            event.key ===
+            'Enter'
+          ) {
+            event.preventDefault();
+            searchFamilies();
+          }
+        }
+      );
+
+
+    el.tr3ApplyFilters
+      .addEventListener(
+        'click',
+        loadSubscriptionReport
+      );
+
+
+    el.tr3ReportSearch
+      .addEventListener(
+        'keydown',
+        function (event) {
+
+          if (
+            event.key ===
+            'Enter'
+          ) {
+            event.preventDefault();
+            loadSubscriptionReport();
+          }
+        }
+      );
+
+
+    el.tr3DownloadCsv
+      .addEventListener(
+        'click',
+        downloadCsv
+      );
+
+
+    el.tr3FySelectedYear
+      .addEventListener(
+        'change',
+        function () {
+          loadFinancialYearSetup(
+            el.tr3FySelectedYear.value
+          );
+        }
+      );
+
+
+    el.tr3FySaveButton
+      .addEventListener(
+        'click',
+        saveFinancialYearSettings
+      );
+
+
+    el.tr3FyCreateButton
+      .addEventListener(
+        'click',
+        createNextFinancialYear
+      );
+  }
+
+
+  function activate(
+    authContext
+  ) {
+
+    const auth =
+      authContext || {};
+
+    const sessionToken =
+      String(
+        auth.sessionToken || ''
+      ).trim();
+
+    if (!sessionToken) {
+      showMessage(
+        'The Treasurer session is missing. Please sign out and sign in again.',
+        'error'
+      );
+      return;
+    }
+
+    state.auth =
+      auth;
+
+    state.sessionToken =
+      sessionToken;
+
+    if (!state.initialised) {
+      cacheElements();
+      bindEvents();
+
+      state.initialised =
+        true;
+    }
+
+    loadConfiguration();
+
+    openModule(
+      state.activeModule
+    );
+  }
+
+
+  function openModule(
+    moduleName
+  ) {
+
+    state.activeModule =
+      moduleName;
+
+    document
+      .querySelectorAll(
+        '#kgmisTreasurerV3 .tr3-module'
+      )
+      .forEach(
+        function (section) {
+          section.classList.remove(
+            'active'
+          );
+        }
+      );
+
+
+    document
+      .querySelectorAll(
+        '#kgmisTreasurerV3 [data-tr3-open]'
+      )
+      .forEach(
+        function (button) {
+
+          button.classList.toggle(
+            'active',
+            button.getAttribute(
+              'data-tr3-open'
+            ) ===
+              moduleName
+          );
+        }
+      );
+
+
+    const section =
+      document.querySelector(
+        '#kgmisTreasurerV3 ' +
+        '[data-tr3-section="' +
+        moduleName +
+        '"]'
+      );
+
+    if (section) {
+      section.classList.add(
+        'active'
+      );
+    }
+
+    clearMessage();
+
+
+    if (
+      moduleName ===
+        'subscription-report' &&
+      !state.currentReportRows.length
+    ) {
+      loadSubscriptionReport();
+    }
+
+
+    if (
+      moduleName ===
+        'receive-payment' &&
+      window.KGMIS_RECEIVE_PAYMENT_MODULE &&
+      typeof window
+        .KGMIS_RECEIVE_PAYMENT_MODULE
+        .activate ===
+        'function'
+    ) {
+
+      window
+        .KGMIS_RECEIVE_PAYMENT_MODULE
+        .activate(
+          state.auth
+        );
+    }
+
+
+    if (
+      moduleName ===
+        'record-expense' &&
+      window.KGMIS_RecordExpenses &&
+      typeof window
+        .KGMIS_RecordExpenses
+        .activate ===
+        'function'
+    ) {
+
+      window
+        .KGMIS_RecordExpenses
+        .activate({
+          sessionToken:
+            state.sessionToken,
+
+          financialYear:
+            state.financialYear
+        });
+    }
+
+
+    if (
+      moduleName ===
+        'receipt-register' &&
+      window.KGMIS_ReceiptRegister &&
+      typeof window
+        .KGMIS_ReceiptRegister
+        .activate ===
+        'function'
+    ) {
+
+      window
+        .KGMIS_ReceiptRegister
+        .activate({
+          sessionToken:
+            state.sessionToken,
+
+          financialYear:
+            state.financialYear
+        });
+    }
+
+
+    if (
+      moduleName ===
+        'payment-register' &&
+      window.KGMIS_PaymentRegister &&
+      typeof window
+        .KGMIS_PaymentRegister
+        .activate ===
+        'function'
+    ) {
+
+      window
+        .KGMIS_PaymentRegister
+        .activate({
+          sessionToken:
+            state.sessionToken,
+
+          financialYear:
+            state.financialYear
+        });
+    }
+
+
+    if (
+      moduleName ===
+        'financial-summary' &&
+      window.KGMIS_FinancialSummary &&
+      typeof window
+        .KGMIS_FinancialSummary
+        .activate ===
+        'function'
+    ) {
+
+      window
+        .KGMIS_FinancialSummary
+        .activate({
+          sessionToken:
+            state.sessionToken,
+
+          financialYear:
+            state.financialYear,
+
+          userName:
+            state.auth &&
+            (
+              state.auth.userName ||
+              state.auth.name
+            )
+              ? (
+                  state.auth.userName ||
+                  state.auth.name
+                )
+              : '',
+
+          email:
+            state.auth &&
+            state.auth.email
+              ? state.auth.email
+              : ''
+        });
+    }
+
+
+    if (
+      moduleName ===
+        'financial-year'
+    ) {
+      loadFinancialYearSetup();
+    }
+  }
+
+
+  function loadConfiguration() {
+
+    if (
+      !state.sessionToken ||
+      state.configurationLoaded
+    ) {
+      return;
+    }
+
+    setLoading(
+      true,
+      'Loading Treasurer configuration…'
+    );
+
+    google.script.run
+      .withSuccessHandler(
+        function (configuration) {
+
+          state.configurationLoaded =
+            true;
+
+          state.financialYear =
+            configuration
+              .financialYear || '';
+
+          state.subscriptionStatuses =
+            configuration
+              .subscriptionStatusOptions ||
+            [
+              'PAID',
+              'PENDING'
+            ];
+
+          state.zones =
+            configuration.zones || [];
+
+          setFinancialYearLabels();
+
+          populateSelect(
+            el.tr3ReportZone,
+            state.zones,
+            'All Zones'
+          );
+
+          populateSelect(
+            el.tr3SubscriptionStatus,
+            state.subscriptionStatuses,
+            'All Subscription Statuses'
+          );
+
+          setLoading(false);
+        }
+      )
+      .withFailureHandler(
+        function (error) {
+          setLoading(false);
+          showMessage(
+            error,
+            'error'
+          );
+        }
+      )
+      .KGMIS_TreasurerV3_GetConfiguration(
+        state.sessionToken
+      );
+  }
+
+
+  function setFinancialYearLabels() {
+
+    const text =
+      'Current Financial Year: ' +
+      (
+        state.financialYear ||
+        '—'
+      );
+
+    el.tr3SearchYear.textContent =
+      text;
+
+    el.tr3ReportYear.textContent =
+      text;
+  }
+
+
+  function populateSelect(
+    select,
+    values,
+    firstLabel
+  ) {
+
+    select.innerHTML = '';
+
+    const first =
+      document.createElement(
+        'option'
+      );
+
+    first.value = '';
+    first.textContent =
+      firstLabel;
+
+    select.appendChild(
+      first
+    );
+
+
+    (values || [])
+      .forEach(
+        function (value) {
+
+          const option =
+            document.createElement(
+              'option'
+            );
+
+          option.value =
+            value;
+
+          option.textContent =
+            value;
+
+          select.appendChild(
+            option
+          );
+        }
+      );
+  }
+
+
+  function searchFamilies() {
+
+    const query =
+      String(
+        el.tr3SearchInput
+          .value || ''
+      ).trim();
+
+    if (!query) {
+      showMessage(
+        'Enter a Family ID, KEFG ID, Zone, name, mobile number or alumni detail.',
+        'error'
+      );
+
+      el.tr3SearchInput
+        .focus();
+
+      return;
+    }
+
+    clearMessage();
+
+    setLoading(
+      true,
+      'Searching families…'
+    );
+
+    el.tr3SearchButton.disabled =
+      true;
+
+    google.script.run
+      .withSuccessHandler(
+        function (families) {
+
+          setLoading(false);
+
+        el.tr3SearchButton.disabled =
+          false;
+
+        renderFamilies(
+          families || []
+        );
+
+       /*
+        * Clear search box after
+        * successful search result.
+        */
+        if (
+          families &&
+          families.length > 0
+        ) {
+          el.tr3SearchInput.value = '';
+        }
+      }
+    )
+      .withFailureHandler(
+        function (error) {
+
+          setLoading(false);
+
+          el.tr3SearchButton.disabled =
+            false;
+
+          showMessage(
+            error,
+            'error'
+          );
+        }
+      )
+      .KGMIS_TreasurerV3_SearchFamilies(
+        state.sessionToken,
+        query
+      );
+  }
+
+
+  function renderFamilies(
+    families
+  ) {
+
+    el.tr3Results.innerHTML =
+      '';
+
+    el.tr3ResultsPanel.hidden =
+      false;
+
+    if (!families.length) {
+
+      el.tr3Results.innerHTML =
+        '<div class="tr3-empty">' +
+        'No matching family was found.' +
+        '</div>';
+
+      return;
+    }
+
+
+    families.forEach(
+      function (family) {
+
+        el.tr3Results
+          .appendChild(
+            createFamilyCard(
+              family
+            )
+          );
+      }
+    );
+  }
+
+
+  function createFamilyCard(
+    family
+  ) {
+
+    const card =
+      document.createElement(
+        'article'
+      );
+
+    card.className =
+      'tr3-family-card';
+
+
+    const header =
+      document.createElement(
+        'div'
+      );
+
+    header.className =
+      'tr3-family-card-header';
+
+
+    const title =
+      document.createElement(
+        'h3'
+      );
+
+    title.className =
+      'tr3-family-title';
+
+    title.textContent =
+      family.familyId ||
+      'Family';
+
+
+    const statusStack =
+      document.createElement(
+        'div'
+      );
+
+    statusStack.className =
+      'tr3-status-stack';
+
+
+    const membershipBadge =
+      document.createElement(
+        'span'
+      );
+
+    membershipBadge.className =
+      'tr3-badge tr3-membership-badge';
+
+    membershipBadge.textContent =
+      'Membership: ' +
+      (
+        family.membershipStatus ||
+        'NO YEAR RECORD'
+      );
+
+
+    const paymentBadge =
+      document.createElement(
+        'span'
+      );
+
+    paymentBadge.className =
+      'tr3-badge tr3-payment-badge ' +
+      getPaymentBadgeClass(
+        family.paymentStatus
+      );
+
+    paymentBadge.textContent =
+      'Payment: ' +
+      (
+        family.subscriptionStatus ||
+        'PENDING'
+      );
+
+
+    statusStack.appendChild(
+      membershipBadge
+    );
+
+    statusStack.appendChild(
+      paymentBadge
+    );
+
+    header.appendChild(
+      title
+    );
+
+    header.appendChild(
+      statusStack
+    );
+
+    card.appendChild(
+      header
+    );
+
+
+    const people =
+      document.createElement(
+        'div'
+      );
+
+    people.className =
+      'tr3-person-grid';
+
+
+    people.appendChild(
+      createPersonCard(
+        'Primary Member',
+        family.memberName,
+        family.memberMobile,
+        family.memberAlumniAssociation,
+        family.memberBranch,
+        family.memberBatchYear
+      )
+    );
+
+
+    if (
+      family.spouseName ||
+      family.spouseMobile ||
+      hasAlumni(
+        family.spouseAlumniAssociation,
+        family.spouseBranch,
+        family.spouseBatchYear
+      )
+    ) {
+
+      people.appendChild(
+        createPersonCard(
+          'Spouse',
+          family.spouseName,
+          family.spouseMobile,
+          family.spouseAlumniAssociation,
+          family.spouseBranch,
+          family.spouseBatchYear
+        )
+      );
+    }
+
+
+    card.appendChild(
+      people
+    );
+
+
+    const zone =
+      document.createElement(
+        'div'
+      );
+
+    zone.className =
+      'tr3-family-zone';
+
+    zone.textContent =
+      family.zone
+        ? 'Zone: ' +
+          family.zone
+        : 'Zone: Not recorded';
+
+    card.appendChild(
+      zone
+    );
+
+
+    const actions =
+      document.createElement(
+        'div'
+      );
+
+    actions.className =
+      'tr3-family-actions';
+
+
+    actions.appendChild(
+      createActionButton(
+        'Receive Payment',
+        '',
+        function () {
+
+          openModule(
+            'receive-payment'
+          );
+
+          if (
+            window
+              .KGMIS_RECEIVE_PAYMENT_MODULE &&
+            typeof window
+              .KGMIS_RECEIVE_PAYMENT_MODULE
+              .selectFamily ===
+              'function'
+          ) {
+
+            window
+              .KGMIS_RECEIVE_PAYMENT_MODULE
+              .selectFamily(
+                family
+              );
+          }
+        }
+      )
+    );
+
+
+    actions.appendChild(
+      createActionButton(
+        'Payment History',
+        'alt',
+        function () {
+          showMessage(
+            'Payment History will be connected with the Receipt Register.',
+            'info'
+          );
+        }
+      )
+    );
+
+
+    card.appendChild(
+      actions
+    );
+
+    return card;
+  }
+
+
+  function createPersonCard(
+    role,
+    name,
+    mobile,
+    association,
+    branch,
+    batchYear
+  ) {
+
+    const card =
+      document.createElement(
+        'div'
+      );
+
+    card.className =
+      'tr3-person-card';
+
+
+    const roleElement =
+      document.createElement(
+        'span'
+      );
+
+    roleElement.className =
+      'tr3-role';
+
+    roleElement.textContent =
+      role;
+
+
+    const nameElement =
+      document.createElement(
+        'div'
+      );
+
+    nameElement.className =
+      'tr3-person-name';
+
+    nameElement.textContent =
+      name || '—';
+
+
+    card.appendChild(
+      roleElement
+    );
+
+    card.appendChild(
+      nameElement
+    );
+
+
+    if (
+      hasAlumni(
+        association,
+        branch,
+        batchYear
+      )
+    ) {
+
+      const alumniElement =
+        document.createElement(
+          'div'
+        );
+
+      alumniElement.className =
+        'tr3-person-detail';
+
+      alumniElement.textContent =
+        '🎓 ' +
+        formatAlumni(
+          association,
+          branch,
+          batchYear
+        );
+
+      card.appendChild(
+        alumniElement
+      );
+    }
+
+
+    if (mobile) {
+
+      const mobileElement =
+        document.createElement(
+          'div'
+        );
+
+      mobileElement.className =
+        'tr3-person-detail';
+
+      mobileElement.textContent =
+        '📱 ' +
+        mobile;
+
+      card.appendChild(
+        mobileElement
+      );
+    }
+
+
+    return card;
+  }
+
+
+  function createActionButton(
+    label,
+    className,
+    handler
+  ) {
+
+    const button =
+      document.createElement(
+        'button'
+      );
+
+    button.type =
+      'button';
+
+    button.className =
+      className || '';
+
+    button.textContent =
+      label;
+
+    button.addEventListener(
+      'click',
+      handler
+    );
+
+    return button;
+  }
+
+
+  function getPaymentBadgeClass(
+    paymentStatus
+  ) {
+
+    const status =
+      String(
+        paymentStatus || ''
+      )
+        .trim()
+        .toUpperCase();
+
+    if (
+      status === 'UNPAID' ||
+      !status
+    ) {
+      return 'unpaid';
+    }
+
+    if (
+      status === 'PENDING' ||
+      status ===
+        'PARTIALLY PAID'
+    ) {
+      return 'pending';
+    }
+
+    return '';
+  }
+
+
+  function loadSubscriptionReport() {
+
+    const filters = {
+      searchText:
+        String(
+          el.tr3ReportSearch
+            .value || ''
+        ).trim(),
+
+      zone:
+        el.tr3ReportZone
+          .value || '',
+
+      subscriptionStatus:
+        el.tr3SubscriptionStatus
+          .value || ''
+    };
+
+
+    setLoading(
+      true,
+      'Loading subscription report…'
+    );
+
+    el.tr3ApplyFilters.disabled =
+      true;
+
+
+    google.script.run
+      .withSuccessHandler(
+        function (report) {
+
+          setLoading(false);
+
+          el.tr3ApplyFilters.disabled =
+            false;
+
+          const safeReport =
+            report || {};
+
+          state.currentReportRows =
+            safeReport.rows || [];
+
+          if (
+            safeReport.financialYear
+          ) {
+            state.financialYear =
+              safeReport.financialYear;
+
+            setFinancialYearLabels();
+          }
+
+          renderSummary(
+            safeReport.summary || {}
+          );
+
+          renderReport(
+            state.currentReportRows
+          );
+        }
+      )
+      .withFailureHandler(
+        function (error) {
+
+          setLoading(false);
+
+          el.tr3ApplyFilters.disabled =
+            false;
+
+          showMessage(
+            error,
+            'error'
+          );
+        }
+      )
+      .KGMIS_TreasurerV3_GetSubscriptionReport(
+        state.sessionToken,
+        filters
+      );
+  }
+
+
+  function renderSummary(
+    summary
+  ) {
+
+    el.tr3SummaryTotal.textContent =
+      summary.total || 0;
+
+    el.tr3SummaryCurrent.textContent =
+      summary.paid || 0;
+
+    el.tr3SummaryPending.textContent =
+      Math.max(
+        0,
+        (summary.total || 0) -
+        (summary.paid || 0)
+      );
+
+    el.tr3SummaryLifetime.textContent =
+      summary.lifetimeMember || 0;
+
+    el.tr3SummaryExempt.textContent =
+      summary.exempt || 0;
+
+    el.tr3SummaryZone.textContent =
+      summary.zone || 'ALL ZONES';
+  }
+
+
+  function renderReport(
+    rows
+  ) {
+
+    const tbody =
+      el.tr3ReportTable
+        .querySelector(
+          'tbody'
+        );
+
+    tbody.innerHTML =
+      '';
+
+    el.tr3ReportMeta.textContent =
+      rows.length +
+      ' family record(s) listed.';
+
+
+    if (!rows.length) {
+
+      const tr =
+        document.createElement(
+          'tr'
+        );
+
+      const td =
+        document.createElement(
+          'td'
+        );
+
+      td.colSpan =
+        10;
+
+      td.className =
+        'tr3-empty';
+
+      td.textContent =
+        'No records match the selected filters.';
+
+      tr.appendChild(
+        td
+      );
+
+      tbody.appendChild(
+        tr
+      );
+
+      return;
+    }
+
+
+    rows.forEach(
+      function (row) {
+
+        const tr =
+          document.createElement(
+            'tr'
+          );
+
+        [
+          row.familyId,
+          row.subscriptionStatus ||
+            'PENDING',
+          row.zone,
+          row.memberName,
+          row.memberMobile,
+          formatAlumni(
+            row.memberAlumniAssociation,
+            row.memberBranch,
+            row.memberBatchYear
+          ),
+          row.spouseName,
+          row.spouseMobile,
+          formatAlumni(
+            row.spouseAlumniAssociation,
+            row.spouseBranch,
+            row.spouseBatchYear
+          ),
+          row.lastPaymentDateDisplay
+        ].forEach(
+          function (value) {
+
+            const td =
+              document.createElement(
+                'td'
+              );
+
+            td.textContent =
+              value || '';
+
+            tr.appendChild(
+              td
+            );
+          }
+        );
+
+        tbody.appendChild(
+          tr
+        );
+      }
+    );
+  }
+
+
+  function downloadCsv() {
+
+    if (
+      !state.currentReportRows
+        .length
+    ) {
+      showMessage(
+        'There are no report records to download.',
+        'error'
+      );
+      return;
+    }
+
+
+    const csvRows = [
+      [
+        'FAMILY_ID',
+        'SUBSCRIPTION_STATUS',
+        'ZONE',
+        'PRIMARY_MEMBER',
+        'MOBILE_NUMBER',
+        'ALUMNI',
+        'SPOUSE',
+        'SPOUSE_MOBILE',
+        'SPOUSE_ALUMNI',
+        'PAYMENT_DATE'
+      ]
+    ];
+
+
+    state.currentReportRows
+      .forEach(
+        function (row) {
+
+          csvRows.push([
+            row.familyId,
+            row.subscriptionStatus || 'PENDING',
+            row.zone,
+            row.memberName,
+            row.memberMobile,
+            formatAlumni(
+              row.memberAlumniAssociation,
+              row.memberBranch,
+              row.memberBatchYear
+            ),
+            row.spouseName,
+            row.spouseMobile,
+            formatAlumni(
+              row.spouseAlumniAssociation,
+              row.spouseBranch,
+              row.spouseBatchYear
+            ),
+            row.lastPaymentDateDisplay
+          ]);
+        }
+      );
+
+
+    const csvText =
+      csvRows
+        .map(
+          function (row) {
+            return row
+              .map(csvEscape)
+              .join(',');
+          }
+        )
+        .join('\r\n');
+
+
+    const blob =
+      new Blob(
+        ['\uFEFF' + csvText],
+        {
+          type:
+            'text/csv;charset=utf-8;'
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        'a'
+      );
+
+    link.href =
+      url;
+
+    link.download =
+      'KGMIS_Subscription_Report_' +
+      (
+        state.financialYear ||
+        'Current'
+      )
+        .replace(
+          /[^A-Za-z0-9_-]/g,
+          '_'
+        ) +
+      '_' +
+      new Date()
+        .toISOString()
+        .slice(0, 10) +
+      '.csv';
+
+
+    document.body
+      .appendChild(
+        link
+      );
+
+    link.click();
+
+    document.body
+      .removeChild(
+        link
+      );
+
+    URL.revokeObjectURL(
+      url
+    );
+  }
+
+
+  function loadFinancialYearSetup(
+    selectedFinancialYear
+  ) {
+
+    setLoading(
+      true,
+      'Loading financial-year setup…'
+    );
+
+    google.script.run
+      .withSuccessHandler(
+        function (setup) {
+          setLoading(false);
+          state.financialYearSetup =
+            setup || null;
+          renderFinancialYearSetup(
+            setup || {}
+          );
+        }
+      )
+      .withFailureHandler(
+        function (error) {
+          setLoading(false);
+          showMessage(
+            error,
+            'error'
+          );
+        }
+      )
+      .KGMIS_TreasurerV3_GetFinancialYearSetup(
+        state.sessionToken,
+        selectedFinancialYear || ''
+      );
+  }
+
+
+  function renderFinancialYearSetup(
+    setup
+  ) {
+
+    const selected =
+      setup.selected ||
+      setup.current ||
+      {};
+
+    populateFinancialYearSetupSelect_(
+      setup.financialYears || [],
+      setup.selectedFinancialYear ||
+      selected.financialYear ||
+      ''
+    );
+
+    el.tr3FySelectedYearNote.textContent =
+      selected.financialYear
+        ? (
+            selected.financialYear +
+            ' — ' +
+            (selected.status || '—') +
+            (
+              setup.canEditSettings
+                ? ' — editable'
+                : ' — view-only'
+            )
+          )
+        : 'Select a financial year to view its configuration.';
+
+    el.tr3FyYear.textContent =
+      selected.financialYear || '—';
+
+    el.tr3FyStartDate.textContent =
+      selected.startDateDisplay || '—';
+
+    el.tr3FyEndDate.textContent =
+      selected.endDateDisplay || '—';
+
+    el.tr3FyStatus.textContent =
+      selected.status || '—';
+
+    el.tr3FyReceiptPrefix.textContent =
+      selected.receiptPrefix || '—';
+
+    el.tr3FyLastReceiptNo.textContent =
+      selected.lastReceiptNo == null
+        ? '—'
+        : String(
+            selected.lastReceiptNo
+          );
+
+    el.tr3FyVoucherPrefix.textContent =
+      selected.paymentVoucherPrefix || '—';
+
+    el.tr3FyLastVoucherNo.textContent =
+      selected.lastPaymentVoucherNo == null
+        ? '—'
+        : String(
+            selected.lastPaymentVoucherNo
+          );
+
+    el.tr3FyPaymentOpen.value =
+      selected.paymentOpen
+        ? 'YES'
+        : 'CLOSED';
+
+    el.tr3FyCardVersion.value =
+      selected.cardVersion || '';
+
+    el.tr3FyUpdatedOn.textContent =
+      selected.updatedOnDisplay || '—';
+
+    el.tr3FyUpdatedBy.textContent =
+      selected.updatedBy || '—';
+
+    el.tr3FyMembershipFee.value =
+      selected.membershipFee == null
+        ? ''
+        : selected.membershipFee;
+
+    el.tr3FyMembershipType.textContent =
+      'FAMILY';
+
+    el.tr3FyGracePeriodEnd.value =
+      selected.gracePeriodEndIso || '';
+
+    const canEdit =
+      Boolean(
+        setup.canEditSettings
+      );
+
+    el.tr3FyMembershipFee.disabled =
+      !canEdit;
+
+    el.tr3FyGracePeriodEnd.disabled =
+      !canEdit;
+
+    el.tr3FyCardVersion.disabled =
+      !canEdit;
+
+    el.tr3FyPaymentOpen.disabled =
+      !canEdit;
+
+    el.tr3FySaveButton.disabled =
+      !canEdit;
+
+    el.tr3FyCreateButton.disabled =
+      !Boolean(
+        setup.canCreateNextYear
+      );
+
+    el.tr3FyCreateButton.textContent =
+      setup.nextFinancialYear
+        ? 'Create ' +
+          setup.nextFinancialYear +
+          ' as Upcoming'
+        : 'Create Next Financial Year';
+
+    el.tr3FyStatusText.textContent =
+      setup.statusMessage ||
+      'Financial-year configuration.';
+
+    el.tr3FyCreateNote.textContent =
+      setup.createMessage || '';
+  }
+
+
+  function populateFinancialYearSetupSelect_(
+    years,
+    selectedYear
+  ) {
+
+    el.tr3FySelectedYear.innerHTML =
+      '';
+
+    (years || []).forEach(
+      function (item) {
+
+        const financialYear =
+          typeof item === 'string'
+            ? item
+            : item.financialYear;
+
+        if (!financialYear) {
+          return;
+        }
+
+        const status =
+          typeof item === 'string'
+            ? ''
+            : (
+                item.status || ''
+              );
+
+        const option =
+          document.createElement(
+            'option'
+          );
+
+        option.value =
+          financialYear;
+
+        option.textContent =
+          financialYear +
+          (
+            status
+              ? ' — ' + status
+              : ''
+          );
+
+        option.selected =
+          financialYear ===
+          selectedYear;
+
+        el.tr3FySelectedYear.appendChild(
+          option
+        );
+      }
+    );
+  }
+
+
+  function saveFinancialYearSettings() {
+
+    const payload = {
+      financialYear:
+        el.tr3FySelectedYear.value,
+      membershipFee:
+        el.tr3FyMembershipFee.value,
+      gracePeriodEnd:
+        el.tr3FyGracePeriodEnd.value,
+      cardVersion:
+        el.tr3FyCardVersion.value,
+      paymentOpen:
+        el.tr3FyPaymentOpen.value
+    };
+
+    setLoading(
+      true,
+      'Saving financial-year settings…'
+    );
+
+    el.tr3FySaveButton.disabled =
+      true;
+
+    google.script.run
+      .withSuccessHandler(
+        function (setup) {
+          setLoading(false);
+          state.financialYearSetup =
+            setup || null;
+          renderFinancialYearSetup(
+            setup || {}
+          );
+          showMessage(
+            'Financial-year settings saved.',
+            'success'
+          );
+        }
+      )
+      .withFailureHandler(
+        function (error) {
+          setLoading(false);
+          loadFinancialYearSetup(
+            el.tr3FySelectedYear.value
+          );
+          showMessage(
+            error,
+            'error'
+          );
+        }
+      )
+      .KGMIS_TreasurerV3_UpdateFinancialYearSettings(
+        state.sessionToken,
+        payload
+      );
+  }
+
+
+  function createNextFinancialYear() {
+
+    const setup =
+      state.financialYearSetup || {};
+
+    if (!setup.canCreateNextYear) {
+      showMessage(
+        setup.createMessage ||
+        'The next financial year cannot be created now.',
+        'info'
+      );
+      return;
+    }
+
+    const nextYear =
+      setup.nextFinancialYear ||
+      'the next financial year';
+
+    if (
+      !window.confirm(
+        'Create ' +
+        nextYear +
+        ' as UPCOMING? The current financial year will remain CURRENT until the new year start date.'
+      )
+    ) {
+      return;
+    }
+
+    setLoading(
+      true,
+      'Creating upcoming financial year…'
+    );
+
+    el.tr3FyCreateButton.disabled =
+      true;
+
+    google.script.run
+      .withSuccessHandler(
+        function (result) {
+          setLoading(false);
+          state.financialYearSetup =
+            null;
+          loadFinancialYearSetup(
+            result &&
+            result.financialYear
+              ? result.financialYear
+              : ''
+          );
+          showMessage(
+            result && result.message
+              ? result.message
+              : 'Upcoming financial year created successfully.',
+            'success'
+          );
+        }
+      )
+      .withFailureHandler(
+        function (error) {
+          setLoading(false);
+          loadFinancialYearSetup(
+            el.tr3FySelectedYear.value
+          );
+          showMessage(
+            error,
+            'error'
+          );
+        }
+      )
+      .KGMIS_TreasurerV3_CreateNextFinancialYear(
+        state.sessionToken
+      );
+  }
+
+
+
+  function hasAlumni(
+    association,
+    branch,
+    batchYear
+  ) {
+
+    return Boolean(
+      String(
+        association || ''
+      ).trim() ||
+      String(
+        branch || ''
+      ).trim() ||
+      String(
+        batchYear || ''
+      ).trim()
+    );
+  }
+
+
+  function formatAlumni(
+    association,
+    branch,
+    batchYear
+  ) {
+
+    return [
+      association,
+      branch,
+      batchYear
+    ]
+      .map(
+        function (value) {
+          return String(
+            value || ''
+          ).trim();
+        }
+      )
+      .filter(Boolean)
+      .join(' · ');
+  }
+
+
+  function csvEscape(
+    value
+  ) {
+
+    const text =
+      String(
+        value == null
+          ? ''
+          : value
+      );
+
+    if (
+      text.includes(',') ||
+      text.includes('"') ||
+      text.includes('\n') ||
+      text.includes('\r')
+    ) {
+
+      return (
+        '"' +
+        text.replace(
+          /"/g,
+          '""'
+        ) +
+        '"'
+      );
+    }
+
+    return text;
+  }
+
+
+  function setLoading(
+    isLoading,
+    text
+  ) {
+
+    el.tr3Loading.textContent =
+      text || 'Loading…';
+
+    el.tr3Loading.style.display =
+      isLoading
+        ? 'block'
+        : 'none';
+  }
+
+
+  function clearMessage() {
+
+    el.tr3Message.className =
+      'tr3-message';
+
+    el.tr3Message.textContent =
+      '';
+  }
+
+
+  function showMessage(
+    value,
+    type
+  ) {
+
+    const text =
+      value &&
+      value.message
+        ? value.message
+        : String(
+            value ||
+            'An unexpected error occurred.'
+          );
+
+    el.tr3Message.className =
+      'tr3-message ' +
+      (
+        type ||
+        'info'
+      );
+
+    el.tr3Message.textContent =
+      text;
+  }
+
+
+  function initialise() {
+
+    cacheElements();
+
+    bindEvents();
+  }
+
+
+  window.KGMIS_TREASURER_MODULE = {
+    activate:
+      activate,
+
+    openModule:
+      openModule
+  };
+
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialise
+    );
+
+  } else {
+
+    initialise();
+  }
+
+})();
+</script>

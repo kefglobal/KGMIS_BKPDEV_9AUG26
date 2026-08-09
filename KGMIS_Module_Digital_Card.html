@@ -1,0 +1,847 @@
+<!--
+  ============================================================
+  KEF Global Membership Information System (KGMIS)
+  Embedded Digital Membership Card Module
+
+  File: KGMIS_Module_Digital_Card.html
+  Developed by: JJA Global Systems
+  ============================================================
+
+  Backend required:
+  - KGMIS_DigitalCard_GetInitialData(sessionToken)
+  - KGMIS_DigitalCard_IssueOwnCard(sessionToken, cardholderKey)
+-->
+
+<section id="kgmisDigitalCardModule" class="dc-module">
+  <div class="dc-header">
+    <div>
+      <p class="dc-eyebrow">MEMBER SELF-SERVICE</p>
+      <h2>Digital Membership Card</h2>
+      <p class="dc-subtitle">
+        Review eligible family members and issue their permanent
+        KEF Global digital membership cards.
+      </p>
+    </div>
+
+    <div class="dc-family-badge">
+      <span>Family ID</span>
+      <strong id="dcFamilyId">—</strong>
+    </div>
+  </div>
+
+  <div id="dcMessage" class="dc-message" hidden></div>
+
+  <section class="dc-summary">
+    <div><span>Eligible</span><strong id="dcEligibleCount">—</strong></div>
+    <div><span>Active</span><strong id="dcActiveCount">—</strong></div>
+    <div><span>Extended</span><strong id="dcExtendedCount">—</strong></div>
+    <div><span>Revoked</span><strong id="dcRevokedCount">—</strong></div>
+  </section>
+
+  <section class="dc-panel">
+    <div class="dc-panel-heading">
+      <div>
+        <h3>Cardholders</h3>
+        <p>
+          Card numbers are created from the Family ID and the person's
+          relation sequence.
+        </p>
+      </div>
+
+      <button id="dcRefreshButton" class="dc-button dc-secondary" type="button">
+        Refresh
+      </button>
+    </div>
+
+    <div id="dcPeopleList" class="dc-list">
+      <div class="dc-empty">Loading digital-card information…</div>
+    </div>
+  </section>
+</section>
+
+<style>
+  .dc-module {
+    --dc-primary: #0d4e70;
+    --dc-blue: #176c91;
+    --dc-success: #16723a;
+    --dc-extended: #155c9d;
+    --dc-danger: #b42318;
+    --dc-warning: #92400e;
+    --dc-text: #1f2937;
+    --dc-muted: #64748b;
+    --dc-border: #d8e2e8;
+    --dc-bg: #f6f9fb;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--dc-text);
+  }
+
+  .dc-module *,
+  .dc-module *::before,
+  .dc-module *::after {
+    box-sizing: border-box;
+  }
+
+  .dc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 18px;
+  }
+
+  .dc-eyebrow {
+    margin: 0 0 5px;
+    color: var(--dc-blue);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .09em;
+  }
+
+  .dc-header h2 {
+    margin: 0;
+    color: var(--dc-primary);
+    font-size: clamp(27px, 4vw, 36px);
+  }
+
+  .dc-subtitle {
+    max-width: 760px;
+    margin: 7px 0 0;
+    color: var(--dc-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .dc-family-badge {
+    min-width: 165px;
+    padding: 12px 15px;
+    border: 1px solid #b9d7e6;
+    border-radius: 12px;
+    background: #eef8fc;
+    text-align: center;
+  }
+
+  .dc-family-badge span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--dc-muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  .dc-family-badge strong {
+    color: var(--dc-primary);
+    font-size: 18px;
+  }
+
+  .dc-message {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .dc-message.info {
+    border: 1px solid #b9d7e6;
+    background: #eff8fc;
+    color: #155c7b;
+  }
+
+  .dc-message.error {
+    border: 1px solid #fecdca;
+    background: #fef3f2;
+    color: var(--dc-danger);
+  }
+
+  .dc-message.success {
+    border: 1px solid #a9d4b7;
+    background: #eef9f1;
+    color: var(--dc-success);
+  }
+
+  .dc-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .dc-summary > div {
+    padding: 13px 15px;
+    border: 1px solid var(--dc-border);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(13, 78, 112, .06);
+  }
+
+  .dc-summary span {
+    display: block;
+    color: var(--dc-muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  .dc-summary strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--dc-primary);
+    font-size: 23px;
+  }
+
+  .dc-panel {
+    padding: 20px;
+    border: 1px solid var(--dc-border);
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(13, 78, 112, .08);
+  }
+
+  .dc-panel-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .dc-panel-heading h3 {
+    margin: 0;
+    color: var(--dc-primary);
+    font-size: 20px;
+  }
+
+  .dc-panel-heading p {
+    margin: 4px 0 0;
+    color: var(--dc-muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .dc-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .dc-person-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid var(--dc-border);
+    border-radius: 12px;
+    background: var(--dc-bg);
+  }
+
+  .dc-person-main { min-width: 0; }
+
+  .dc-person-top {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .dc-person-name {
+    margin: 0;
+    color: var(--dc-primary);
+    font-size: 16px;
+  }
+
+  .dc-person-meta {
+    margin: 6px 0 0;
+    color: var(--dc-muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .dc-card-number {
+    margin-top: 8px;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: .05em;
+  }
+
+  .dc-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .dc-button,
+  .dc-link-button {
+    min-height: 38px;
+    padding: 8px 13px;
+    border-radius: 9px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .dc-button { border: 0; }
+
+  .dc-primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--dc-primary), var(--dc-blue));
+  }
+
+  .dc-secondary {
+    border: 1px solid #a8bdc9;
+    color: var(--dc-primary);
+    background: #eef5f8;
+  }
+
+  .dc-link-button {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #a8bdc9;
+    color: var(--dc-primary);
+    background: #fff;
+  }
+
+  .dc-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+
+  .dc-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .dc-badge-ready,
+  .dc-badge-active {
+    color: #166534;
+    border: 1px solid #86efac;
+    background: #dcfce7;
+  }
+
+  .dc-badge-extended {
+    color: #155c9d;
+    border: 1px solid #93c5fd;
+    background: #dbeafe;
+  }
+
+  .dc-badge-revoked {
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    background: #fee2e2;
+  }
+
+  .dc-badge-pending {
+    color: var(--dc-warning);
+    border: 1px solid #fcd34d;
+    background: #fef3c7;
+  }
+
+  .dc-empty {
+    display: grid;
+    place-items: center;
+    min-height: 145px;
+    padding: 24px 16px;
+    border: 1px dashed #c9d5dc;
+    border-radius: 11px;
+    color: var(--dc-muted);
+    background: #f8fafb;
+    text-align: center;
+  }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 800px) {
+    .dc-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dc-person-card { grid-template-columns: 1fr; align-items: start; }
+    .dc-actions { justify-content: flex-start; }
+  }
+
+  @media (max-width: 560px) {
+    .dc-header { flex-direction: column; }
+    .dc-family-badge { width: 100%; }
+    .dc-summary { grid-template-columns: 1fr 1fr; }
+    .dc-panel-heading { flex-direction: column; }
+    .dc-panel-heading .dc-button { width: 100%; }
+    .dc-actions { display: grid; grid-template-columns: 1fr; }
+    .dc-button,
+    .dc-link-button { width: 100%; justify-content: center; }
+  }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  const state = {
+    initialised: false,
+    sessionToken: '',
+    busy: false,
+    data: null
+  };
+
+  const el = {};
+
+  function activate(auth) {
+    const safeAuth = auth || {};
+    state.sessionToken = String(safeAuth.sessionToken || '').trim();
+
+    initialiseOnce();
+
+    if (!state.sessionToken) {
+      showMessage(
+        'Your KGMIS session is missing. Please sign in again.',
+        'error'
+      );
+      return;
+    }
+
+    loadData();
+  }
+
+  function initialiseOnce() {
+    if (state.initialised) {
+      return;
+    }
+
+    cacheElements();
+    bindEvents();
+    state.initialised = true;
+  }
+
+  function cacheElements() {
+    [
+      'dcFamilyId',
+      'dcMessage',
+      'dcEligibleCount',
+      'dcActiveCount',
+      'dcExtendedCount',
+      'dcRevokedCount',
+      'dcRefreshButton',
+      'dcPeopleList'
+    ].forEach(function (id) {
+      el[id] = document.getElementById(id);
+    });
+  }
+
+  function bindEvents() {
+    el.dcRefreshButton.addEventListener('click', loadData);
+  }
+
+  function loadData() {
+    if (state.busy) {
+      return;
+    }
+
+    setBusy(true, 'Loading digital-card information…');
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        state.data = result || {};
+        render(state.data);
+        setBusy(false);
+        clearMessage();
+      })
+      .withFailureHandler(function (error) {
+        setBusy(false);
+        showMessage(
+          error && error.message
+            ? error.message
+            : String(error || 'Digital-card information could not be loaded.'),
+          'error'
+        );
+      })
+      .KGMIS_DigitalCard_GetInitialData(state.sessionToken);
+  }
+
+  function render(result) {
+    const profile = result.profile || {};
+    const summary = result.summary || {};
+    const people = Array.isArray(result.people) ? result.people : [];
+
+    el.dcFamilyId.textContent = profile.familyId || '—';
+    el.dcEligibleCount.textContent = String(summary.eligible || 0);
+    el.dcActiveCount.textContent = String(summary.active || 0);
+    el.dcExtendedCount.textContent = String(summary.extended || 0);
+    el.dcRevokedCount.textContent = String(summary.revoked || 0);
+
+    renderPeople(people);
+  }
+
+  function renderPeople(people) {
+    el.dcPeopleList.innerHTML = '';
+
+    if (!people.length) {
+      el.dcPeopleList.innerHTML =
+        '<div class="dc-empty">No eligible family members were found.</div>';
+      return;
+    }
+
+    people.forEach(function (person) {
+      el.dcPeopleList.appendChild(buildPersonCard(person));
+    });
+  }
+
+  function buildPersonCard(person) {
+    const article = document.createElement('article');
+    article.className = 'dc-person-card';
+
+    const status = String(person.cardStatus || '').trim().toUpperCase();
+    const relation = displayRelation(person.cardholderType);
+    const details = [relation, person.mobile, person.email]
+      .filter(Boolean)
+      .join(' · ');
+
+    article.innerHTML =
+      '<div class="dc-person-main">' +
+        '<div class="dc-person-top">' +
+          '<h4 class="dc-person-name">' +
+            escapeHtml(person.cardholderName || '') +
+          '</h4>' +
+          getBadge(status, person) +
+        '</div>' +
+        '<div class="dc-person-meta">' + escapeHtml(details) + '</div>' +
+        '<div class="dc-card-number">' +
+          escapeHtml(person.cardId || '') +
+        '</div>' +
+      '</div>' +
+      '<div class="dc-actions"></div>';
+
+    const actions = article.querySelector('.dc-actions');
+
+    if (!person.issued) {
+      const issueButton = document.createElement('button');
+      issueButton.type = 'button';
+      issueButton.className = 'dc-button dc-primary';
+      issueButton.textContent = 'Issue Digital Card';
+      issueButton.disabled = !person.cardEligible;
+      issueButton.addEventListener('click', function () {
+        issueCard(person.key, issueButton);
+      });
+      actions.appendChild(issueButton);
+      return article;
+    }
+
+   const viewButton =
+  document.createElement('button');
+
+viewButton.type =
+  'button';
+
+viewButton.className =
+  'dc-button dc-primary';
+
+viewButton.textContent =
+  'View Digital Card';
+
+viewButton.addEventListener(
+  'click',
+  function () {
+    viewDigitalCard(
+      person.cardId,
+      viewButton
+    );
+  }
+);
+
+actions.appendChild(
+  viewButton
+);
+
+if (person.cardImageUrl) {
+  actions.appendChild(
+    createLink(
+      person.cardImageUrl,
+      'Download Card Image'
+    )
+  );
+}
+
+if (person.cardPdfUrl) {
+  actions.appendChild(
+    createLink(
+      person.cardPdfUrl,
+      'Download Card PDF'
+    )
+  );
+}
+
+return article;
+    
+  }
+
+
+
+function viewDigitalCard(
+  cardId,
+  button
+) {
+
+  const cleanCardId =
+    String(
+      cardId || ''
+    )
+      .trim()
+      .toUpperCase();
+
+  if (!cleanCardId) {
+    showMessage(
+      'The selected card has no Card ID.',
+      'error'
+    );
+
+    return;
+  }
+
+  if (!state.sessionToken) {
+    showMessage(
+      'Your KGMIS session is missing. Please sign in again.',
+      'error'
+    );
+
+    return;
+  }
+
+  const previewWindow =
+    window.open(
+      '',
+      '_blank'
+    );
+
+  if (!previewWindow) {
+    showMessage(
+      'Please allow pop-ups for the KGMIS portal.',
+      'error'
+    );
+
+    return;
+  }
+
+  previewWindow.document.open();
+
+  previewWindow.document.write(
+    '<!DOCTYPE html>' +
+    '<html>' +
+    '<head>' +
+    '<title>Loading Digital Card</title>' +
+    '</head>' +
+    '<body style="' +
+      'font-family:Arial,sans-serif;' +
+      'padding:30px;' +
+      'text-align:center;' +
+    '">' +
+      'Loading Digital Membership Card…' +
+    '</body>' +
+    '</html>'
+  );
+
+  previewWindow.document.close();
+
+  if (button) {
+    button.disabled =
+      true;
+
+    button.textContent =
+      'Opening…';
+  }
+
+  google.script.run
+    .withSuccessHandler(
+      function (result) {
+
+        if (button) {
+          button.disabled =
+            false;
+
+          button.textContent =
+            'View Digital Card';
+        }
+
+        if (
+          !result ||
+          result.success !== true ||
+          !result.html
+        ) {
+          previewWindow.close();
+
+          showMessage(
+            'The Digital Membership Card could not be rendered.',
+            'error'
+          );
+
+          return;
+        }
+
+        previewWindow.document.open();
+
+        previewWindow.document.write(
+          String(
+            result.html || ''
+          )
+        );
+
+        previewWindow.document.close();
+      }
+    )
+    .withFailureHandler(
+      function (error) {
+
+        if (button) {
+          button.disabled =
+            false;
+
+          button.textContent =
+            'View Digital Card';
+        }
+
+        if (
+          previewWindow &&
+          !previewWindow.closed
+        ) {
+          previewWindow.close();
+        }
+
+        showMessage(
+          error && error.message
+            ? error.message
+            : String(
+                error ||
+                'The Digital Membership Card could not be opened.'
+              ),
+          'error'
+        );
+      }
+    )
+    .KGMIS_DigitalCardRenderer_RenderPreview(
+      state.sessionToken,
+      cleanCardId
+    );
+}
+
+
+  function issueCard(cardholderKey, button) {
+    if (state.busy) {
+      return;
+    }
+
+    if (!window.confirm('Issue this permanent KEF Global digital card now?')) {
+      return;
+    }
+
+    setBusy(true, 'Issuing digital card…');
+    button.disabled = true;
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setBusy(false);
+        showMessage(
+          result && result.message
+            ? result.message
+            : 'Digital card issued successfully.',
+          'success'
+        );
+        loadData();
+      })
+      .withFailureHandler(function (error) {
+        setBusy(false);
+        button.disabled = false;
+        showMessage(
+          error && error.message
+            ? error.message
+            : String(error || 'The digital card could not be issued.'),
+          'error'
+        );
+      })
+      .KGMIS_DigitalCard_IssueOwnCard(
+        state.sessionToken,
+        cardholderKey
+      );
+  }
+
+  function getBadge(status, person) {
+    if (status === 'ACTIVE') {
+      return '<span class="dc-badge dc-badge-active">ACTIVE</span>';
+    }
+
+    if (status === 'EXTENDED') {
+      return '<span class="dc-badge dc-badge-extended">EXTENDED</span>';
+    }
+
+    if (status === 'REVOKED') {
+      return '<span class="dc-badge dc-badge-revoked">REVOKED</span>';
+    }
+
+    if (person.cardEligible) {
+      return '<span class="dc-badge dc-badge-ready">READY</span>';
+    }
+
+    return '<span class="dc-badge dc-badge-pending">NOT ELIGIBLE</span>';
+  }
+
+  function createLink(href, label) {
+    const link = document.createElement('a');
+    link.className = 'dc-link-button';
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = label;
+    return link;
+  }
+
+  function setBusy(isBusy, message) {
+    state.busy = isBusy;
+    el.dcRefreshButton.disabled = isBusy;
+
+    if (message) {
+      showMessage(message, 'info');
+    }
+  }
+
+  function showMessage(message, type) {
+    el.dcMessage.textContent = message || '';
+    el.dcMessage.className = 'dc-message ' + (type || 'info');
+    el.dcMessage.hidden = false;
+  }
+
+  function clearMessage() {
+    el.dcMessage.hidden = true;
+    el.dcMessage.textContent = '';
+    el.dcMessage.className = 'dc-message';
+  }
+
+  function displayRelation(value) {
+    return String(value || '')
+      .trim()
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, function (letter) {
+        return letter.toUpperCase();
+      });
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  window.KGMIS_DIGITAL_CARD_MODULE = {
+    activate: activate
+  };
+})();
+</script>

@@ -1,0 +1,1139 @@
+<!--
+============================================================
+KEF Global Membership Information System (KGMIS)
+Module    : Receipt Register
+File Name : 92.00_KGMIS_Module_Receipt_Register.html
+Version   : 1.5
+Designed & Developed by: James Joseph Alenchery
+
+Read-only UI for KGMIS_RECEIPT_TRANSACTIONS.
+
+Version 1.5 includes client-side reporting and corrected compact print layout:
+  • This Week / Last Week
+  • This Month / Last Month
+  • Custom Period
+  • Full Financial Year
+  • Print Report
+  • Download CSV
+
+No transaction-writing service is changed.
+
+Backend expected:
+  KGMIS_ReceiptRegister_GetSetup(sessionToken)
+  KGMIS_ReceiptRegister_GetRegister(sessionToken, filters)
+  KGMIS_ReceiptRegister_ViewReceipt(sessionToken, lookupValue)
+============================================================
+-->
+
+<style>
+  .rr1-shell{width:100%}
+  .rr1-topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+  .rr1-heading{margin:0;color:var(--tr3-primary-dark,#123a63);font-size:20px;font-weight:800}
+  .rr1-subheading{margin:5px 0 0;color:var(--tr3-muted,#667085);font-size:12px;line-height:1.5}
+  .rr1-year-badge{min-width:132px;padding:8px 12px;border:1px solid var(--tr3-border,#dbe3ec);border-radius:10px;background:#fff;text-align:center}
+  .rr1-year-label{display:block;color:var(--tr3-muted,#667085);font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .rr1-year-value{display:block;margin-top:3px;color:var(--tr3-primary,#1c5d99);font-size:15px;font-weight:800}
+  .rr1-panel{margin-bottom:14px;padding:16px;border:1px solid var(--tr3-border,#dbe3ec);border-radius:12px;background:#fff}
+  .rr1-panel-title{margin:0 0 3px;color:var(--tr3-primary-dark,#123a63);font-size:13px;font-weight:800}
+  .rr1-panel-note,.rr1-meta{margin:0 0 13px;color:var(--tr3-muted,#667085);font-size:10px;line-height:1.45}
+  .rr1-message{display:none;margin-bottom:14px;padding:10px 12px;border-radius:8px;font-size:11px;line-height:1.45}
+  .rr1-message.info{display:block;border:1px solid #b9d6f2;background:#eef7ff;color:#174b78}
+  .rr1-message.success{display:block;border:1px solid #a9d9bd;background:#effaf3;color:#166534}
+  .rr1-message.error{display:block;border:1px solid #f0b5b5;background:#fff2f2;color:#b42318}
+
+  .rr1-filters{display:grid;grid-template-columns:minmax(135px,.65fr) minmax(165px,.8fr) minmax(240px,1.35fr) minmax(130px,.65fr) minmax(130px,.65fr) minmax(150px,.75fr) minmax(145px,.7fr);gap:10px;align-items:end}
+  .rr1-field{min-width:0}
+  .rr1-label{display:block;margin-bottom:5px;color:var(--tr3-muted,#667085);font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .rr1-input,.rr1-select{box-sizing:border-box;width:100%;min-height:40px;padding:8px 10px;border:1px solid var(--tr3-border,#dbe3ec);border-radius:8px;background:#fff;color:var(--tr3-text,#1f2937);font:inherit;font-size:12px;outline:none}
+  .rr1-input:focus,.rr1-select:focus{border-color:var(--tr3-primary,#1c5d99);box-shadow:0 0 0 3px rgba(28,93,153,.09)}
+  .rr1-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px;margin-top:13px}
+  .rr1-button{min-height:40px;padding:8px 14px;border:1px solid transparent;border-radius:8px;cursor:pointer;font:inherit;font-size:11px;font-weight:800}
+  .rr1-button:disabled{cursor:not-allowed;opacity:.55}
+  .rr1-primary{border-color:var(--tr3-primary,#1c5d99);background:var(--tr3-primary,#1c5d99);color:#fff}
+  .rr1-secondary{border-color:var(--tr3-border,#dbe3ec);background:#fff;color:var(--tr3-primary-dark,#123a63)}
+  .rr1-view{min-height:32px;padding:6px 10px;border-color:#157347;background:#157347;color:#fff;white-space:nowrap}
+  .rr1-report{border-color:#157347;background:#157347;color:#fff}
+
+  .rr1-summary{display:grid;grid-template-columns:repeat(2,minmax(0,220px));gap:10px;margin-bottom:14px}
+  .rr1-summary-card{padding:13px 14px;border:1px solid var(--tr3-border,#dbe3ec);border-radius:10px;background:#f8fbff}
+  .rr1-summary-value{display:block;color:var(--tr3-primary-dark,#123a63);font-size:22px;font-weight:800}
+  .rr1-summary-label{display:block;margin-top:4px;color:var(--tr3-muted,#667085);font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+
+  .rr1-table-wrap{overflow-x:auto;border:1px solid var(--tr3-border,#dbe3ec);border-radius:10px}
+  .rr1-table{width:100%;min-width:1180px;border-collapse:collapse;background:#fff}
+  .rr1-table th,.rr1-table td{padding:10px;border-right:1px solid var(--tr3-border,#dbe3ec);border-bottom:1px solid var(--tr3-border,#dbe3ec);text-align:left;vertical-align:middle;font-size:11px;line-height:1.35}
+  .rr1-table th:last-child,.rr1-table td:last-child{border-right:0}
+  .rr1-table th{color:#fff;background:var(--tr3-primary-dark,#123a63);font-size:10px;font-weight:800;text-transform:uppercase;white-space:nowrap}
+  .rr1-table tbody tr:nth-child(even){background:#f8fbfd}
+  .rr1-table tbody tr:hover{background:#eef7fb}
+  .rr1-receipt{color:var(--tr3-primary-dark,#123a63);font-weight:800;white-space:nowrap}
+  .rr1-payer{max-width:180px;font-weight:700;white-space:normal;overflow-wrap:break-word}
+  .rr1-amount{font-weight:800;white-space:nowrap}
+  .rr1-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:800;white-space:nowrap}
+  .rr1-status.successful{color:#166534;background:#dcfce7;border:1px solid #86efac}
+  .rr1-status.pending{color:#92400e;background:#fef3c7;border:1px solid #fcd34d}
+  .rr1-status.failed,.rr1-status.cancelled{color:#991b1b;background:#fee2e2;border:1px solid #fca5a5}
+  .rr1-status.refunded{color:#6b21a8;background:#f3e8ff;border:1px solid #d8b4fe}
+  .rr1-empty{padding:30px 20px!important;color:var(--tr3-muted,#667085);text-align:center!important}
+
+  @media(max-width:1180px){.rr1-filters{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(max-width:720px){
+    .rr1-topbar{display:block}.rr1-year-badge{box-sizing:border-box;width:100%;margin-top:10px}
+    .rr1-filters{grid-template-columns:1fr}.rr1-summary{grid-template-columns:1fr 1fr}
+    .rr1-actions{justify-content:stretch}.rr1-actions .rr1-button{flex:1 1 100%}
+  }
+  @media(max-width:460px){.rr1-summary{grid-template-columns:1fr}}
+
+
+  #rr1PrintReport{display:none}
+
+  @media print{
+    @page{
+      size:A4 landscape;
+      margin:10mm;
+    }
+
+    html,
+    body{
+      height:auto!important;
+      min-height:0!important;
+      overflow:visible!important;
+    }
+
+    body > *{
+      visibility:hidden!important;
+    }
+
+    #rr1Root,
+    #rr1Root *{
+      visibility:visible!important;
+    }
+
+    #rr1Root{
+      position:absolute!important;
+      left:0!important;
+      top:0!important;
+      width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:0!important;
+      padding:0!important;
+    }
+
+    #rr1Root > *:not(#rr1PrintReport){
+      display:none!important;
+    }
+
+    #rr1PrintReport{
+      display:block!important;
+      position:static!important;
+      width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:0!important;
+      padding:0!important;
+      background:#fff;
+      color:#1f2937;
+      font-family:Arial,Helvetica,sans-serif;
+      font-size:9px;
+    }
+
+    #rr1PrintReport .rr1-print-header{
+      position:relative;
+      height:46px;
+      margin:0 0 7px;
+      padding:0 82px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      box-sizing:border-box;
+    }
+
+    #rr1PrintReport .rr1-print-logo{
+      position:absolute;
+      left:0;
+      top:0;
+      width:70px;
+      height:46px;
+      object-fit:contain;
+      object-position:left top;
+    }
+
+    #rr1PrintReport .rr1-print-org{
+      color:#0d4e70;
+      font-size:13px;
+      line-height:1.05;
+      font-weight:800;
+      letter-spacing:.03em;
+    }
+
+    #rr1PrintReport .rr1-print-title{
+      margin-top:2px;
+      font-size:10.5px;
+      line-height:1.05;
+      font-weight:800;
+    }
+
+    #rr1PrintReport .rr1-print-meta{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:3px 16px;
+      margin:6px 0 7px;
+      padding:6px 8px;
+      border:1px solid #cbd5e1;
+    }
+
+    #rr1PrintReport .rr1-print-filter{
+      margin:0 0 6px;
+      font-size:8.5px;
+    }
+
+    #rr1PrintReport table{
+      width:100%;
+      border-collapse:collapse;
+    }
+
+    #rr1PrintReport thead{
+      display:table-header-group;
+    }
+
+    #rr1PrintReport tr{
+      page-break-inside:avoid;
+      break-inside:avoid;
+    }
+
+    #rr1PrintReport th,
+    #rr1PrintReport td{
+      padding:3px 4px;
+      border:1px solid #cbd5e1;
+      text-align:left;
+      vertical-align:top;
+      line-height:1.2;
+    }
+
+    #rr1PrintReport th{
+      background:#0d4e70!important;
+      color:#fff;
+      font-size:7.8px;
+      text-transform:uppercase;
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+    }
+
+    #rr1PrintReport .rr1-print-amount{
+      text-align:right;
+      white-space:nowrap;
+      font-weight:700;
+    }
+
+    #rr1PrintReport .rr1-print-summary{
+      display:flex;
+      justify-content:flex-end;
+      gap:20px;
+      margin-top:6px;
+      font-size:9.5px;
+      font-weight:700;
+    }
+
+    #rr1PrintReport .rr1-print-footer{
+      margin-top:6px;
+      padding-top:5px;
+      border-top:1px solid #cbd5e1;
+      min-height:4px;
+    }
+  }
+
+
+</style>
+
+<div id="rr1Root" class="rr1-shell">
+
+  <div id="rr1PrintReport" aria-hidden="true"></div>
+
+  <div class="rr1-topbar">
+    <div>
+      <h2 class="rr1-heading">Receipt Register</h2>
+      <p class="rr1-subheading">Search, review and view receipts already issued by KEF Global.</p>
+    </div>
+    <div class="rr1-year-badge">
+      <span class="rr1-year-label">Selected Financial Year</span>
+      <span id="rr1SelectedYearDisplay" class="rr1-year-value">—</span>
+    </div>
+  </div>
+
+  <div id="rr1Message" class="rr1-message" role="status" aria-live="polite"></div>
+
+  <section class="rr1-panel">
+    <h3 class="rr1-panel-title">Search &amp; Filters</h3>
+    <p class="rr1-panel-note">Search by receipt number, transaction ID, payer name, Family ID, KEFG ID, mobile number or transaction reference.</p>
+
+    <div class="rr1-filters">
+      <div class="rr1-field">
+        <label class="rr1-label" for="rr1FinancialYear">Financial Year</label>
+        <select id="rr1FinancialYear" class="rr1-select"><option value="">Loading…</option></select>
+      </div>
+
+      <div class="rr1-field">
+        <label class="rr1-label" for="rr1ReportPeriod">Report Period</label>
+        <select id="rr1ReportPeriod" class="rr1-select">
+          <option value="FULL_FINANCIAL_YEAR">Full Financial Year</option>
+          <option value="THIS_WEEK">This Week</option>
+          <option value="LAST_WEEK">Last Week</option>
+          <option value="THIS_MONTH">This Month</option>
+          <option value="LAST_MONTH">Last Month</option>
+          <option value="CUSTOM">Custom Period</option>
+        </select>
+      </div>
+
+      <div class="rr1-field">
+        <label class="rr1-label" for="rr1Search">Search</label>
+        <input id="rr1Search" class="rr1-input" type="search" autocomplete="off"
+          placeholder="Receipt No., Transaction ID, name, ID, mobile or reference">
+      </div>
+
+      <div class="rr1-field">
+        <label class="rr1-label" for="rr1FromDate">From Date</label>
+        <input id="rr1FromDate" class="rr1-input" type="date">
+      </div>
+
+      <div class="rr1-field">
+        <label class="rr1-label" for="rr1ToDate">To Date</label>
+        <input id="rr1ToDate" class="rr1-input" type="date">
+      </div>
+
+      <div class="rr1-field">
+        <label class="rr1-label" for="rr1PaymentMode">Payment Mode</label>
+        <select id="rr1PaymentMode" class="rr1-select">
+          <option value="">All Payment Modes</option>
+          <option value="CASH">CASH</option>
+          <option value="UPI">UPI</option>
+          <option value="BANK TRANSFER">BANK TRANSFER</option>
+          <option value="CHEQUE">CHEQUE</option>
+          <option value="CARD">CARD</option>
+          <option value="ONLINE PAYMENT">ONLINE PAYMENT</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+      </div>
+
+      <div class="rr1-field">
+        <label class="rr1-label" for="rr1Status">Status</label>
+        <select id="rr1Status" class="rr1-select">
+          <option value="">All Statuses</option>
+          <option value="SUCCESSFUL">SUCCESSFUL</option>
+          <option value="PENDING">PENDING</option>
+          <option value="FAILED">FAILED</option>
+          <option value="REFUNDED">REFUNDED</option>
+          <option value="CANCELLED">CANCELLED</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="rr1-actions">
+      <button id="rr1ClearButton" class="rr1-button rr1-secondary" type="button">Clear Filters</button>
+      <button id="rr1RefreshButton" class="rr1-button rr1-secondary" type="button">↻ Refresh</button>
+      <button id="rr1DownloadCsvButton" class="rr1-button rr1-report" type="button">Download CSV</button>
+      <button id="rr1PrintButton" class="rr1-button rr1-report" type="button">Print Report</button>
+      <button id="rr1ApplyButton" class="rr1-button rr1-primary" type="button">Apply Filters</button>
+    </div>
+  </section>
+
+  <div class="rr1-summary">
+    <div class="rr1-summary-card">
+      <span id="rr1SummaryCount" class="rr1-summary-value">0</span>
+      <span class="rr1-summary-label">Receipts Issued</span>
+    </div>
+    <div class="rr1-summary-card">
+      <span id="rr1SummaryAmount" class="rr1-summary-value">₹0.00</span>
+      <span class="rr1-summary-label">Total Amount Received</span>
+    </div>
+  </div>
+
+  <section class="rr1-panel">
+    <h3 class="rr1-panel-title">Receipt Register</h3>
+    <p id="rr1RegisterMeta" class="rr1-meta">No receipt records loaded.</p>
+
+    <div class="rr1-table-wrap">
+      <table id="rr1Table" class="rr1-table">
+        <thead>
+          <tr>
+            <th>Receipt Date</th>
+            <th>Receipt Number</th>
+            <th>Transaction ID</th>
+            <th>Family ID</th>
+            <th>Payer</th>
+            <th>Purpose</th>
+            <th>Amount</th>
+            <th>Payment Mode</th>
+            <th>Transaction Reference</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="rr1-empty" colspan="11">Open Receipt Register to load issued receipts.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  const state={
+    initialised:false,
+    sessionToken:'',
+    currentFinancialYear:'',
+    rows:[],
+    setupLoaded:false,
+    currentSummary:{
+      receiptsIssued:0,
+      totalAmountReceived:0
+    },
+    generatedBy:''
+  };
+  const el={};
+
+  function cacheElements(){
+    [
+      'rr1SelectedYearDisplay','rr1Message','rr1FinancialYear','rr1ReportPeriod',
+      'rr1Search','rr1FromDate','rr1ToDate','rr1PaymentMode',
+      'rr1Status','rr1ClearButton','rr1RefreshButton','rr1DownloadCsvButton',
+      'rr1PrintButton','rr1ApplyButton','rr1SummaryCount','rr1SummaryAmount',
+      'rr1RegisterMeta','rr1Table','rr1PrintReport'
+    ].forEach(function(id){el[id]=document.getElementById(id);});
+  }
+
+  function bindEvents(){
+    el.rr1ApplyButton.addEventListener('click',loadRegister);
+    el.rr1RefreshButton.addEventListener('click',function(){loadSetup(true);});
+    el.rr1ClearButton.addEventListener('click',clearFilters);
+    el.rr1DownloadCsvButton.addEventListener('click',downloadCsvReport);
+    el.rr1PrintButton.addEventListener('click',printReport);
+
+    el.rr1Search.addEventListener('keydown',function(event){
+      if(event.key==='Enter'){event.preventDefault();loadRegister();}
+    });
+
+    el.rr1FinancialYear.addEventListener('change',function(){
+      updateSelectedYearDisplay();
+      el.rr1ReportPeriod.value='FULL_FINANCIAL_YEAR';
+      applyReportPeriod(false);
+      loadRegister();
+    });
+
+    el.rr1ReportPeriod.addEventListener('change',function(){
+      applyReportPeriod(true);
+    });
+
+    [el.rr1FromDate,el.rr1ToDate].forEach(function(input){
+      input.addEventListener('change',function(){
+        if(el.rr1ReportPeriod.value!=='CUSTOM'){
+          el.rr1ReportPeriod.value='CUSTOM';
+        }
+      });
+    });
+
+    el.rr1Table.querySelector('tbody').addEventListener('click',function(event){
+      const button=event.target.closest('[data-rr1-view-receipt]');
+      if(!button)return;
+      viewReceipt(
+        button.getAttribute('data-transaction-id'),
+        button.getAttribute('data-receipt-number')
+      );
+    });
+  }
+
+  function activate(context){
+    const safe=context&&typeof context==='object'?context:{};
+
+    if(!state.initialised){
+      cacheElements();
+      bindEvents();
+      state.initialised=true;
+    }
+
+    state.sessionToken=clean(safe.sessionToken);
+    state.currentFinancialYear=clean(safe.financialYear);
+    state.generatedBy=clean(
+      safe.userName||
+      (safe.user&&safe.user.userName)||
+      safe.email||
+      (safe.user&&safe.user.email)
+    );
+
+    if(!state.sessionToken){
+      showMessage('The Treasurer session is missing. Please sign out and sign in again.','error');
+      setControlsEnabled(false);
+      return;
+    }
+
+    if(state.currentFinancialYear){
+      el.rr1SelectedYearDisplay.textContent=state.currentFinancialYear;
+    }
+
+    loadSetup(false);
+  }
+
+  function loadSetup(preserveFilters){
+    if(!state.sessionToken)return;
+
+    setControlsEnabled(false);
+    showMessage('Loading Receipt Register…','info');
+
+    google.script.run
+      .withSuccessHandler(function(response){
+        if(!response||response.success!==true){
+          setControlsEnabled(false);
+          showMessage(response&&response.message?response.message:'Receipt Register setup could not be loaded.','error');
+          return;
+        }
+
+        state.setupLoaded=true;
+        state.currentFinancialYear=clean(response.currentFinancialYear);
+
+        const selectedBefore=preserveFilters?clean(el.rr1FinancialYear.value):'';
+        populateFinancialYears(
+          response.financialYears||[],
+          selectedBefore||state.currentFinancialYear
+        );
+
+        if(!preserveFilters){
+          el.rr1Search.value='';
+          el.rr1ReportPeriod.value='FULL_FINANCIAL_YEAR';
+          el.rr1FromDate.value='';
+          el.rr1ToDate.value='';
+          el.rr1PaymentMode.value='';
+          el.rr1Status.value='';
+        }
+
+        setControlsEnabled(true);
+        showMessage('','');
+        updateSelectedYearDisplay();
+        loadRegister();
+      })
+      .withFailureHandler(function(error){
+        setControlsEnabled(false);
+        showMessage(getErrorMessage(error),'error');
+      })
+      .KGMIS_ReceiptRegister_GetSetup(state.sessionToken);
+  }
+
+  function populateFinancialYears(years,selectedYear){
+    const safeYears=Array.isArray(years)?years:[];
+    el.rr1FinancialYear.innerHTML='';
+
+    safeYears.forEach(function(year){
+      const value=typeof year==='string'?year:clean(year.financialYear);
+      if(!value)return;
+
+      const option=document.createElement('option');
+      option.value=value;
+      option.textContent=value;
+      option.selected=value===selectedYear;
+      el.rr1FinancialYear.appendChild(option);
+    });
+
+    if(!el.rr1FinancialYear.options.length&&selectedYear){
+      const option=document.createElement('option');
+      option.value=selectedYear;
+      option.textContent=selectedYear;
+      el.rr1FinancialYear.appendChild(option);
+    }
+  }
+
+  function updateSelectedYearDisplay(){
+    el.rr1SelectedYearDisplay.textContent=
+      clean(el.rr1FinancialYear.value)||state.currentFinancialYear||'—';
+  }
+
+  function applyReportPeriod(reload){
+    const period=clean(el.rr1ReportPeriod.value)||'FULL_FINANCIAL_YEAR';
+    const today=startOfDay(new Date());
+
+    let fromDate='';
+    let toDate='';
+
+    if(period==='THIS_WEEK'){
+      const monday=new Date(today);
+      const day=(monday.getDay()+6)%7;
+      monday.setDate(monday.getDate()-day);
+      fromDate=formatIsoLocal(monday);
+      toDate=formatIsoLocal(today);
+    }else if(period==='LAST_WEEK'){
+      const thisMonday=new Date(today);
+      const day=(thisMonday.getDay()+6)%7;
+      thisMonday.setDate(thisMonday.getDate()-day);
+
+      const lastMonday=new Date(thisMonday);
+      lastMonday.setDate(lastMonday.getDate()-7);
+
+      const lastSunday=new Date(thisMonday);
+      lastSunday.setDate(lastSunday.getDate()-1);
+
+      fromDate=formatIsoLocal(lastMonday);
+      toDate=formatIsoLocal(lastSunday);
+    }else if(period==='THIS_MONTH'){
+      const firstDay=new Date(today.getFullYear(),today.getMonth(),1);
+      fromDate=formatIsoLocal(firstDay);
+      toDate=formatIsoLocal(today);
+    }else if(period==='LAST_MONTH'){
+      const firstDay=new Date(today.getFullYear(),today.getMonth()-1,1);
+      const lastDay=new Date(today.getFullYear(),today.getMonth(),0);
+      fromDate=formatIsoLocal(firstDay);
+      toDate=formatIsoLocal(lastDay);
+    }else if(period==='CUSTOM'){
+      if(reload)loadRegister();
+      return;
+    }else{
+      /*
+       * Full Financial Year needs no additional date restriction:
+       * the existing backend already filters by selected FY.
+       */
+      fromDate='';
+      toDate='';
+    }
+
+    el.rr1FromDate.value=fromDate;
+    el.rr1ToDate.value=toDate;
+    if(reload)loadRegister();
+  }
+
+
+  function startOfDay(date){
+    return new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  }
+
+
+  function formatIsoLocal(date){
+    const year=date.getFullYear();
+    const month=String(date.getMonth()+1).padStart(2,'0');
+    const day=String(date.getDate()).padStart(2,'0');
+    return year+'-'+month+'-'+day;
+  }
+
+
+  function getFilters(){
+    return{
+      financialYear:clean(el.rr1FinancialYear.value),
+      searchText:clean(el.rr1Search.value),
+      fromDate:clean(el.rr1FromDate.value),
+      toDate:clean(el.rr1ToDate.value),
+      paymentMode:clean(el.rr1PaymentMode.value).toUpperCase(),
+      paymentStatus:clean(el.rr1Status.value).toUpperCase()
+    };
+  }
+
+  function clearFilters(){
+    el.rr1Search.value='';
+    el.rr1ReportPeriod.value='FULL_FINANCIAL_YEAR';
+    el.rr1FromDate.value='';
+    el.rr1ToDate.value='';
+    el.rr1PaymentMode.value='';
+    el.rr1Status.value='';
+
+    if(state.currentFinancialYear){
+      el.rr1FinancialYear.value=state.currentFinancialYear;
+    }
+
+    updateSelectedYearDisplay();
+    loadRegister();
+  }
+
+  function loadRegister(){
+    if(!state.sessionToken||!state.setupLoaded)return;
+
+    const filters=getFilters();
+
+    if(filters.fromDate&&filters.toDate&&filters.fromDate>filters.toDate){
+      showMessage('From Date cannot be later than To Date.','error');
+      return;
+    }
+
+    setRegisterLoading(true);
+    showMessage('Loading receipt records…','info');
+
+    google.script.run
+      .withSuccessHandler(function(response){
+        setRegisterLoading(false);
+
+        if(!response||response.success!==true){
+          showMessage(response&&response.message?response.message:'Receipt records could not be loaded.','error');
+          return;
+        }
+
+        state.rows=Array.isArray(response.rows)?response.rows:[];
+        state.currentSummary=response.summary||{
+          receiptsIssued:0,
+          totalAmountReceived:0
+        };
+        renderSummary(state.currentSummary);
+        renderRegister(state.rows);
+        updateSelectedYearDisplay();
+        showMessage('','');
+      })
+      .withFailureHandler(function(error){
+        setRegisterLoading(false);
+        showMessage(getErrorMessage(error),'error');
+      })
+      .KGMIS_ReceiptRegister_GetRegister(state.sessionToken,filters);
+  }
+
+  function renderSummary(summary){
+    el.rr1SummaryCount.textContent=
+      Number(summary.receiptsIssued||0).toLocaleString('en-IN');
+
+    el.rr1SummaryAmount.textContent=
+      '₹'+formatAmount(summary.totalAmountReceived||0);
+  }
+
+  function renderRegister(rows){
+    const tbody=el.rr1Table.querySelector('tbody');
+    const safeRows=Array.isArray(rows)?rows:[];
+    tbody.innerHTML='';
+    el.rr1RegisterMeta.textContent=safeRows.length+' receipt record(s) listed.';
+
+    if(!safeRows.length){
+      const tr=document.createElement('tr');
+      const td=document.createElement('td');
+      td.colSpan=11;
+      td.className='rr1-empty';
+      td.textContent='No receipt records match the selected filters.';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    safeRows.forEach(function(row){
+      const tr=document.createElement('tr');
+
+      appendTextCell(tr,row.receiptDateDisplay||row.transactionDateDisplay||'');
+      appendTextCell(tr,row.receiptNumber||'','rr1-receipt');
+      appendTextCell(tr,row.transactionId||'');
+      appendTextCell(tr,row.familyId||'');
+      appendTextCell(tr,row.payerName||'','rr1-payer');
+      appendTextCell(tr,row.paymentPurpose||'');
+      appendTextCell(tr,'₹'+formatAmount(row.amount||0),'rr1-amount');
+      appendTextCell(tr,row.paymentMode||'');
+      appendTextCell(tr,row.transactionReference||'');
+
+      const status=clean(row.paymentStatus).toUpperCase();
+      const statusCell=document.createElement('td');
+      const badge=document.createElement('span');
+      badge.className='rr1-status '+getStatusClass(status);
+      badge.textContent=status||'—';
+      statusCell.appendChild(badge);
+      tr.appendChild(statusCell);
+
+      const actionCell=document.createElement('td');
+      const viewButton=document.createElement('button');
+      viewButton.type='button';
+      viewButton.className='rr1-button rr1-view';
+      viewButton.textContent=row.receiptFileUrl?'View Receipt':'Generate / View';
+      viewButton.setAttribute('data-rr1-view-receipt','1');
+      viewButton.setAttribute('data-transaction-id',row.transactionId||'');
+      viewButton.setAttribute('data-receipt-number',row.receiptNumber||'');
+
+      if(
+        status!=='SUCCESSFUL'||
+        clean(row.recordStatus).toUpperCase()!=='ACTIVE'
+      ){
+        viewButton.disabled=true;
+      }
+
+      actionCell.appendChild(viewButton);
+      tr.appendChild(actionCell);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function appendTextCell(row,value,className){
+    const td=document.createElement('td');
+    if(className)td.className=className;
+    td.textContent=value==null?'':String(value);
+    row.appendChild(td);
+  }
+
+  function getStatusClass(status){
+    switch(clean(status).toUpperCase()){
+      case 'SUCCESSFUL': return 'successful';
+      case 'PENDING': return 'pending';
+      case 'FAILED': return 'failed';
+      case 'REFUNDED': return 'refunded';
+      case 'CANCELLED': return 'cancelled';
+      default: return '';
+    }
+  }
+
+  function getReportPeriodLabel(){
+    const period=clean(el.rr1ReportPeriod.value)||'FULL_FINANCIAL_YEAR';
+    const labels={
+      FULL_FINANCIAL_YEAR:'Full Financial Year',
+      THIS_WEEK:'This Week',
+      LAST_WEEK:'Last Week',
+      THIS_MONTH:'This Month',
+      LAST_MONTH:'Last Month',
+      CUSTOM:'Custom Period'
+    };
+    return labels[period]||'Selected Period';
+  }
+
+
+  function getReportPeriodDescription(){
+    const from=clean(el.rr1FromDate.value);
+    const to=clean(el.rr1ToDate.value);
+
+    if(from&&to){
+      return formatDateForReport(from)+' to '+formatDateForReport(to);
+    }
+
+    return getReportPeriodLabel();
+  }
+
+
+  function formatDateForReport(value){
+    const text=clean(value);
+    const match=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+    if(match){
+      const months=[
+        'Jan','Feb','Mar','Apr','May','Jun',
+        'Jul','Aug','Sep','Oct','Nov','Dec'
+      ];
+      return match[3]+'-'+months[Number(match[2])-1]+'-'+match[1];
+    }
+
+    return text||'—';
+  }
+
+
+  function formatGeneratedDateTime(){
+    return new Date().toLocaleString(
+      'en-IN',
+      {
+        day:'2-digit',
+        month:'short',
+        year:'numeric',
+        hour:'2-digit',
+        minute:'2-digit',
+        hour12:true
+      }
+    );
+  }
+
+
+  function reportFilterText(){
+    const filters=getFilters();
+    const parts=[];
+
+    if(filters.paymentMode){
+      parts.push('Payment Mode: '+filters.paymentMode);
+    }else{
+      parts.push('Payment Mode: All');
+    }
+
+    if(filters.paymentStatus){
+      parts.push('Status: '+filters.paymentStatus);
+    }else{
+      parts.push('Status: All');
+    }
+
+    if(filters.searchText){
+      parts.push('Search: '+clean(el.rr1Search.value));
+    }
+
+    return parts.join(' | ');
+  }
+
+
+  function printReport(){
+    if(!state.rows.length){
+      showMessage('There are no receipt records to print for the selected filters.','error');
+      return;
+    }
+
+    buildPrintReport();
+    window.print();
+  }
+
+
+  function buildPrintReport(){
+    const year=clean(el.rr1FinancialYear.value)||state.currentFinancialYear||'—';
+    const period=getReportPeriodDescription();
+    const logoSrc=findKefGlobalLogoSrc();
+
+    const rowsHtml=state.rows.map(function(row){
+      return '<tr>'+
+        '<td>'+escapeHtml(row.receiptDateDisplay||row.transactionDateDisplay||'')+'</td>'+
+        '<td>'+escapeHtml(row.receiptNumber||'')+'</td>'+
+        '<td>'+escapeHtml(row.transactionId||'')+'</td>'+
+        '<td>'+escapeHtml(row.familyId||'')+'</td>'+
+        '<td>'+escapeHtml(row.payerName||'')+'</td>'+
+        '<td>'+escapeHtml(row.paymentPurpose||'')+'</td>'+
+        '<td>'+escapeHtml(row.paymentMode||'')+'</td>'+
+        '<td>'+escapeHtml(row.transactionReference||'')+'</td>'+
+        '<td class="rr1-print-amount">₹'+escapeHtml(formatAmount(row.amount||0))+'</td>'+
+        '<td>'+escapeHtml(row.paymentStatus||'')+'</td>'+
+      '</tr>';
+    }).join('');
+
+    const generatedBy=state.generatedBy
+      ? '<div><strong>Generated By:</strong> '+escapeHtml(state.generatedBy)+'</div>'
+      : '';
+
+    const logoHtml=logoSrc
+      ? '<img class="rr1-print-logo" src="'+escapeHtml(logoSrc)+'" alt="KEF Global">'
+      : '';
+
+    el.rr1PrintReport.innerHTML=
+      '<div class="rr1-print-header">'+
+        logoHtml+
+        '<div class="rr1-print-org">KEF GLOBAL</div>'+
+        '<div class="rr1-print-title">Receipt Register</div>'+
+      '</div>'+
+      '<div class="rr1-print-meta">'+
+        '<div><strong>Financial Year:</strong> '+escapeHtml(year)+'</div>'+
+        '<div><strong>Report Period:</strong> '+escapeHtml(period)+'</div>'+
+        '<div><strong>Generated On:</strong> '+escapeHtml(formatGeneratedDateTime())+'</div>'+
+        generatedBy+
+      '</div>'+
+      '<div class="rr1-print-filter">'+escapeHtml(reportFilterText())+'</div>'+
+      '<table><thead><tr>'+
+        '<th>Date</th><th>Receipt No.</th><th>Transaction ID</th><th>Family ID</th>'+
+        '<th>Payer</th><th>Purpose</th><th>Mode</th><th>Reference</th><th>Amount</th><th>Status</th>'+
+      '</tr></thead><tbody>'+rowsHtml+'</tbody></table>'+
+      '<div class="rr1-print-summary">'+
+        '<span>Receipts Issued: '+escapeHtml(String(state.currentSummary.receiptsIssued||0))+'</span>'+
+        '<span>Total Amount Received: ₹'+escapeHtml(formatAmount(state.currentSummary.totalAmountReceived||0))+'</span>'+
+      '</div>'+
+      '<div class="rr1-print-footer"></div>';
+  }
+
+
+  function findKefGlobalLogoSrc(){
+    const images=Array.from(document.images||[]);
+
+    const preferred=images.find(function(img){
+      const text=[
+        img.id||'',
+        img.className||'',
+        img.alt||'',
+        img.title||''
+      ].join(' ').toLowerCase();
+
+      return (
+        text.includes('kef')||
+        text.includes('global')||
+        text.includes('logo')
+      )&&clean(img.src);
+    });
+
+    if(preferred){
+      return preferred.src;
+    }
+
+    const firstUsable=images.find(function(img){
+      return clean(img.src)&&img.naturalWidth>0&&img.naturalHeight>0;
+    });
+
+    return firstUsable?firstUsable.src:'';
+  }
+
+
+  function downloadCsvReport(){
+    if(!state.rows.length){
+      showMessage('There are no receipt records to download for the selected filters.','error');
+      return;
+    }
+
+    const rows=[
+      [
+        'RECEIPT_DATE',
+        'RECEIPT_NUMBER',
+        'TRANSACTION_ID',
+        'FAMILY_ID',
+        'KEFG_ID',
+        'PAYER_NAME',
+        'PAYMENT_PURPOSE',
+        'AMOUNT',
+        'PAYMENT_MODE',
+        'TRANSACTION_REFERENCE',
+        'PAYMENT_STATUS'
+      ]
+    ];
+
+    state.rows.forEach(function(row){
+      rows.push([
+        row.receiptDateDisplay||row.transactionDateDisplay||'',
+        row.receiptNumber||'',
+        row.transactionId||'',
+        row.familyId||'',
+        row.kefgId||'',
+        row.payerName||'',
+        row.paymentPurpose||'',
+        Number(row.amount||0).toFixed(2),
+        row.paymentMode||'',
+        row.transactionReference||'',
+        row.paymentStatus||''
+      ]);
+    });
+
+    rows.push([]);
+    rows.push(['FINANCIAL_YEAR',clean(el.rr1FinancialYear.value)||state.currentFinancialYear||'']);
+    rows.push(['REPORT_PERIOD',getReportPeriodDescription()]);
+    rows.push(['RECEIPTS_ISSUED',state.currentSummary.receiptsIssued||0]);
+    rows.push(['TOTAL_AMOUNT_RECEIVED',Number(state.currentSummary.totalAmountReceived||0).toFixed(2)]);
+    rows.push(['GENERATED_ON',formatGeneratedDateTime()]);
+    if(state.generatedBy){
+      rows.push(['GENERATED_BY',state.generatedBy]);
+    }
+
+    const csvText=rows
+      .map(function(row){
+        return row.map(csvEscape).join(',');
+      })
+      .join('\r\n');
+
+    const blob=new Blob(
+      ['\uFEFF'+csvText],
+      {type:'text/csv;charset=utf-8;'}
+    );
+
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    const year=(clean(el.rr1FinancialYear.value)||state.currentFinancialYear||'FY')
+      .replace(/[^A-Za-z0-9_-]/g,'_');
+    const period=getReportPeriodLabel()
+      .replace(/[^A-Za-z0-9_-]/g,'_');
+
+    link.href=url;
+    link.download=
+      'KGMIS_Receipt_Register_'+
+      year+'_'+period+'_['+formatIsoLocal(new Date())+'].csv';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+
+  function csvEscape(value){
+    const text=String(value==null?'':value);
+
+    if(
+      text.includes(',')||
+      text.includes('"')||
+      text.includes('\n')||
+      text.includes('\r')
+    ){
+      return '"'+text.replace(/"/g,'""')+'"';
+    }
+
+    return text;
+  }
+
+
+  function escapeHtml(value){
+    return String(value==null?'':value)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  }
+
+
+  function viewReceipt(transactionId,receiptNumber){
+    const lookupValue=clean(transactionId)||clean(receiptNumber);
+
+    if(!lookupValue){
+      showMessage('The selected receipt does not contain a valid Transaction ID or Receipt Number.','error');
+      return;
+    }
+
+    showMessage('Opening receipt…','info');
+
+    google.script.run
+      .withSuccessHandler(function(response){
+        if(!response||response.success!==true){
+          showMessage(response&&response.message?response.message:'The receipt could not be opened.','error');
+          return;
+        }
+
+        if(!response.fileUrl){
+          showMessage('The receipt PDF was prepared, but no file URL was returned.','error');
+          return;
+        }
+
+        showMessage(
+          response.alreadyGenerated===true?'Existing receipt opened.':'Receipt generated successfully.',
+          'success'
+        );
+
+        window.open(response.fileUrl,'_blank','noopener');
+      })
+      .withFailureHandler(function(error){
+        showMessage(getErrorMessage(error),'error');
+      })
+      .KGMIS_ReceiptRegister_ViewReceipt(state.sessionToken,lookupValue);
+  }
+
+  function setControlsEnabled(enabled){
+    [
+      el.rr1FinancialYear,el.rr1ReportPeriod,el.rr1Search,el.rr1FromDate,
+      el.rr1ToDate,el.rr1PaymentMode,el.rr1Status,el.rr1ClearButton,
+      el.rr1RefreshButton,el.rr1DownloadCsvButton,el.rr1PrintButton,
+      el.rr1ApplyButton
+    ].forEach(function(control){
+      if(control)control.disabled=!enabled;
+    });
+  }
+
+  function setRegisterLoading(loading){
+    el.rr1ApplyButton.disabled=Boolean(loading);
+    el.rr1RefreshButton.disabled=Boolean(loading);
+    el.rr1DownloadCsvButton.disabled=Boolean(loading);
+    el.rr1PrintButton.disabled=Boolean(loading);
+    el.rr1ApplyButton.textContent=loading?'Loading…':'Apply Filters';
+  }
+
+  function showMessage(message,type){
+    const text=clean(message);
+    el.rr1Message.className='rr1-message';
+    el.rr1Message.textContent=text;
+    if(!text)return;
+    el.rr1Message.classList.add(type||'info');
+  }
+
+  function clean(value){
+    return String(value==null?'':value).trim();
+  }
+
+  function formatAmount(value){
+    return Number(value||0).toLocaleString(
+      'en-IN',
+      {minimumFractionDigits:2,maximumFractionDigits:2}
+    );
+  }
+
+  function getErrorMessage(error){
+    return error&&error.message
+      ? error.message
+      : String(error||'An unexpected Receipt Register error occurred.');
+  }
+
+  window.KGMIS_ReceiptRegister={
+    activate:activate,
+    refresh:function(){loadSetup(true);},
+    reload:loadRegister,
+    printReport:printReport,
+    downloadCsv:downloadCsvReport
+  };
+
+})();
+</script>

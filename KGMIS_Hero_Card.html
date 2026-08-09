@@ -1,0 +1,1094 @@
+<!-- =====================================================
+     KGMIS Compact Dashboard
+     Main Portal Home Component
+     Version 2.0
+     Designed and Developed by JJA Global Systems
+     ===================================================== -->
+
+<style>
+  .kgmis-hero {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .kgmis-hero__mission {
+    min-height: 0;
+    padding: 12px 18px;
+    border: 1px solid var(--border, #d5e0e8);
+    border-radius: 12px;
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f9fcfd 100%
+      );
+    box-shadow: 0 5px 16px rgba(13, 78, 112, 0.05);
+  }
+
+  .kgmis-hero__organisation {
+    margin: 0;
+    color: var(--primary-dark, #0d4e70);
+    font-size: clamp(22px, 2vw, 28px);
+    font-weight: 800;
+    line-height: 1.15;
+  }
+
+  .kgmis-hero__mission-text {
+    margin: 4px 0 0;
+    color: #35556a;
+    font-size: clamp(13px, 1.15vw, 15px);
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: left;
+  }
+
+  .kgmis-hero__personal-row {
+    min-height: 44px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border: 1px solid var(--border, #d5e0e8);
+    border-radius: 11px;
+    background: #ffffff;
+  }
+
+  .kgmis-hero__greeting {
+    margin: 0;
+    color: var(--primary-dark, #0d4e70);
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .kgmis-hero__session {
+    margin: 0;
+    color: var(--muted, #64748b);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .kgmis-hero__session strong {
+    color: var(--primary-dark, #0d4e70);
+    font-size: 12px;
+  }
+
+  .kgmis-hero__updates {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
+    grid-template-areas:
+      "announcement poster"
+      "event poster";
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .kgmis-hero__update-card--announcement {
+    grid-area: announcement;
+  }
+
+  .kgmis-hero__update-card--event {
+    grid-area: event;
+  }
+
+  .kgmis-hero__event-poster {
+    grid-area: poster;
+    min-width: 0;
+    min-height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border, #d5e0e8);
+    border-radius: 13px;
+    background:
+      linear-gradient(
+        180deg,
+        #f8fbfd 0%,
+        #eef6fa 100%
+      );
+    box-shadow: 0 6px 18px rgba(13, 78, 112, 0.06);
+  }
+
+  .kgmis-hero__event-poster[hidden] {
+    display: none !important;
+  }
+
+  .kgmis-hero__event-poster-image {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    display: block;
+    object-fit: contain;
+    background: #ffffff;
+  }
+
+  .kgmis-hero__event-poster-placeholder {
+    padding: 28px 20px;
+    color: var(--muted, #64748b);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  .kgmis-hero__update-card {
+    min-width: 0;
+    padding: 15px 16px;
+    border: 1px solid var(--border, #d5e0e8);
+    border-radius: 13px;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(13, 78, 112, 0.06);
+  }
+
+  .kgmis-hero__update-heading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 8px;
+  }
+
+  .kgmis-hero__update-icon {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    background: var(--primary-light, #e7f4f9);
+    font-size: 16px;
+  }
+
+  .kgmis-hero__update-heading h3 {
+    margin: 0;
+    color: var(--primary-dark, #0d4e70);
+    font-size: 15px;
+  }
+
+  .kgmis-hero__label {
+    margin: 0;
+    color: var(--muted, #64748b);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .kgmis-hero__item-title {
+    margin: 5px 0 0;
+    color: var(--text, #1f2937);
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .kgmis-hero__item-text {
+    margin: 5px 0 0;
+    color: var(--muted, #64748b);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .kgmis-hero__meta {
+    margin: 7px 0 0;
+    color: var(--primary-dark, #0d4e70);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .kgmis-hero__action {
+    min-height: 32px;
+    margin-top: 9px;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 8px;
+    color: #ffffff;
+    background: var(--primary, #176c91);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .kgmis-hero__action[hidden] {
+    display: none !important;
+  }
+
+  .kgmis-hero__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--border, #d5e0e8);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .kgmis-hero__stat {
+    min-width: 0;
+    padding: 9px 8px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 7px;
+    border-right: 1px solid var(--border, #d5e0e8);
+    text-align: center;
+  }
+
+  .kgmis-hero__stat:last-child {
+    border-right: 0;
+  }
+
+  .kgmis-hero__stat-value {
+    color: var(--primary-dark, #0d4e70);
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .kgmis-hero__stat-label {
+    color: var(--muted, #64748b);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .kgmis-hero__pillars {
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    border: 1px solid var(--border, #d5e0e8);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .kgmis-hero__pillar {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    color: var(--primary-dark, #0d4e70);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .kgmis-hero__pillar-icon {
+    font-size: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .kgmis-hero__personal-row {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .kgmis-hero__updates {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "announcement"
+        "event"
+        "poster";
+    }
+
+    .kgmis-hero__event-poster-image {
+      height: auto;
+      min-height: 0;
+      max-height: none;
+      object-fit: contain;
+    }
+
+    .kgmis-hero__stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kgmis-hero__stat {
+      border-right: 0;
+      border-bottom: 1px solid var(--border, #d5e0e8);
+    }
+
+    .kgmis-hero__stat:nth-last-child(-n + 2) {
+      border-bottom: 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .kgmis-hero__mission {
+      padding: 11px 14px;
+    }
+
+    .kgmis-hero__mission-text {
+      margin-top: 3px;
+    }
+
+    .kgmis-hero__pillars {
+      grid-template-columns: 1fr;
+    }
+
+    .kgmis-hero__pillar {
+      justify-content: flex-start;
+    }
+  }
+</style>
+
+<section
+  id="kgmisHeroCard"
+  class="kgmis-hero"
+  aria-label="KEF Global dashboard"
+>
+  <div class="kgmis-hero__personal-row">
+    <p
+      id="kgmisHeroGreeting"
+      class="kgmis-hero__greeting"
+    >
+      Welcome
+    </p>
+
+    <p class="kgmis-hero__session">
+      Session until
+      <strong id="mainSessionExpiry">—</strong>
+    </p>
+  </div>
+
+  <div class="kgmis-hero__updates">
+    <article class="kgmis-hero__update-card kgmis-hero__update-card--announcement">
+      <div class="kgmis-hero__update-heading">
+        <span
+          class="kgmis-hero__update-icon"
+          aria-hidden="true"
+        >📢</span>
+        <h3>Latest Announcement</h3>
+      </div>
+
+      <p
+        id="kgmisHeroAnnouncementCategory"
+        class="kgmis-hero__label"
+      >
+        KEF Global Update
+      </p>
+
+      <h4
+        id="kgmisHeroAnnouncementTitle"
+        class="kgmis-hero__item-title"
+      >
+        No active announcement
+      </h4>
+
+      <p
+        id="kgmisHeroAnnouncementText"
+        class="kgmis-hero__item-text"
+      >
+        Current member updates will appear here.
+      </p>
+
+      <button
+        id="kgmisHeroAnnouncementButton"
+        class="kgmis-hero__action"
+        type="button"
+        hidden
+      >
+        Read More
+      </button>
+    </article>
+
+    <article class="kgmis-hero__update-card kgmis-hero__update-card--event">
+      <div class="kgmis-hero__update-heading">
+        <span
+          class="kgmis-hero__update-icon"
+          aria-hidden="true"
+        >📅</span>
+        <h3>Next Event</h3>
+      </div>
+
+      <p
+        id="kgmisHeroEventCategory"
+        class="kgmis-hero__label"
+      >
+        Upcoming Event
+      </p>
+
+      <h4
+        id="kgmisHeroEventTitle"
+        class="kgmis-hero__item-title"
+      >
+        No upcoming event announced
+      </h4>
+
+      <p
+        id="kgmisHeroEventText"
+        class="kgmis-hero__item-text"
+      >
+        The next KEF Global event will appear here.
+      </p>
+
+      <p
+        id="kgmisHeroEventCountdown"
+        class="kgmis-hero__meta"
+      >
+        Date to be announced
+      </p>
+
+      <button
+        id="kgmisHeroEventButton"
+        class="kgmis-hero__action"
+        type="button"
+        hidden
+      >
+        View Details
+      </button>
+    </article>
+
+    <aside
+      id="kgmisHeroEventPosterPanel"
+      class="kgmis-hero__event-poster"
+      aria-label="Next event poster"
+      hidden
+    >
+      <img
+        id="kgmisHeroEventPosterImage"
+        class="kgmis-hero__event-poster-image"
+        alt="Next event poster"
+        hidden
+      >
+
+      <div
+        id="kgmisHeroEventPosterPlaceholder"
+        class="kgmis-hero__event-poster-placeholder"
+      >
+        Event poster will appear here.
+      </div>
+    </aside>
+  </div>
+
+  <div
+    class="kgmis-hero__stats"
+    aria-label="KEF Global statistics"
+  >
+    <div class="kgmis-hero__stat">
+      <strong
+        id="kgmisHeroFamilies"
+        class="kgmis-hero__stat-value"
+      >—</strong>
+      <span class="kgmis-hero__stat-label">Families</span>
+    </div>
+
+    <div class="kgmis-hero__stat">
+      <strong
+        id="kgmisHeroMembers"
+        class="kgmis-hero__stat-value"
+      >—</strong>
+      <span class="kgmis-hero__stat-label">Members</span>
+    </div>
+
+    <div class="kgmis-hero__stat">
+      <strong
+        id="kgmisHeroPaidFamilies"
+        class="kgmis-hero__stat-value"
+      >—</strong>
+      <span class="kgmis-hero__stat-label">Paid Families</span>
+    </div>
+
+    <div class="kgmis-hero__stat">
+      <strong
+        id="kgmisHeroDigitalCards"
+        class="kgmis-hero__stat-value"
+      >—</strong>
+      <span class="kgmis-hero__stat-label">Digital Cards</span>
+    </div>
+  </div>
+
+  <div class="kgmis-hero__pillars">
+    <div
+      class="kgmis-hero__pillar"
+      style="
+        grid-column: 1 / -1;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      "
+    >
+      Connecting Engineers • Strengthening Families • Serving Community
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  const state = {
+    auth: null,
+    countdownTimer: null,
+    eventDate: null
+  };
+
+  const el = {};
+
+  function initialiseHeroCard() {
+    cacheHeroElements();
+
+    window.addEventListener(
+      'kgmis:authenticated',
+      function (event) {
+        activateHeroCard(
+          event && event.detail
+            ? event.detail
+            : null
+        );
+      }
+    );
+
+    window.addEventListener(
+      'kgmis:signout-requested',
+      resetHeroCard
+    );
+  }
+
+  function cacheHeroElements() {
+    [
+      'kgmisHeroGreeting',
+      'kgmisHeroAnnouncementCategory',
+      'kgmisHeroAnnouncementTitle',
+      'kgmisHeroAnnouncementText',
+      'kgmisHeroAnnouncementButton',
+      'kgmisHeroEventCategory',
+      'kgmisHeroEventTitle',
+      'kgmisHeroEventText',
+      'kgmisHeroEventCountdown',
+      'kgmisHeroEventButton',
+      'kgmisHeroEventPosterPanel',
+      'kgmisHeroEventPosterImage',
+      'kgmisHeroEventPosterPlaceholder',
+      'kgmisHeroFamilies',
+      'kgmisHeroMembers',
+      'kgmisHeroPaidFamilies',
+      'kgmisHeroDigitalCards'
+    ].forEach(function (id) {
+      el[id] = document.getElementById(id);
+    });
+  }
+
+  function activateHeroCard(auth) {
+    state.auth = auth || null;
+
+    renderGreeting(
+      auth && auth.user
+        ? auth.user
+        : {}
+    );
+
+    loadHeroDashboard();
+  }
+
+  function loadHeroDashboard() {
+    if (
+      !state.auth ||
+      !state.auth.sessionToken
+    ) {
+      renderDashboardError(
+        'Your session is not available. Please sign in again.'
+      );
+      return;
+    }
+
+    renderLoadingState();
+
+    google.script.run
+      .withSuccessHandler(
+        function (response) {
+          if (
+            !response ||
+            response.success !== true
+          ) {
+            renderDashboardError(
+              response && response.message
+                ? response.message
+                : 'Unable to load dashboard data.'
+            );
+            return;
+          }
+
+          renderDashboard(response);
+        }
+      )
+      .withFailureHandler(
+        function (error) {
+          renderDashboardError(
+            error && error.message
+              ? error.message
+              : 'Unable to load dashboard data.'
+          );
+        }
+      )
+      .getHeroDashboard(
+        state.auth.sessionToken
+      );
+  }
+
+  function renderLoadingState() {
+    setText(
+      el.kgmisHeroAnnouncementCategory,
+      'KEF Global Update'
+    );
+    setText(
+      el.kgmisHeroAnnouncementTitle,
+      'Loading announcement...'
+    );
+    setText(
+      el.kgmisHeroAnnouncementText,
+      'Please wait.'
+    );
+
+    setText(
+      el.kgmisHeroEventCategory,
+      'Upcoming Event'
+    );
+    setText(
+      el.kgmisHeroEventTitle,
+      'Loading upcoming event...'
+    );
+    setText(
+      el.kgmisHeroEventText,
+      'Please wait.'
+    );
+    setText(
+      el.kgmisHeroEventCountdown,
+      ''
+    );
+
+    [
+      el.kgmisHeroFamilies,
+      el.kgmisHeroMembers,
+      el.kgmisHeroPaidFamilies,
+      el.kgmisHeroDigitalCards
+    ].forEach(function (element) {
+      setText(element, '…');
+    });
+  }
+
+  function renderDashboardError(message) {
+    renderAnnouncement(null);
+    renderEvent(null);
+    renderStatistics({});
+
+    setText(
+      el.kgmisHeroAnnouncementText,
+      message || 'Unable to load dashboard data.'
+    );
+  }
+
+  function renderGreeting(user) {
+    const name = getPreferredName(user);
+    const greeting = getTimeGreeting();
+
+    if (!el.kgmisHeroGreeting) {
+      return;
+    }
+
+    el.kgmisHeroGreeting.textContent =
+      name
+        ? greeting + ', ' + name
+        : greeting;
+  }
+
+  function getPreferredName(user) {
+    const candidates = [
+      user.memberName,
+      user.userName,
+      user.name,
+      user.fullName,
+      user.displayName
+    ];
+
+    for (
+      let i = 0;
+      i < candidates.length;
+      i += 1
+    ) {
+      const value =
+        String(candidates[i] || '')
+          .trim();
+
+      if (
+        value &&
+        value.indexOf('@') === -1
+      ) {
+        return value;
+      }
+    }
+
+    const combinedName = [
+      user.firstName || user.givenName || '',
+      user.middleName || '',
+      user.lastName || user.familyName || ''
+    ]
+      .map(function (part) {
+        return String(part || '').trim();
+      })
+      .filter(Boolean)
+      .join(' ');
+
+    if (combinedName) {
+      return combinedName;
+    }
+
+    const email =
+      String(user.email || '').trim();
+
+    return email
+      ? email.split('@')[0]
+      : '';
+  }
+
+  function getTimeGreeting() {
+    const hour = new Date().getHours();
+
+    if (hour < 12) {
+      return 'Good morning';
+    }
+
+    if (hour < 17) {
+      return 'Good afternoon';
+    }
+
+    return 'Good evening';
+  }
+
+  function renderDashboard(data) {
+    const dashboard = data || {};
+
+    renderAnnouncement(dashboard.announcement || null);
+    renderEvent(dashboard.nextEvent || null);
+    renderStatistics(dashboard.statistics || {});
+  }
+
+  function renderAnnouncement(item) {
+    if (!item) {
+      setText(
+        el.kgmisHeroAnnouncementCategory,
+        'KEF Global Update'
+      );
+      setText(
+        el.kgmisHeroAnnouncementTitle,
+        'No active announcement'
+      );
+      setText(
+        el.kgmisHeroAnnouncementText,
+        'Current member updates will appear here.'
+      );
+      configureActionButton(
+        el.kgmisHeroAnnouncementButton,
+        '',
+        ''
+      );
+      return;
+    }
+
+    setText(
+      el.kgmisHeroAnnouncementCategory,
+      item.category || 'KEF Global Update'
+    );
+    setText(
+      el.kgmisHeroAnnouncementTitle,
+      item.title || 'Announcement'
+    );
+    setText(
+      el.kgmisHeroAnnouncementText,
+      item.shortDescription || item.description || ''
+    );
+
+    configureActionButton(
+      el.kgmisHeroAnnouncementButton,
+      item.buttonText || 'Read More',
+      item.actionUrl || ''
+    );
+  }
+
+  function renderEvent(item) {
+    stopCountdown();
+    state.eventDate = null;
+
+    if (!item) {
+      setText(
+        el.kgmisHeroEventCategory,
+        'Upcoming Event'
+      );
+      setText(
+        el.kgmisHeroEventTitle,
+        'No upcoming event announced'
+      );
+      setText(
+        el.kgmisHeroEventText,
+        'The next KEF Global event will appear here.'
+      );
+      setText(
+        el.kgmisHeroEventCountdown,
+        'Date to be announced'
+      );
+      configureActionButton(
+        el.kgmisHeroEventButton,
+        '',
+        ''
+      );
+      renderEventPoster(null);
+      return;
+    }
+
+    setText(
+      el.kgmisHeroEventCategory,
+      item.category || 'Upcoming Event'
+    );
+    setText(
+      el.kgmisHeroEventTitle,
+      item.title || 'KEF Global Event'
+    );
+    setText(
+      el.kgmisHeroEventText,
+      item.shortDescription || item.description || ''
+    );
+
+    configureActionButton(
+      el.kgmisHeroEventButton,
+      item.buttonText || 'View Details',
+      item.actionUrl || ''
+    );
+
+    renderEventPoster(item);
+
+    const timestamp = new Date(
+      item.eventDate || item.displayFrom || ''
+    ).getTime();
+
+    if (Number.isFinite(timestamp)) {
+      state.eventDate = timestamp;
+      updateCountdown();
+      scheduleCountdown();
+    } else {
+      setText(
+        el.kgmisHeroEventCountdown,
+        'Date to be announced'
+      );
+    }
+  }
+
+  function renderEventPoster(item) {
+    const panel =
+      el.kgmisHeroEventPosterPanel;
+
+    const image =
+      el.kgmisHeroEventPosterImage;
+
+    const placeholder =
+      el.kgmisHeroEventPosterPlaceholder;
+
+    if (!panel || !image || !placeholder) {
+      return;
+    }
+
+    const posterUrl = String(
+      item && item.posterUrl
+        ? item.posterUrl
+        : ''
+    ).trim();
+
+    if (!posterUrl) {
+      panel.hidden = true;
+      image.hidden = true;
+      image.removeAttribute('src');
+      placeholder.hidden = false;
+      return;
+    }
+
+    panel.hidden = false;
+    placeholder.hidden = false;
+    image.hidden = true;
+
+    image.onload = function () {
+      placeholder.hidden = true;
+      image.hidden = false;
+    };
+
+    image.onerror = function () {
+      image.hidden = true;
+      image.removeAttribute('src');
+      placeholder.hidden = false;
+      placeholder.textContent =
+        'The event poster could not be loaded.';
+    };
+
+    image.alt = item && item.title
+      ? item.title + ' poster'
+      : 'Next event poster';
+
+    image.src = posterUrl;
+  }
+
+
+  function renderStatistics(statistics) {
+    setText(
+      el.kgmisHeroFamilies,
+      formatCount(statistics.families)
+    );
+    setText(
+      el.kgmisHeroMembers,
+      formatCount(statistics.members)
+    );
+    setText(
+      el.kgmisHeroPaidFamilies,
+      formatCount(statistics.paidFamilies)
+    );
+    setText(
+      el.kgmisHeroDigitalCards,
+      formatCount(statistics.digitalCards)
+    );
+  }
+
+  function configureActionButton(button, label, url) {
+    if (!button) {
+      return;
+    }
+
+    const safeUrl = String(url || '').trim();
+
+    if (!safeUrl) {
+      button.hidden = true;
+      button.onclick = null;
+      return;
+    }
+
+    button.textContent = label || 'View Details';
+    button.hidden = false;
+    button.onclick = function () {
+      window.open(safeUrl, '_blank', 'noopener');
+    };
+  }
+
+  function updateCountdown() {
+    if (!el.kgmisHeroEventCountdown || !state.eventDate) {
+      return;
+    }
+
+    const difference = state.eventDate - Date.now();
+
+    if (difference <= 0) {
+      el.kgmisHeroEventCountdown.textContent =
+        'Event is now in progress';
+      return;
+    }
+
+    const day = 24 * 60 * 60 * 1000;
+    const hour = 60 * 60 * 1000;
+    const minute = 60 * 1000;
+
+    const days = Math.floor(difference / day);
+    const hours = Math.floor((difference % day) / hour);
+    const minutes = Math.floor((difference % hour) / minute);
+
+    if (days > 30) {
+      el.kgmisHeroEventCountdown.textContent =
+        formatEventDate(state.eventDate);
+      return;
+    }
+
+    if (days >= 1) {
+      el.kgmisHeroEventCountdown.textContent =
+        days + ' day' + (days === 1 ? '' : 's') +
+        ' and ' +
+        hours + ' hour' + (hours === 1 ? '' : 's') +
+        ' remaining';
+      return;
+    }
+
+    el.kgmisHeroEventCountdown.textContent =
+      hours + ' hour' + (hours === 1 ? '' : 's') +
+      ' and ' +
+      minutes + ' minute' + (minutes === 1 ? '' : 's') +
+      ' remaining';
+  }
+
+  function scheduleCountdown() {
+    stopCountdown();
+
+    const difference = state.eventDate - Date.now();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+    const interval =
+      difference <= sevenDays
+        ? 60 * 1000
+        : 60 * 60 * 1000;
+
+    state.countdownTimer = window.setInterval(
+      updateCountdown,
+      interval
+    );
+  }
+
+  function stopCountdown() {
+    if (state.countdownTimer) {
+      window.clearInterval(state.countdownTimer);
+      state.countdownTimer = null;
+    }
+  }
+
+  function resetHeroCard() {
+    state.auth = null;
+    state.eventDate = null;
+    stopCountdown();
+
+    if (el.kgmisHeroGreeting) {
+      el.kgmisHeroGreeting.textContent = 'Welcome';
+    }
+  }
+
+  function setText(element, value) {
+    if (element) {
+      element.textContent =
+        value == null
+          ? ''
+          : String(value);
+    }
+  }
+
+  function formatCount(value) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+      return '—';
+    }
+
+    return number.toLocaleString('en-IN');
+  }
+
+  function formatEventDate(timestamp) {
+    const date = new Date(timestamp);
+
+    if (isNaN(date.getTime())) {
+      return 'Date to be announced';
+    }
+
+    return date.toLocaleDateString(
+      'en-IN',
+      {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      }
+    );
+  }
+
+  window.KGMIS_HERO_CARD = {
+    activate: activateHeroCard,
+    render: renderDashboard,
+    reset: resetHeroCard
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialiseHeroCard
+    );
+  } else {
+    initialiseHeroCard();
+  }
+})();
+</script>

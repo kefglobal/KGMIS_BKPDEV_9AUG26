@@ -1,0 +1,1583 @@
+<!--
+  ============================================================
+  KGMIS Embedded My Family Module
+  File: KGMIS_Module_My_Family.html
+  Developed by: JJA Global Systems
+  ============================================================
+
+  Initial Phase:
+  - My Family dashboard
+  - Read-only family profile summary
+  - Card Readiness for Member and Spouse
+  - Digital card status
+  - Submission status placeholder
+
+  Required backend:
+  - KGMIS_MyFamily_GetInitialData(sessionToken)
+-->
+
+<section id="kgmisMyFamilyModule" class="mf-module">
+
+  <!--
+       Hidden greeting target retained because existing JavaScript updates it.
+  -->
+  <p
+    id="mfGreeting"
+    class="mf-greeting"
+    hidden
+  ></p>
+
+  <div id="mfMessage" class="mf-message" hidden></div>
+
+  <section class="mf-overview-row">
+
+    <!-- Card 1: Family Summary -->
+    <div class="mf-summary-ribbon">
+      <div class="mf-ribbon-item">
+        <span>Family ID</span>
+        <strong id="mfFamilyReference">—</strong>
+      </div>
+
+      <div class="mf-ribbon-divider"></div>
+
+      <div class="mf-ribbon-item">
+        <span>Eligible</span>
+        <strong id="mfEligibleCount">—</strong>
+      </div>
+
+      <div class="mf-ribbon-divider"></div>
+
+      <div class="mf-ribbon-item">
+        <span>Active Cards</span>
+        <strong id="mfActiveCardCount">—</strong>
+      </div>
+
+      <div class="mf-ribbon-divider"></div>
+
+      <div class="mf-ribbon-item">
+        <span>Pending</span>
+        <strong id="mfPendingCount">—</strong>
+      </div>
+    </div>
+
+    <!-- Card 2: Profile Completeness -->
+    <div class="mf-completeness">
+
+      <div class="mf-completeness-top">
+        <span>Profile Completeness</span>
+        <strong id="mfCompletenessValue">—</strong>
+      </div>
+
+      <div class="mf-progress">
+        <span id="mfCompletenessBar"></span>
+      </div>
+
+    </div>
+
+    <!-- Card 3: Family Self-Service -->
+    <button
+      id="mfReviewUpdateTopButton"
+      class="mf-profile-update-card"
+      type="button"
+      aria-label="Review and Update Family Profile">
+
+      <span class="mf-profile-update-label">
+        Family Self-Service
+      </span>
+
+      <span class="mf-profile-update-text">
+        Review &amp; Update Family Profile
+      </span>
+
+      <svg
+        class="mf-profile-update-icon"
+        viewBox="0 0 64 64"
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg">
+
+        <circle cx="20" cy="18" r="7"></circle>
+        <circle cx="44" cy="18" r="7"></circle>
+        <circle cx="32" cy="34" r="6"></circle>
+
+        <path d="M8 50V42c0-7 5-12 12-12s12 5 12 12"></path>
+        <path d="M32 42c0-7 5-12 12-12s12 5 12 12v8"></path>
+        <path d="M22 56v-8c0-6 4-10 10-10s10 4 10 10v8"></path>
+
+      </svg>
+
+    </button>
+
+  </section>
+
+  <div class="mf-card-grid">
+
+    <!-- Card 1 -->
+    <section class="mf-card">
+      <div class="mf-card-heading">
+        <span class="mf-step">1</span>
+        <div>
+          <h3>My Family Profile</h3>
+          <p>Current member and spouse details.</p>
+        </div>
+      </div>
+
+      <div id="mfProfileContent" class="mf-empty">
+        Loading your family profile…
+      </div>
+    </section>
+
+    <!-- Card 2 -->
+    <section class="mf-card">
+      <div class="mf-card-heading">
+        <span class="mf-step">2</span>
+        <div>
+          <h3>Digital Membership ID Readiness</h3>
+          <p>View ID status and download issued IDs.</p>
+        </div>
+      </div>
+
+      <div id="mfCardList" class="mf-card-list">
+        Loading digital cards…
+      </div>
+    </section>
+
+    <!-- Card 3 -->
+    <section class="mf-card">
+      <div class="mf-card-heading">
+        <span class="mf-step">3</span>
+        <div>
+          <h3>My Family Members</h3>
+        </div>
+      </div>
+
+      <div id="mfReadinessList" class="mf-readiness-list">
+        Loading Digital ID readiness…
+      </div>
+
+    </section>
+
+    <!-- Card 4 -->
+    <section class="mf-card">
+      <div class="mf-card-heading">
+        <span class="mf-step">4</span>
+        <div>
+          <h3>Submission Status</h3>
+          <p>Track submitted family updates and verification.</p>
+        </div>
+      </div>
+
+      <div class="mf-status-placeholder">
+        <strong>No profile update submitted</strong>
+        <span>
+          Your future family update requests will appear here.
+        </span>
+      </div>
+      <div class="mf-card-actions">
+        <button
+          id="mfAddFamilyMemberButton"
+          class="mf-primary-button"
+          type="button">
+          Review & Update Family Profile
+        </button>
+      </div>
+
+    </section>
+
+  </div>
+</section>
+
+<style>
+  .mf-module {
+    --mf-primary: #176c91;
+    --mf-primary-dark: #0d4e70;
+    --mf-primary-light: #e7f4f9;
+    --mf-success: #16723a;
+    --mf-warning: #92400e;
+    --mf-danger: #b42318;
+    --mf-text: #1f2937;
+    --mf-muted: #64748b;
+    --mf-border: #d5e0e8;
+    --mf-panel: #ffffff;
+    --mf-shadow: 0 8px 24px rgba(13, 78, 112, 0.08);
+
+    color: var(--mf-text);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .mf-module *,
+  .mf-module *::before,
+  .mf-module *::after {
+    box-sizing: border-box;
+  }
+
+  .mf-overview-row {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1.9fr)
+      minmax(210px, .72fr)
+      minmax(220px, .82fr);
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 16px;
+  }
+
+  .mf-profile-update-card {
+    appearance: none;
+    position: relative;
+    overflow: hidden;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 86px;
+    margin: 0;
+    padding: 14px 72px 14px 18px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background: linear-gradient(
+      135deg,
+      var(--mf-primary-dark),
+      var(--mf-primary)
+    );
+
+    box-shadow: var(--mf-shadow);
+    color: #ffffff;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+
+    transition:
+      transform .18s ease,
+      filter .18s ease,
+      box-shadow .18s ease;
+  }
+
+    .mf-profile-update-card{
+      transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+  }
+
+    .mf-profile-update-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(13,78,112,.22);
+  }
+
+    .mf-profile-update-card:focus-visible {
+    outline: 3px solid rgba(23, 108, 145, .28);
+    outline-offset: 3px;
+  }
+
+  .mf-profile-update-label,
+  .mf-profile-update-text {
+    position: relative;
+    z-index: 1;
+    display: block;
+  }
+
+  .mf-profile-update-label {
+    margin-bottom: 3px;
+    color: rgba(255, 255, 255, .82);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+
+  .mf-profile-update-text {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.22;
+  }
+
+  .mf-profile-update-icon {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+
+    width: 34px;
+    height: 34px;
+
+    fill: none;
+    stroke: rgba(255, 255, 255, .36);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.2;
+  }
+
+  .mf-completeness-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .mf-completeness-top > span {
+    color: var(--mf-muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  .mf-completeness-top strong {
+    margin: 0;
+    color: var(--mf-primary-dark);
+    font-size: 21px;
+    line-height: 1;
+  }
+
+  .mf-completeness {
+    min-width: 0;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px 14px;
+    border: 1px solid #b9d7e6;
+    border-radius: 12px;
+    background: var(--mf-primary-light);
+  }
+
+  .mf-progress {
+    height: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #cfe3ec;
+  }
+
+  .mf-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--mf-primary-dark), var(--mf-primary));
+    transition: width .25s ease;
+  }
+
+  .mf-message {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .mf-message.info {
+    border: 1px solid #b9d7e6;
+    background: #eff8fc;
+    color: #155c7b;
+  }
+
+  .mf-message.error {
+    border: 1px solid #fecdca;
+    background: #fef3f2;
+    color: var(--mf-danger);
+  }
+
+  .mf-greeting {
+    margin: 7px 0 0;
+    color: var(--mf-primary-dark);
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.4;
+  }
+
+  .mf-summary-ribbon {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    min-width: 0;
+    min-height: 86px;
+    margin: 0;
+    padding: 8px 16px;
+
+    border: 1px solid #b9d7e6;
+    border-radius: 13px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #f7fcfe,
+        #eef8fc
+      );
+
+    box-shadow: var(--mf-shadow);
+  }
+
+  .mf-ribbon-item {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .mf-ribbon-item span {
+    color: var(--mf-muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .mf-ribbon-item strong {
+    color: var(--mf-primary-dark);
+    font-size: 17px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .mf-ribbon-divider {
+    width: 1px;
+    height: 26px;
+    flex: 0 0 1px;
+    background: #cbdde6;
+  }
+
+  .mf-card {
+    border: 1px solid var(--mf-border);
+    border-radius: 14px;
+    background: var(--mf-panel);
+    box-shadow: var(--mf-shadow);
+  }
+
+  .mf-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .mf-card {
+    min-width: 0;
+    padding: 18px;
+  }
+
+  .mf-card:nth-child(1),
+  .mf-card:nth-child(2) {
+    min-height: 315px;
+  }
+
+  .mf-card-heading {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 15px;
+  }
+
+  .mf-step {
+    width: 29px;
+    height: 29px;
+    flex: 0 0 29px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--mf-primary-dark);
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  .mf-card-heading h3 {
+    margin: 0 0 3px;
+    color: var(--mf-primary-dark);
+    font-size: 19px;
+  }
+
+  .mf-card-heading p {
+    margin: 0;
+    color: var(--mf-muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .mf-profile-person {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 10px;
+    padding: 9px 0;
+  }
+
+  .mf-profile-person + .mf-profile-person {
+    border-top: 1px solid #e4edf2;
+  }
+
+  .mf-role {
+    color: var(--mf-primary);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .mf-person-name {
+    color: #111827;
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  .mf-person-detail {
+    margin-top: 6px;
+    color: var(--mf-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .mf-info-note {
+    margin-bottom: 13px;
+    padding: 11px 13px;
+    border: 1px solid #b9d7e6;
+    border-radius: 10px;
+    color: #155c7b;
+    background: #eff8fc;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .mf-readiness-list,
+  .mf-card-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .mf-readiness-item,
+  .mf-digital-card-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border: 1px solid var(--mf-border);
+    border-radius: 11px;
+    background: #f9fbfc;
+  }
+
+  .mf-readiness-item h4,
+  .mf-digital-card-item h4 {
+    margin: 0;
+    color: var(--mf-primary-dark);
+    font-size: 14px;
+  }
+
+  .mf-readiness-item p,
+  .mf-digital-card-item p {
+    margin: 4px 0 0;
+    color: var(--mf-muted);
+    font-size: 11px;
+  }
+
+  .mf-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 27px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  /* ======================================================
+     Card 2 - View & Download Button
+     ====================================================== */
+
+  .mf-card-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .mf-card-view-button {
+    min-height: 30px;
+    padding: 6px 10px;
+
+    border: 1px solid var(--mf-primary);
+    border-radius: 8px;
+
+    background:
+      linear-gradient(
+        135deg,
+        var(--mf-primary-dark),
+        var(--mf-primary)
+      );
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 10px;
+    font-weight: 900;
+    font-family: inherit;
+  }
+
+  .mf-card-view-button:hover {
+    filter: brightness(1.05);
+  }
+
+  .mf-card-view-button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+
+  .mf-badge-ready,
+  .mf-badge-active {
+    color: #166534;
+    border: 1px solid #86efac;
+    background: #dcfce7;
+  }
+
+  .mf-badge-pending {
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    background: #fef3c7;
+  }
+
+  .mf-badge-missing,
+  .mf-badge-not-issued {
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    background: #f1f5f9;
+  }
+
+  .mf-card-actions {
+    margin-top: 13px;
+  }
+
+  .mf-primary-button,
+  .mf-secondary-button {
+    min-height: 38px;
+    padding: 8px 13px;
+    border-radius: 9px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .mf-primary-button {
+    border: 0;
+    color: #fff;
+    background: linear-gradient(135deg, var(--mf-primary-dark), var(--mf-primary));
+  }
+
+  .mf-secondary-button {
+    border: 1px solid #a8bdc9;
+    color: var(--mf-primary-dark);
+    background: #eef5f8;
+  }
+
+  .mf-primary-button:disabled,
+  .mf-secondary-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+
+  .mf-empty,
+  .mf-status-placeholder {
+    display: grid;
+    place-items: center;
+    min-height: 130px;
+    padding: 24px 16px;
+    border: 1px dashed #c9d5dc;
+    border-radius: 11px;
+    color: var(--mf-muted);
+    background: #f8fafb;
+    text-align: center;
+  }
+
+  .mf-status-placeholder strong,
+  .mf-status-placeholder span {
+    display: block;
+  }
+
+  .mf-status-placeholder strong {
+    color: var(--mf-primary-dark);
+  }
+
+  .mf-status-placeholder span {
+    margin-top: 6px;
+    font-size: 11px;
+  }
+
+  @media (max-width: 1050px) {
+    .mf-overview-row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .mf-summary-ribbon {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .mf-card-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .mf-card:nth-child(1),
+    .mf-card:nth-child(2) {
+      min-height: 0;
+    }
+
+    .mf-summary-ribbon {
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 650px) {
+    .mf-overview-row {
+      grid-template-columns: 1fr;
+    }
+
+    .mf-summary-ribbon {
+      grid-column: auto;
+    }
+
+    .mf-profile-update-card {
+      min-height: 60px;
+    }
+
+    .mf-card-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .mf-summary-ribbon {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 18px;
+    }
+
+    .mf-ribbon-divider {
+      display: none;
+    }
+
+    .mf-profile-person {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+
+    .mf-readiness-item,
+    .mf-digital-card-item {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+  }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  const state = {
+    initialised: false,
+    sessionToken: '',
+    dataLoaded: false,
+    data: null
+  };
+
+  const el = {};
+
+  function activate(auth) {
+    const safeAuth =
+      auth || {};
+
+    state.sessionToken =
+      String(
+        safeAuth.sessionToken || ''
+      ).trim();
+
+    if (!state.sessionToken) {
+      showMessage(
+        'Your KGMIS session is missing. Please sign in again.',
+        'error'
+      );
+      return;
+    }
+
+    if (!state.initialised) {
+      state.initialised = true;
+      cacheElements();
+      bindEvents();
+    }
+
+    /*
+    * Always reload My Family data whenever the module is opened.
+    * This ensures newly generated Digital IDs appear immediately.
+    */
+        loadInitialData();
+      }
+
+  function cacheElements() {
+    [
+      'mfMessage',
+      'mfGreeting',
+      'mfCompletenessValue',
+      'mfCompletenessBar',
+      'mfEligibleCount',
+      'mfActiveCardCount',
+      'mfPendingCount',
+      'mfFamilyReference',
+      'mfProfileContent',
+      'mfReadinessList',
+      'mfCardList',
+      'mfReviewUpdateTopButton',
+      'mfAddFamilyMemberButton'
+    ].forEach(function (id) {
+      el[id] =
+        document.getElementById(id);
+    });
+  }
+
+  function bindEvents() {
+    if (el.mfReviewUpdateTopButton) {
+      el.mfReviewUpdateTopButton.addEventListener(
+        'click',
+        openFamilyProfileUpdate
+      );
+    }
+
+    if (el.mfAddFamilyMemberButton) {
+      el.mfAddFamilyMemberButton.addEventListener(
+        'click',
+        openFamilyProfileUpdate
+      );
+    }
+  }
+
+  function openFamilyProfileUpdate() {
+
+  if (
+    !window.KGMIS_MAIN_PORTAL ||
+    typeof window.KGMIS_MAIN_PORTAL.openModule !== 'function'
+  ) {
+    showMessage(
+      'The Family Profile module could not be opened.',
+      'error'
+    );
+
+    return;
+  }
+
+  window.KGMIS_MAIN_PORTAL.openModule(
+    'family-self-service-profile'
+  );
+}
+
+  function loadInitialData() {
+    showMessage(
+      'Loading My Family…',
+      'info'
+    );
+
+    google.script.run
+      .withSuccessHandler(
+        function (result) {
+          state.dataLoaded = true;
+          state.data = result || {};
+          renderInitialData(state.data);
+          clearMessage();
+        }
+      )
+      .withFailureHandler(
+        function (error) {
+          showMessage(
+            error && error.message
+              ? error.message
+              : String(
+                  error ||
+                  'My Family could not be loaded.'
+                ),
+            'error'
+          );
+        }
+      )
+      .KGMIS_MyFamily_GetInitialData(
+        state.sessionToken
+      );
+  }
+
+  function renderInitialData(result) {
+    const profile =
+      result.profile || {};
+
+    const readiness =
+      Array.isArray(result.cardReadiness)
+        ? result.cardReadiness
+        : [];
+
+    const cards =
+      Array.isArray(result.cards)
+        ? result.cards
+        : [];
+
+    const summary =
+      result.summary || {};
+
+    const completeness =
+      Number(
+        summary.profileCompleteness || 0
+      );
+
+    el.mfCompletenessValue.textContent =
+      String(completeness) + '%';
+
+    el.mfCompletenessBar.style.width =
+      Math.max(
+        0,
+        Math.min(100, completeness)
+      ) + '%';
+
+    el.mfEligibleCount.textContent =
+      String(
+        summary.eligiblePeople || 0
+      );
+
+    el.mfActiveCardCount.textContent =
+      String(
+        summary.activeCards || 0
+      );
+
+    el.mfPendingCount.textContent =
+      String(
+        summary.pendingVerification || 0
+      );
+
+    el.mfFamilyReference.textContent =
+      profile.familyId || '—';
+
+    const memberFirstName =
+      String(profile.memberName || '')
+        .trim()
+        .split(/\s+/)[0] || '';
+
+    el.mfGreeting.textContent =
+      memberFirstName
+        ? 'Welcome, ' + memberFirstName + '. Your family profile is ' +
+          String(completeness) + '% complete.'
+        : 'Your family profile is ' +
+          String(completeness) + '% complete.';
+
+    renderProfile(profile);
+    renderReadiness(
+      readiness,
+      cards
+    );
+
+    renderCards(
+      readiness,
+      cards
+    );
+  }
+
+  function renderProfile(profile) {
+    const p =
+      profile || {};
+
+    if (!p.familyId) {
+      el.mfProfileContent.className =
+        'mf-empty';
+
+      el.mfProfileContent.textContent =
+        'No family profile is linked to your signed-in email.';
+      return;
+    }
+
+    el.mfProfileContent.className =
+      '';
+
+    el.mfProfileContent.innerHTML =
+      buildPerson(
+        'Member',
+        p.memberName,
+        p.memberMobile,
+        p.memberEmail
+      ) +
+      buildPerson(
+        'Spouse',
+        p.spouseName,
+        p.spouseMobile,
+        p.spouseEmail
+      );
+  }
+
+  function buildPerson(
+    role,
+    name,
+    mobile,
+    email
+  ) {
+    if (!String(name || '').trim()) {
+      return '';
+    }
+
+    return (
+      '<section class="mf-profile-person">' +
+        '<div class="mf-role">' +
+          escapeHtml(role) +
+        '</div>' +
+        '<div>' +
+          '<div class="mf-person-name">' +
+            escapeHtml(name) +
+          '</div>' +
+          (
+            String(mobile || '').trim()
+              ? '<div class="mf-person-detail">📱 ' +
+                  escapeHtml(mobile) +
+                '</div>'
+              : ''
+          ) +
+          (
+            String(email || '').trim()
+              ? '<div class="mf-person-detail">✉ ' +
+                  escapeHtml(email) +
+                '</div>'
+              : ''
+          ) +
+        '</div>' +
+      '</section>'
+    );
+  }
+
+function renderReadiness(
+  rows,
+  cards
+) {
+
+  el.mfReadinessList.innerHTML = '';
+
+  const people =
+    Array.isArray(rows)
+      ? rows
+      : [];
+
+  const issuedCards =
+    Array.isArray(cards)
+      ? cards
+      : [];
+
+  if (!people.length) {
+
+    el.mfReadinessList.innerHTML =
+      '<div class="mf-empty">' +
+        'No family-member records are available.' +
+      '</div>';
+
+    return;
+  }
+
+  people.forEach(function (row) {
+
+    const relation =
+  String(row.familyRelation || '')
+    .trim()
+    .replace(/[_-]+/g, ' ')
+    .toUpperCase();
+
+if (
+  relation === 'PRIMARY MEMBER' ||
+  relation === 'PRIMARY' ||
+  relation === 'MEMBER' ||
+  relation === 'SELF' ||
+  relation === 'SPOUSE' ||
+  relation === 'HUSBAND' ||
+  relation === 'WIFE' ||
+  relation === 'ALUMNI SPOUSE' ||
+  relation === 'ALUMNI SPOUSE MEMBER' ||
+  relation === 'NON ALUMNI SPOUSE' ||
+  relation === 'NON ALUMNI SPOUSE MEMBER'
+) {
+  return;
+}
+
+    const item =
+      document.createElement('article');
+
+    item.className =
+      'mf-readiness-item';
+
+    const relationSequence =
+      String(
+        row.relationSequence || ''
+      ).trim();
+
+    const personName =
+      String(
+        row.fullName || ''
+      )
+        .trim()
+        .toUpperCase();
+
+    /*
+     * Find the corresponding issued card belonging
+     * to the logged-in user's family.
+     */
+    const matchingCard =
+      issuedCards.find(
+        function (card) {
+
+          const cardRelationSequence =
+            String(
+              card.relationSequence || ''
+            ).trim();
+
+          const cardholderName =
+            String(
+              card.cardholderName || ''
+            )
+              .trim()
+              .toUpperCase();
+
+          return (
+            (
+              relationSequence &&
+              cardRelationSequence &&
+              relationSequence ===
+                cardRelationSequence
+            ) ||
+            (
+              personName &&
+              cardholderName &&
+              personName ===
+                cardholderName
+            )
+          );
+        }
+      ) || null;
+
+    const cardStatus =
+      matchingCard
+        ? String(
+            matchingCard.cardStatus || ''
+          )
+            .trim()
+            .toUpperCase()
+        : '';
+
+    const imageUrl =
+      matchingCard
+        ? String(
+            matchingCard.cardImageUrl || ''
+          ).trim()
+        : '';
+
+    /*
+     * READY means the card can actually be
+     * viewed and downloaded.
+     */
+    const cardAvailable =
+      Boolean(
+        matchingCard &&
+        cardStatus === 'ACTIVE' &&
+        imageUrl
+      );
+
+    const details =
+      document.createElement('div');
+
+    details.innerHTML =
+      '<h4>' +
+        escapeHtml(
+          row.fullName ||
+          row.familyRelation ||
+          ''
+        ) +
+      '</h4>' +
+
+      '<p>' +
+        escapeHtml(
+          [
+            displayRelation(
+              row.familyRelation
+            ),
+
+            row.mobile,
+
+            row.email
+          ]
+            .filter(Boolean)
+            .join(' · ')
+        ) +
+      '</p>';
+
+    const rightArea =
+      document.createElement('div');
+
+    rightArea.className =
+      'mf-card-right';
+
+    /*
+const statusBadge =
+  document.createElement('span');
+
+statusBadge.className =
+  'mf-badge ' +
+  (
+    cardAvailable
+      ? 'mf-badge-ready'
+      : 'mf-badge-not-issued'
+  );
+
+statusBadge.textContent =
+  cardAvailable
+    ? 'READY'
+    : 'NOT AVAILABLE';
+
+rightArea.appendChild(
+  statusBadge
+);
+*/
+/*
+
+    if (cardAvailable) {
+
+      const viewButton =
+        document.createElement('button');
+
+      viewButton.type =
+        'button';
+
+      viewButton.className =
+        'mf-card-view-button';
+
+      viewButton.textContent =
+        'View and Download ID';
+
+      viewButton.addEventListener(
+        'click',
+        function () {
+
+          openDigitalCardImage(
+            imageUrl
+          );
+        }
+      );
+
+      rightArea.appendChild(
+        viewButton
+      );
+    }
+
+*/
+    item.appendChild(
+      details
+    );
+
+    item.appendChild(
+      rightArea
+    );
+
+    el.mfReadinessList.appendChild(
+      item
+    );
+  });
+}
+
+function renderCards(
+  people,
+  cards
+) {
+
+  el.mfCardList.innerHTML = '';
+
+  const familyPeople =
+    Array.isArray(people)
+      ? people
+      : [];
+
+  const issuedCards =
+    Array.isArray(cards)
+      ? cards
+      : [];
+
+  if (!familyPeople.length) {
+
+    el.mfCardList.innerHTML =
+      '<div class="mf-status-placeholder">' +
+        '<strong>No family members found</strong>' +
+        '<span>Family members will appear here.</span>' +
+      '</div>';
+
+    return;
+  }
+
+  familyPeople.forEach(function (person) {
+
+    const personName =
+      String(
+        person.fullName || ''
+      )
+        .trim()
+        .toUpperCase();
+
+    const relationSequence =
+      String(
+        person.relationSequence || ''
+      ).trim();
+
+    const matchingCard =
+      issuedCards.find(
+        function (card) {
+
+          const cardholderName =
+            String(
+              card.cardholderName || ''
+            )
+              .trim()
+              .toUpperCase();
+
+          const cardRelationSequence =
+            String(
+              card.relationSequence || ''
+            ).trim();
+
+          return (
+            (
+              relationSequence &&
+              cardRelationSequence &&
+              relationSequence ===
+                cardRelationSequence
+            ) ||
+            (
+              personName &&
+              cardholderName &&
+              personName ===
+                cardholderName
+            )
+          );
+        }
+      ) || null;
+
+    const cardStatus =
+      matchingCard
+        ? String(
+            matchingCard.cardStatus || ''
+          )
+            .trim()
+            .toUpperCase()
+        : '';
+
+    const imageUrl =
+      matchingCard
+        ? String(
+            matchingCard.cardImageUrl || ''
+          ).trim()
+        : '';
+
+    const cardReady =
+      Boolean(
+        matchingCard &&
+        cardStatus === 'ACTIVE' &&
+        imageUrl
+      );
+
+    const item =
+      document.createElement('article');
+
+    item.className =
+      'mf-digital-card-item';
+
+    const details =
+      document.createElement('div');
+
+    const personHeading =
+      document.createElement('h4');
+
+    personHeading.textContent =
+      person.fullName ||
+      person.familyRelation ||
+      '';
+
+    details.appendChild(
+      personHeading
+    );
+
+    if (cardReady) {
+
+      const cardDetails =
+        document.createElement('p');
+
+      cardDetails.textContent =
+        [
+          matchingCard.cardId,
+
+          displayRelation(
+            matchingCard.cardholderType
+          ),
+
+          matchingCard.validUntil
+            ? 'Valid until ' +
+              matchingCard.validUntil
+            : ''
+        ]
+          .filter(Boolean)
+          .join(' · ');
+
+      details.appendChild(
+        cardDetails
+      );
+    }
+
+    const rightArea =
+      document.createElement('div');
+
+    rightArea.className =
+      'mf-card-right';
+
+    const statusBadge =
+      document.createElement('span');
+
+    statusBadge.className =
+      'mf-badge ' +
+      (
+        cardReady
+          ? 'mf-badge-ready'
+          : 'mf-badge-pending'
+      );
+
+    statusBadge.textContent =
+      cardReady
+        ? 'READY'
+        : 'ID NOT READY';
+
+    rightArea.appendChild(
+      statusBadge
+    );
+
+    if (cardReady) {
+
+      const viewButton =
+        document.createElement('button');
+
+      viewButton.type =
+        'button';
+
+      viewButton.className =
+        'mf-card-view-button';
+
+      viewButton.textContent =
+        'View and Download ID';
+
+      viewButton.addEventListener(
+        'click',
+        function () {
+
+          openDigitalCardImage(
+            imageUrl
+          );
+        }
+      );
+
+      rightArea.appendChild(
+        viewButton
+      );
+    }
+
+    item.appendChild(
+      details
+    );
+
+    item.appendChild(
+      rightArea
+    );
+
+    el.mfCardList.appendChild(
+      item
+    );
+  });
+}
+
+function openDigitalCardImage(imageUrl) {
+
+  const safeUrl =
+    String(imageUrl || '').trim();
+
+  if (!safeUrl) {
+
+    showMessage(
+      'The Digital Membership ID image is not available.',
+      'error'
+    );
+
+    return;
+  }
+
+  const fileIdMatch =
+    safeUrl.match(/id=([^&]+)/i);
+
+  let finalUrl = safeUrl;
+
+  if (fileIdMatch) {
+
+    finalUrl =
+      'https://drive.google.com/file/d/' +
+      fileIdMatch[1] +
+      '/view';
+  }
+
+  window.open(
+    finalUrl,
+    '_blank'
+  );
+}
+
+  function displayRelation(value) {
+    return String(value || '')
+      .trim()
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(
+        /\b\w/g,
+        function (letter) {
+          return letter.toUpperCase();
+        }
+      );
+  }
+
+  function showMessage(message, type) {
+    el.mfMessage.textContent =
+      message || '';
+
+    el.mfMessage.className =
+      'mf-message ' +
+      (type || 'info');
+
+    el.mfMessage.hidden =
+      false;
+  }
+
+  function clearMessage() {
+    el.mfMessage.hidden =
+      true;
+
+    el.mfMessage.textContent =
+      '';
+
+    el.mfMessage.className =
+      'mf-message';
+  }
+
+  function escapeHtml(value) {
+    return String(
+      value == null
+        ? ''
+        : value
+    )
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  window.KGMIS_MY_FAMILY_MODULE = {
+    activate:
+      activate
+  };
+})();
+</script>

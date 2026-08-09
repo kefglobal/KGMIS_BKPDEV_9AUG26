@@ -1,0 +1,786 @@
+<!--
+==============================================================================
+KEFG Membership Information System (KGMIS)
+
+Module        : Self-Service Portal
+Section       : Primary Member
+File          : 50.03_KGMIS_SS_Primary_Member.html
+Version       : 1.0
+Status        : Development
+
+Designed and Developed by:
+James Joseph Alenchery
+==============================================================================
+-->
+
+<section
+    id="sspPrimaryMemberPage"
+    class="ssp-page"
+    style="display:none;">
+
+    <!-- =====================================================
+         Page Header
+         ===================================================== -->
+
+    <div class="ssp-page-header">
+
+        <h3>Primary Member</h3>
+
+        <p>
+
+            Please review every section carefully.
+            Update any information that has changed,
+            then confirm the section before continuing.
+
+        </p>
+
+    </div>
+
+    <!-- =====================================================
+         Card 1
+         Personal Information
+         ===================================================== -->
+
+    <section class="ssp-card">
+
+        <div class="ssp-card-header">
+
+            <h4>Personal Information</h4>
+
+            <span
+                id="sspPersonalStatus"
+                class="ssp-card-status">
+
+                Pending Review
+
+            </span>
+
+        </div>
+
+        <div class="ssp-form-grid">
+
+            <div class="ssp-field">
+
+                <label>Full Name</label>
+
+                <input
+                    id="sspMemberName"
+                    type="text">
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>Gender</label>
+
+                <select id="sspGender">
+
+                </select>
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>Blood Group</label>
+
+                <select id="sspBloodGroup">
+
+                </select>
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>Date of Birth</label>
+
+                <input
+                    id="sspMemberDOB"
+                    type="date">
+
+            </div>
+
+        </div>
+
+        <div class="ssp-card-footer">
+
+            <label>
+
+                <input
+                    id="sspPersonalReviewed"
+                    type="checkbox">
+
+                I have reviewed this section.
+
+            </label>
+
+            <button
+                id="sspSavePersonal"
+                class="ssp-primary-button">
+
+                Save & Confirm
+
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- =====================================================
+         Card 2
+         Alumni Information
+         ===================================================== -->
+
+    <section class="ssp-card">
+
+        <div class="ssp-card-header">
+
+            <h4>Alumni Information</h4>
+
+            <span
+                id="sspAlumniStatus"
+                class="ssp-card-status">
+
+                Pending Review
+
+            </span>
+
+        </div>
+
+        <div class="ssp-form-grid">
+
+            <div class="ssp-field">
+
+                <label>Alumni Association</label>
+
+                <select id="sspAlumni">
+
+                </select>
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>Branch</label>
+
+                <input
+                    id="sspBranch"
+                    type="text">
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>Batch / Year</label>
+
+                <input
+                    id="sspBatch"
+                    type="text">
+
+            </div>
+
+        </div>
+
+        <div class="ssp-card-footer">
+
+            <label>
+
+                <input
+                    id="sspAlumniReviewed"
+                    type="checkbox">
+
+                I have reviewed this section.
+
+            </label>
+
+            <button
+                id="sspSaveAlumni"
+                class="ssp-primary-button">
+
+                Save & Confirm
+
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- =====================================================
+         Card 3
+         Contact Information
+         ===================================================== -->
+
+    <section class="ssp-card">
+
+        <div class="ssp-card-header">
+
+            <h4>Contact Information</h4>
+
+            <span
+                id="sspContactStatus"
+                class="ssp-card-status">
+
+                Pending Review
+
+            </span>
+
+        </div>
+
+        <div class="ssp-form-grid">
+
+            <div class="ssp-field">
+
+                <label>Mobile</label>
+
+                <input
+                    id="sspMobile"
+                    type="text">
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>WhatsApp</label>
+
+                <input
+                    id="sspWhatsapp"
+                    type="text">
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>Email</label>
+
+                <input
+                    id="sspEmail"
+                    type="email">
+
+            </div>
+
+        </div>
+
+        <div class="ssp-card-footer">
+
+            <label>
+
+                <input
+                    id="sspContactReviewed"
+                    type="checkbox">
+
+                I have reviewed this section.
+
+            </label>
+
+            <button
+                id="sspSaveContact"
+                class="ssp-primary-button">
+
+                Save & Confirm
+
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- =====================================================
+         Card 4
+         Current Location
+         ===================================================== -->
+
+    <section class="ssp-card">
+
+        <div class="ssp-card-header">
+
+            <h4>Current Location</h4>
+
+            <span
+                id="sspLocationStatus"
+                class="ssp-card-status">
+
+                Pending Review
+
+            </span>
+
+        </div>
+
+        <div class="ssp-form-grid">
+
+            <div class="ssp-field">
+
+                <label>Country</label>
+
+                <input
+                    id="sspCountry"
+                    type="text">
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>State</label>
+
+                <input
+                    id="sspState"
+                    type="text">
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>City / District</label>
+
+                <input
+                    id="sspCity"
+                    type="text">
+
+            </div>
+
+            <div class="ssp-field ssp-field-full">
+
+                <label>Postal Address</label>
+
+                <textarea
+                    id="sspAddress"
+                    rows="3"></textarea>
+
+            </div>
+
+            <div class="ssp-field ssp-field-full">
+
+                <label>Google Maps Location</label>
+
+                <input
+                    id="sspGoogleMap"
+                    type="text">
+
+            </div>
+
+        </div>
+
+        <div class="ssp-card-footer">
+
+            <label>
+
+                <input
+                    id="sspLocationReviewed"
+                    type="checkbox">
+
+                I have reviewed this section.
+
+            </label>
+
+            <button
+                id="sspSaveLocation"
+                class="ssp-primary-button">
+
+                Save & Confirm
+
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- =====================================================
+         Card 5
+         Profession & KEFG
+         ===================================================== -->
+
+    <section class="ssp-card">
+
+        <div class="ssp-card-header">
+
+            <h4>Profession & KEFG</h4>
+
+            <span
+                id="sspProfessionStatus"
+                class="ssp-card-status">
+
+                Pending Review
+
+            </span>
+
+        </div>
+
+        <div class="ssp-form-grid">
+
+            <div class="ssp-field ssp-field-full">
+
+                <label>Present Activities</label>
+
+                <textarea
+                    id="sspActivities"
+                    rows="3"></textarea>
+
+            </div>
+
+            <div class="ssp-field ssp-field-full">
+
+                <label>Profession, Qualifications & Skills</label>
+
+                <textarea
+                    id="sspSkills"
+                    rows="3"></textarea>
+
+            </div>
+
+            <div class="ssp-field ssp-field-full">
+
+                <label>KEFG Contributions</label>
+
+                <textarea
+                    id="sspContribution"
+                    rows="3"></textarea>
+
+            </div>
+
+            <div class="ssp-field">
+
+                <label>Volunteer</label>
+
+                <select id="sspVolunteer">
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="ssp-card-footer">
+
+            <label>
+
+                <input
+                    id="sspProfessionReviewed"
+                    type="checkbox">
+
+                I have reviewed this section.
+
+            </label>
+
+            <button
+                id="sspSaveProfession"
+                class="ssp-primary-button">
+
+                Save & Confirm
+
+            </button>
+
+        </div>
+
+    </section>
+
+</section>
+
+/* ==========================================================
+   Primary Member Page
+   ========================================================== */
+
+.ssp-page{
+
+    display:block;
+
+}
+
+/* ==========================================================
+   Page Header
+   ========================================================== */
+
+.ssp-page-header{
+
+    margin-bottom:24px;
+
+}
+
+.ssp-page-header h3{
+
+    margin:0 0 6px;
+
+    color:var(--mf-primary-dark,#0d4e70);
+
+    font-size:26px;
+
+    font-weight:700;
+
+}
+
+.ssp-page-header p{
+
+    margin:0;
+
+    color:#64748b;
+
+    line-height:1.6;
+
+}
+
+/* ==========================================================
+   Cards
+   ========================================================== */
+
+.ssp-card{
+
+    margin-bottom:22px;
+
+    border:1px solid #d5e0e8;
+
+    border-radius:14px;
+
+    background:#ffffff;
+
+    box-shadow:
+        0 4px 12px
+        rgba(13,78,112,.05);
+
+    overflow:hidden;
+
+}
+
+/* ==========================================================
+   Card Header
+   ========================================================== */
+
+.ssp-card-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:16px 20px;
+
+    border-bottom:1px solid #e7edf2;
+
+    background:#f8fbfd;
+
+}
+
+.ssp-card-header h4{
+
+    margin:0;
+
+    color:#0d4e70;
+
+    font-size:18px;
+
+}
+
+.ssp-card-status{
+
+    padding:5px 10px;
+
+    border-radius:999px;
+
+    background:#fff4ce;
+
+    color:#9a6700;
+
+    font-size:11px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================================
+   Form Grid
+   ========================================================== */
+
+.ssp-form-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap:20px;
+
+    padding:22px;
+
+}
+
+.ssp-field{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.ssp-field-full{
+
+    grid-column:1 / -1;
+
+}
+
+/* ==========================================================
+   Labels
+   ========================================================== */
+
+.ssp-field label{
+
+    margin-bottom:8px;
+
+    color:#475569;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:.05em;
+
+}
+
+/* ==========================================================
+   Inputs
+   ========================================================== */
+
+.ssp-field input,
+
+.ssp-field select,
+
+.ssp-field textarea{
+
+    width:100%;
+
+    padding:10px 12px;
+
+    border:1px solid #cfd9e2;
+
+    border-radius:8px;
+
+    font:inherit;
+
+    background:#ffffff;
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+
+}
+
+.ssp-field textarea{
+
+    resize:vertical;
+
+    min-height:90px;
+
+}
+
+.ssp-field input:focus,
+
+.ssp-field select:focus,
+
+.ssp-field textarea:focus{
+
+    outline:none;
+
+    border-color:#176c91;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(23,108,145,.12);
+
+}
+
+/* ==========================================================
+   Card Footer
+   ========================================================== */
+
+.ssp-card-footer{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    padding:18px 22px;
+
+    border-top:1px solid #e7edf2;
+
+    background:#fafcfd;
+
+}
+
+.ssp-card-footer label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:#475569;
+
+    font-size:14px;
+
+}
+
+.ssp-card-footer input[type="checkbox"]{
+
+    width:18px;
+
+    height:18px;
+
+}
+
+/* ==========================================================
+   Completed Card
+   ========================================================== */
+
+.ssp-card.completed{
+
+    border-color:#22c55e;
+
+}
+
+.ssp-card.completed
+.ssp-card-header{
+
+    background:#f0fdf4;
+
+}
+
+.ssp-card.completed
+.ssp-card-status{
+
+    background:#dcfce7;
+
+    color:#166534;
+
+}
+
+/* ==========================================================
+   Mobile
+   ========================================================== */
+
+@media (max-width:900px){
+
+    .ssp-form-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .ssp-field-full{
+
+        grid-column:auto;
+
+    }
+
+    .ssp-card-footer{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+}
+

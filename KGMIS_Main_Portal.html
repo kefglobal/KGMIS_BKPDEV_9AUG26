@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <style>
+    :root {
+      --primary: #176c91;
+      --primary-dark: #0d4e70;
+      --primary-light: #e7f4f9;
+      --accent: #0aa957;
+      --background: #f3f7fa;
+      --panel: #ffffff;
+      --border: #d5e0e8;
+      --text: #1f2937;
+      --muted: #64748b;
+      --danger: #b42318;
+      --shadow: 0 10px 30px rgba(13, 78, 112, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--background);
+    }
+
+    button {
+      font: inherit;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .main-portal-shell {
+      min-height: 100vh;
+    }
+
+    /* ========================================================
+       Login View
+       ======================================================== */
+
+    .main-login-view .kgmis-mobile-login,
+    .main-login-view .kgmis-otp-login {
+      min-height: calc(100vh - 78px);
+    }
+
+    /* ========================================================
+       Portal View and App Layout
+       ======================================================== */
+
+    .main-portal-view {
+      min-height: calc(100vh - 78px);
+    }
+
+    .main-app-layout {
+      width: min(1500px, 100%);
+      min-height: calc(100vh - 78px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 245px minmax(0, 1fr);
+    }
+
+    .main-app-layout.module-mode {
+      width: 100%;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .main-app-layout.module-mode .main-sidebar,
+    .main-app-layout.module-mode .main-sidebar-overlay,
+    .main-app-layout.module-mode .main-mobile-toolbar {
+      display: none !important;
+    }
+
+    .main-app-layout.module-mode .main-stage {
+      width: 100%;
+      padding: 18px 12px 30px;
+    }
+
+    .main-app-layout.module-mode .main-module-workspace {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+    }
+
+    /* ========================================================
+       Sidebar
+       ======================================================== */
+
+    .main-sidebar {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      min-height: calc(100vh - 78px);
+      padding: 22px 14px;
+      border-right: 1px solid var(--border);
+      background: #ffffff;
+    }
+
+    .main-sidebar-heading {
+      margin: 0 8px 14px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+    }
+
+    .main-sidebar-nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .main-sidebar-button {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      color: var(--primary-dark);
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 700;
+    }
+
+    .main-sidebar-button:hover {
+      border-color: #c6dce7;
+      background: #f3f9fc;
+      color: var(--primary-dark);
+    }
+
+    .main-sidebar-button.is-active {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: none;
+    }
+
+    .main-sidebar-button.is-active .main-sidebar-icon {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+    }
+
+    .main-sidebar-button.is-active:hover {
+      border-color: var(--primary-dark);
+      background: var(--primary-dark);
+    }
+
+    .main-sidebar-button[hidden] {
+      display: none !important;
+    }
+
+    .main-sidebar-icon {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      background: #eef7fb;
+      font-size: 17px;
+    }
+
+    .main-sidebar-label {
+      min-width: 0;
+      line-height: 1.25;
+    }
+
+    .main-sidebar-footer {
+      margin-top: 22px;
+      padding: 14px 10px 0;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    /* ========================================================
+       Main Stage
+       ======================================================== */
+
+    .main-stage {
+      min-width: 0;
+      padding: 20px;
+    }
+
+    .main-content {
+      width: 100%;
+      max-width: 1220px;
+      margin: 0 auto;
+    }
+
+    .main-message {
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .main-message.info {
+      border: 1px solid #b9d7e6;
+      background: #eff8fc;
+      color: #155c7b;
+    }
+
+    .main-message.error {
+      border: 1px solid #fecdca;
+      background: #fef3f2;
+      color: var(--danger);
+    }
+
+    .main-empty-state {
+      padding: 34px 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #ffffff;
+      color: var(--muted);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .main-empty-state h3 {
+      margin: 0 0 7px;
+      color: var(--primary-dark);
+    }
+
+    /* ========================================================
+       Module Workspace
+       ======================================================== */
+
+    .main-module-workspace {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .main-workspace-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: #ffffff;
+    }
+
+    .main-back-button {
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--primary-dark);
+      background: #ffffff;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .main-workspace-title {
+      color: var(--primary-dark);
+      font-weight: 800;
+    }
+
+    /* ========================================================
+       Mobile Sidebar
+       ======================================================== */
+
+    .main-mobile-toolbar {
+      display: none;
+      margin-bottom: 12px;
+    }
+
+    .main-menu-button {
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--primary-dark);
+      background: #ffffff;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .main-sidebar-overlay {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .main-app-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .main-stage {
+        padding: 14px;
+      }
+
+      .main-mobile-toolbar {
+        display: block;
+      }
+
+      .main-sidebar {
+        position: fixed;
+        z-index: 1002;
+        top: 0;
+        left: 0;
+        width: min(290px, 86vw);
+        height: 100vh;
+        min-height: 100vh;
+        transform: translateX(-105%);
+        transition: transform 0.20s ease;
+        box-shadow: 15px 0 35px rgba(15, 45, 65, 0.18);
+      }
+
+      .main-sidebar.is-open {
+        transform: translateX(0);
+      }
+
+      .main-sidebar-overlay {
+        position: fixed;
+        z-index: 1001;
+        inset: 0;
+        background: rgba(15, 35, 50, 0.36);
+      }
+
+      .main-sidebar-overlay.is-open {
+        display: block;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .main-stage {
+        padding: 10px;
+      }
+
+      .main-workspace-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-portal-shell">
+
+    <!-- Permanent Application Header -->
+    <?!= include('KGMIS_Header'); ?>
+
+    <!-- Login View -->
+    <div
+      id="mainLoginView"
+      class="main-login-view"
+    >
+    <!--  <?!= include('KGMIS_OTP_Login'); ?>  -->
+       <?!= include('80.00_KGMIS_Mobile_Login'); ?>
+    </div>
+
+    <!-- Main Portal View -->
+    <div
+      id="mainPortalView"
+      class="main-portal-view"
+      hidden
+    >
+      <div id="mainAppLayout" class="main-app-layout">
+
+        <!-- Persistent Sidebar -->
+        <aside
+          id="mainSidebar"
+          class="main-sidebar"
+          aria-label="KGMIS module navigation"
+        >
+          <p class="main-sidebar-heading">Navigation</p>
+
+          <nav class="main-sidebar-nav">
+            <button
+              id="homeNav"
+              class="main-sidebar-button is-active"
+              type="button"
+              data-main-home
+            >
+              <span class="main-sidebar-icon" aria-hidden="true">🏠</span>
+              <span class="main-sidebar-label">Main Portal</span>
+            </button>
+
+            <button
+              id="directoryNav"
+              class="main-sidebar-button"
+              type="button"
+              data-module-open="directory"
+              hidden
+            >
+              <span class="main-sidebar-icon" aria-hidden="true">👨‍👩‍👧</span>
+              <span class="main-sidebar-label">Member Directory</span>
+            </button>
+
+            <button
+              id="myFamilyNav"
+              class="main-sidebar-button"
+              type="button"
+              data-module-open="my-family"
+              hidden
+            >
+              <span class="main-sidebar-icon" aria-hidden="true">👨‍👩‍👧‍👦</span>
+              <span class="main-sidebar-label">My Family</span>
+            </button>
+
+            <button
+              id="reportsNav"
+              class="main-sidebar-button"
+              type="button"
+              data-module-open="reports"
+              hidden
+            >
+              <span class="main-sidebar-icon" aria-hidden="true">📊</span>
+              <span class="main-sidebar-label">Reports</span>
+            </button>
+
+            <button
+              id="treasurerNav"
+              class="main-sidebar-button"
+              type="button"
+              data-module-open="treasurer"
+              hidden
+            >
+              <span class="main-sidebar-icon" aria-hidden="true">💰</span>
+              <span class="main-sidebar-label">Treasurer Portal</span>
+            </button>
+
+            <button
+              id="adminNav"
+              class="main-sidebar-button"
+              type="button"
+              data-module-open="admin"
+              hidden
+            >
+              <span class="main-sidebar-icon" aria-hidden="true">⚙️</span>
+              <span class="main-sidebar-label">Administration</span>
+            </button>
+          </nav>
+
+          <div class="main-sidebar-footer">
+            KGMIS Version 1.0<br>
+            © 2026 KEF Global
+          </div>
+        </aside>
+
+        <div
+          id="mainSidebarOverlay"
+          class="main-sidebar-overlay"
+          aria-hidden="true"
+        ></div>
+
+        <!-- Dashboard / Module Stage -->
+        <div class="main-stage">
+
+          <div class="main-mobile-toolbar">
+            <button
+              id="mainMenuButton"
+              class="main-menu-button"
+              type="button"
+            >
+              ☰ Menu
+            </button>
+          </div>
+
+          <main
+            id="mainHomeContent"
+            class="main-content"
+          >
+            <?!= include('KGMIS_Hero_Card'); ?>
+
+            <div
+              id="mainPortalMessage"
+              class="main-message"
+              hidden
+            ></div>
+
+            <section
+              id="mainNoModules"
+              class="main-empty-state"
+              hidden
+            >
+              <h3>No modules available</h3>
+              <p>
+                Your KGMIS account is active, but no portal modules are assigned to your role.
+              </p>
+            </section>
+          </main>
+
+          <section
+            id="mainModuleWorkspace"
+            class="main-module-workspace"
+            hidden
+          >
+            <div class="main-workspace-toolbar">
+              <button
+                id="mainBackToHomeButton"
+                class="main-back-button"
+                type="button"
+              >
+                ← Main Portal
+              </button>
+
+              <div
+                id="mainWorkspaceTitle"
+                class="main-workspace-title"
+              >
+                Module
+              </div>
+            </div>
+
+            <div id="mainDirectoryWorkspace" hidden>
+              <?!= include('KGMIS_Module_Directory'); ?>
+            </div>
+
+            <div id="mainMyFamilyWorkspace" hidden>
+              <?!= include('KGMIS_Module_My_Family'); ?>
+            </div>
+
+            <div id="mainFamilySelfServiceProfileWorkspace" hidden>
+              <?!= include('KGMIS_Module_Family_SelfService_Profile'); ?>
+            </div>
+
+            <div id="mainReportsWorkspace" hidden>
+              <?!= include('60.00_KGMIS_Module_Reports'); ?>
+            </div>
+
+            <div id="mainTreasurerWorkspace" hidden>
+              <?!= include('90.00_KGMIS_Module_Treasurer'); ?>
+            </div>
+
+            <div id="mainAdminWorkspace" hidden>
+              <?!= include('37.00_KGMIS_Module_Admin'); ?>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const state = {
+      auth: null,
+      activeView: 'home'
+    };
+
+    const el = {};
+
+    function initialiseMainPortal() {
+      cacheMainPortalElements();
+      bindMainPortalEvents();
+
+      window.addEventListener(
+        'kgmis:authenticated',
+        handleAuthenticated
+      );
+
+      if (
+        window.KGMIS_HEADER &&
+        typeof window.KGMIS_HEADER.clearUser === 'function'
+      ) {
+        window.KGMIS_HEADER.clearUser();
+      }
+
+      setHeaderForMainPortal();
+    }
+
+    function cacheMainPortalElements() {
+      [
+        'mainLoginView',
+        'mainPortalView',
+        'mainAppLayout',
+        'mainSessionExpiry',
+        'mainPortalMessage',
+        'mainNoModules',
+        'mainHomeContent',
+        'mainModuleWorkspace',
+        'mainBackToHomeButton',
+        'mainWorkspaceTitle',
+        'mainDirectoryWorkspace',
+        'mainMyFamilyWorkspace',
+        'mainFamilySelfServiceProfileWorkspace',
+        'mainReportsWorkspace',
+        'mainTreasurerWorkspace',
+        'mainAdminWorkspace',
+        'mainSidebar',
+        'mainSidebarOverlay',
+        'mainMenuButton',
+        'homeNav',
+        'directoryNav',
+        'myFamilyNav',
+        'reportsNav',
+        'treasurerNav',
+        'adminNav'
+      ].forEach(function (id) {
+        el[id] = document.getElementById(id);
+      });
+    }
+
+    function bindMainPortalEvents() {
+      window.addEventListener(
+        'kgmis:signout-requested',
+        signOutMainPortal
+      );
+
+      if (el.mainBackToHomeButton) {
+        el.mainBackToHomeButton.addEventListener(
+          'click',
+          showMainPortalHome
+        );
+      }
+
+      if (el.mainMenuButton) {
+        el.mainMenuButton.addEventListener(
+          'click',
+          openMobileSidebar
+        );
+      }
+
+      if (el.mainSidebarOverlay) {
+        el.mainSidebarOverlay.addEventListener(
+          'click',
+          closeMobileSidebar
+        );
+      }
+
+      document.addEventListener(
+        'click',
+        handleMainPortalNavigationClick
+      );
+    }
+
+    function handleMainPortalNavigationClick(event) {
+      const homeButton = event.target.closest('[data-main-home]');
+
+      if (homeButton) {
+        event.preventDefault();
+        showMainPortalHome();
+        closeMobileSidebar();
+        return;
+      }
+
+      const button = event.target.closest('[data-module-open]');
+
+      if (!button) {
+        return;
+      }
+
+      const moduleName = String(
+        button.getAttribute('data-module-open') || ''
+      ).trim();
+
+      if (!moduleName) {
+        return;
+      }
+
+      event.preventDefault();
+      openMainPortalModule(moduleName);
+      closeMobileSidebar();
+    }
+
+    function handleAuthenticated(event) {
+      const auth =
+        event && event.detail
+          ? event.detail
+          : null;
+
+      if (
+        !auth ||
+        !auth.sessionToken ||
+        !auth.user
+      ) {
+        showMainPortalMessage(
+          'The authenticated session profile is incomplete.',
+          'error'
+        );
+        return;
+      }
+
+      state.auth = auth;
+      renderAuthenticatedPortal();
+    }
+
+    function renderAuthenticatedPortal() {
+      const auth = state.auth || {};
+      const user = auth.user || {};
+      const modules = auth.modules || {};
+
+      if (
+        window.KGMIS_HEADER &&
+        typeof window.KGMIS_HEADER.setUser === 'function'
+      ) {
+        window.KGMIS_HEADER.setUser(user);
+      }
+
+      setHeaderForMainPortal();
+
+      if (el.mainSessionExpiry) {
+        el.mainSessionExpiry.textContent =
+          formatSessionExpiry(auth.expiresAt);
+      }
+
+      setNavigationVisibility(
+        'directoryNav',
+        Boolean(modules.directory)
+      );
+
+      setNavigationVisibility(
+        'myFamilyNav',
+        Boolean(modules.myFamily || modules.directory)
+      );
+
+      setNavigationVisibility(
+        'reportsNav',
+        Boolean(modules.reports)
+      );
+
+      setNavigationVisibility(
+        'treasurerNav',
+        Boolean(modules.treasurer)
+      );
+
+      setNavigationVisibility(
+        'adminNav',
+        Boolean(modules.admin)
+      );
+
+      const visibleModuleCount = [
+        modules.directory,
+        (modules.myFamily || modules.directory),
+        modules.reports,
+        modules.treasurer,
+        modules.admin
+      ].filter(Boolean).length;
+
+      if (el.mainNoModules) {
+        el.mainNoModules.hidden = visibleModuleCount > 0;
+      }
+
+      el.mainLoginView.hidden = true;
+      el.mainPortalView.hidden = false;
+
+      showMainPortalHome();
+
+      if (
+        window.KGMIS_HERO_CARD &&
+        typeof window.KGMIS_HERO_CARD.activate === 'function'
+      ) {
+        window.KGMIS_HERO_CARD.activate(auth);
+      }
+
+      clearMainPortalMessage();
+    }
+
+    function setNavigationVisibility(elementId, visible) {
+      const item = el[elementId];
+
+      if (item) {
+        item.hidden = !visible;
+      }
+    }
+
+    function openMainPortalModule(moduleName) {
+      if (
+        !state.auth ||
+        !state.auth.sessionToken
+      ) {
+        returnToLogin(
+          'Your session is not available. Please sign in again.'
+        );
+        return;
+      }
+
+      const modules = state.auth.modules || {};
+
+      if (!isModulePermitted(moduleName, modules)) {
+        showMainPortalHome();
+        showMainPortalMessage(
+          'You do not have permission to open this module.',
+          'error'
+        );
+        return;
+      }
+
+      if (moduleName === 'directory') {
+        showWorkspace(
+          'Member Directory',
+          el.mainDirectoryWorkspace,
+          'directory'
+        );
+
+        if (
+          window.KGMIS_DIRECTORY_MODULE &&
+          typeof window.KGMIS_DIRECTORY_MODULE.activate === 'function'
+        ) {
+          window.KGMIS_DIRECTORY_MODULE.activate(state.auth);
+        }
+
+        return;
+      }
+
+      if (moduleName === 'my-family') {
+        showWorkspace(
+          'My Family',
+          el.mainMyFamilyWorkspace,
+          'my-family'
+        );
+
+        if (
+          window.KGMIS_MY_FAMILY_MODULE &&
+          typeof window.KGMIS_MY_FAMILY_MODULE.activate === 'function'
+        ) {
+          window.KGMIS_MY_FAMILY_MODULE.activate(state.auth);
+        }
+
+        return;
+      }
+
+        if (moduleName === 'family-self-service-profile') {
+          showWorkspace(
+          'Family Profile',
+          el.mainFamilySelfServiceProfileWorkspace,
+          'family-self-service-profile'
+      );
+
+        if (
+          window.KGMIS_FAMILY_SELF_SERVICE_PROFILE_MODULE &&
+          typeof window.KGMIS_FAMILY_SELF_SERVICE_PROFILE_MODULE.activate === 'function'
+        ) {
+          window.KGMIS_FAMILY_SELF_SERVICE_PROFILE_MODULE.activate(
+          state.auth
+      );
+  }
+
+  return;
+}
+
+      if (moduleName === 'reports') {
+  showWorkspace(
+    'KEF Global Reports',
+    el.mainReportsWorkspace,
+    'reports'
+  );
+
+  if (
+    window.KGMIS_REPORTS_MODULE &&
+    typeof window.KGMIS_REPORTS_MODULE.activate === 'function'
+  ) {
+    window.KGMIS_REPORTS_MODULE.activate(
+      state.auth
+    );
+  }
+
+  return;
+}
+
+      if (moduleName === 'treasurer') {
+        showWorkspace(
+          'Treasurer Portal',
+          el.mainTreasurerWorkspace,
+          'treasurer'
+        );
+
+        if (
+          window.KGMIS_TREASURER_MODULE &&
+          typeof window.KGMIS_TREASURER_MODULE.activate === 'function'
+        ) {
+          window.KGMIS_TREASURER_MODULE.activate(state.auth);
+        }
+
+        return;
+      }
+
+      if (moduleName === 'admin') {
+        showWorkspace(
+          'Administration',
+          el.mainAdminWorkspace,
+            'admin'
+      );
+
+      if (
+        window.KGMIS_ADMIN_MODULE &&
+        typeof window.KGMIS_ADMIN_MODULE.activate === 'function'
+      ) {
+        window.KGMIS_ADMIN_MODULE.activate(state.auth);
+      }
+
+        return;
+      }
+
+      showMainPortalHome();
+      setActiveNavigation(moduleName);
+
+      showMainPortalMessage(
+        getModuleOpeningMessage(moduleName),
+        'info'
+      );
+    }
+
+    function isModulePermitted(moduleName, modules) {
+      if (moduleName === 'directory') {
+        return Boolean(modules.directory);
+      }
+
+      if (moduleName === 'my-family') {
+        return Boolean(modules.myFamily || modules.directory);
+      }
+
+      if (moduleName === 'family-self-service-profile') {
+        return Boolean(modules.myFamily || modules.directory);
+      }
+
+      if (moduleName === 'reports') {
+        return Boolean(modules.reports);
+      }
+
+      if (moduleName === 'treasurer') {
+        return Boolean(modules.treasurer);
+      }
+
+      if (moduleName === 'admin') {
+        return Boolean(modules.admin);
+      }
+
+      return false;
+    }
+
+    function showWorkspace(title, workspace, moduleName) {
+      hideAllWorkspaces();
+      closeMobileSidebar();
+
+      if (el.mainAppLayout) {
+        el.mainAppLayout.classList.add('module-mode');
+      }
+
+      el.mainHomeContent.hidden = true;
+      el.mainModuleWorkspace.hidden = false;
+
+      if (workspace) {
+        workspace.hidden = false;
+      }
+
+      el.mainWorkspaceTitle.textContent = title;
+      state.activeView = moduleName;
+      setActiveNavigation(moduleName);
+      setHeaderTitle(title);
+      clearMainPortalMessage();
+    }
+
+    function hideAllWorkspaces() {
+      [
+        el.mainDirectoryWorkspace,
+        el.mainMyFamilyWorkspace,
+        el.mainFamilySelfServiceProfileWorkspace,
+        el.mainReportsWorkspace,
+        el.mainTreasurerWorkspace,
+        el.mainAdminWorkspace
+      ].forEach(function (workspace) {
+        if (workspace) {
+          workspace.hidden = true;
+        }
+      });
+    }
+
+    function showMainPortalHome() {
+      if (!el.mainHomeContent || !el.mainModuleWorkspace) {
+        return;
+      }
+
+      hideAllWorkspaces();
+      closeMobileSidebar();
+
+      if (el.mainAppLayout) {
+        el.mainAppLayout.classList.remove('module-mode');
+      }
+
+      el.mainModuleWorkspace.hidden = true;
+      el.mainHomeContent.hidden = false;
+
+      state.activeView = 'home';
+      setActiveNavigation('home');
+      setHeaderForMainPortal();
+      clearMainPortalMessage();
+    }
+
+    function setActiveNavigation(moduleName) {
+      const mapping = {
+        home: el.homeNav,
+        directory: el.directoryNav,
+        'my-family': el.myFamilyNav,
+        reports: el.reportsNav,
+        treasurer: el.treasurerNav,
+        admin: el.adminNav
+      };
+
+      Object.keys(mapping).forEach(function (key) {
+        if (mapping[key]) {
+          mapping[key].classList.toggle(
+            'is-active',
+            key === moduleName
+          );
+        }
+      });
+    }
+
+    function getModuleOpeningMessage(moduleName) {
+      const messages = {
+        reports:
+          'The Reports module is assigned to your role and will be connected in a later implementation phase.',
+        admin:
+          'The Administration module is assigned to your role and will be connected in a later implementation phase.'
+      };
+
+      return (
+        messages[moduleName] ||
+        'This module is not yet connected.'
+      );
+    }
+
+    function setHeaderForMainPortal() {
+      setHeaderTitle('KGMIS Main Portal');
+    }
+
+    function setHeaderTitle(title) {
+      if (
+        window.KGMIS_HEADER &&
+        typeof window.KGMIS_HEADER.setTitle === 'function'
+      ) {
+        window.KGMIS_HEADER.setTitle(
+          title,
+          'KEF Global Membership Information System'
+        );
+      }
+    }
+
+    function openMobileSidebar() {
+      if (el.mainSidebar) {
+        el.mainSidebar.classList.add('is-open');
+      }
+
+      if (el.mainSidebarOverlay) {
+        el.mainSidebarOverlay.classList.add('is-open');
+      }
+    }
+
+    function closeMobileSidebar() {
+      if (el.mainSidebar) {
+        el.mainSidebar.classList.remove('is-open');
+      }
+
+      if (el.mainSidebarOverlay) {
+        el.mainSidebarOverlay.classList.remove('is-open');
+      }
+    }
+
+    function signOutMainPortal() {
+
+  if (
+    window.KGMIS_HEADER &&
+    typeof window.KGMIS_HEADER.setSignOutBusy === 'function'
+  ) {
+    window.KGMIS_HEADER.setSignOutBusy(true);
+  }
+
+  /*
+   * Revoke the shared KGMIS session directly.
+   * This works for both Mobile Password and Email OTP sessions.
+   */
+  if (
+    state.auth &&
+    state.auth.sessionToken
+  ) {
+
+    google.script.run
+      .withSuccessHandler(
+        function () {
+          finishPortalSignOut();
+        }
+      )
+      .withFailureHandler(
+        function () {
+          /*
+           * Even if backend revocation fails,
+           * clear the local portal state.
+           */
+          finishPortalSignOut();
+        }
+      )
+      .KGMIS_OTP_SignOut(
+        state.auth.sessionToken
+      );
+
+    return;
+  }
+
+  finishPortalSignOut();
+}
+
+function finishPortalSignOut() {
+
+  if (
+    window.KGMIS_HEADER &&
+    typeof window.KGMIS_HEADER.setSignOutBusy === 'function'
+  ) {
+    window.KGMIS_HEADER.setSignOutBusy(false);
+  }
+
+  returnToLogin();
+}
+
+
+    function returnToLogin(message) {
+      state.auth = null;
+      state.activeView = 'home';
+
+      if (
+        window.KGMIS_HEADER &&
+        typeof window.KGMIS_HEADER.clearUser === 'function'
+      ) {
+        window.KGMIS_HEADER.clearUser();
+      }
+
+      setHeaderForMainPortal();
+
+      el.mainPortalView.hidden = true;
+      el.mainModuleWorkspace.hidden = true;
+      hideAllWorkspaces();
+
+      if (el.mainAppLayout) {
+        el.mainAppLayout.classList.remove('module-mode');
+      }
+
+      el.mainHomeContent.hidden = false;
+      el.mainLoginView.hidden = false;
+
+      hideAllNavigationItems();
+      closeMobileSidebar();
+
+      if (
+        window.KGMIS_HERO_CARD &&
+        typeof window.KGMIS_HERO_CARD.reset === 'function'
+      ) {
+        window.KGMIS_HERO_CARD.reset();
+      }
+
+      if (
+    window.KGMIS_MOBILE_LOGIN &&
+    typeof window.KGMIS_MOBILE_LOGIN.reset === 'function'
+) {
+
+    window.KGMIS_MOBILE_LOGIN.reset();
+
+} else if (
+
+    window.KGMIS_OTP_LOGIN &&
+    typeof window.KGMIS_OTP_LOGIN.showLogin === 'function'
+
+) {
+
+    window.KGMIS_OTP_LOGIN.showLogin();
+
+}
+
+      if (message) {
+        showMainPortalMessage(message, 'error');
+      } else {
+        clearMainPortalMessage();
+      }
+    }
+
+    function hideAllNavigationItems() {
+      [
+        'directoryNav',
+        'myFamilyNav',
+        'reportsNav',
+        'treasurerNav',
+        'adminNav'
+      ].forEach(function (id) {
+        if (el[id]) {
+          el[id].hidden = true;
+        }
+      });
+
+      if (el.mainNoModules) {
+        el.mainNoModules.hidden = true;
+      }
+
+      setActiveNavigation('home');
+    }
+
+    function formatSessionExpiry(value) {
+      const timestamp = Number(value);
+
+      if (!Number.isFinite(timestamp)) {
+        return '8 hours';
+      }
+
+      const date = new Date(timestamp);
+
+      if (isNaN(date.getTime())) {
+        return '8 hours';
+      }
+
+      return date.toLocaleTimeString(
+        'en-IN',
+        {
+          hour: '2-digit',
+          minute: '2-digit'
+        }
+      );
+    }
+
+    function showMainPortalMessage(message, type) {
+      if (!el.mainPortalMessage) {
+        return;
+      }
+
+      el.mainPortalMessage.textContent = message || '';
+      el.mainPortalMessage.className =
+        'main-message ' + (type || 'info');
+      el.mainPortalMessage.hidden = false;
+    }
+
+    function clearMainPortalMessage() {
+      if (!el.mainPortalMessage) {
+        return;
+      }
+
+      el.mainPortalMessage.hidden = true;
+      el.mainPortalMessage.textContent = '';
+      el.mainPortalMessage.className = 'main-message';
+    }
+
+    window.KGMIS_MAIN_PORTAL = {
+      openModule: openMainPortalModule,
+      showHome: showMainPortalHome
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener(
+        'DOMContentLoaded',
+        initialiseMainPortal
+      );
+    } else {
+      initialiseMainPortal();
+    }
+  })();
+  </script>
+</body>
+</html>

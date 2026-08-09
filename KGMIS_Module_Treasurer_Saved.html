@@ -1,0 +1,1054 @@
+<!--
+  ============================================================
+  KGMIS Embedded Treasurer Module
+  File: KGMIS_Module_Treasurer.html
+  Version: 2.0
+  Designed and Develped by JJA Global Systems
+  Purpose: Responsive embedded module without duplicate header/sidebar
+  ============================================================
+-->
+
+<style>
+  #kgmisTreasurerModuleHost {
+    --tr-primary: #176c91;
+    --tr-primary-dark: #0d4e70;
+    --tr-primary-light: #e7f4f9;
+    --tr-border: #d5e0e8;
+    --tr-panel: #ffffff;
+    --tr-background: #f3f7fa;
+    --tr-text: #1f2937;
+    --tr-muted: #64748b;
+    --tr-shadow: 0 5px 18px rgba(15, 76, 105, 0.08);
+
+    width: 100%;
+    min-width: 0;
+    color: var(--tr-text);
+    background: var(--tr-background);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #kgmisTreasurerModuleHost *,
+  #kgmisTreasurerModuleHost *::before,
+  #kgmisTreasurerModuleHost *::after {
+    box-sizing: border-box;
+  }
+
+  #kgmisTreasurerModuleHost button,
+  #kgmisTreasurerModuleHost input,
+  #kgmisTreasurerModuleHost select,
+  #kgmisTreasurerModuleHost textarea {
+    font: inherit;
+  }
+
+  #kgmisTreasurerModuleHost button {
+    cursor: pointer;
+  }
+
+  .tr-shell {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* ========================================================
+     Module Navigation
+     ======================================================== */
+
+  .tr-navigation {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    margin-bottom: 16px;
+    padding: 10px;
+    border: 1px solid var(--tr-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: var(--tr-shadow);
+    backdrop-filter: blur(8px);
+  }
+
+  .tr-navigation-label {
+    margin: 0 0 8px;
+    color: var(--tr-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .tr-desktop-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .tr-nav-button {
+    min-height: 38px;
+    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: var(--tr-primary-dark);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .tr-nav-button:hover {
+    border-color: #b9d7e6;
+    background: var(--tr-primary-light);
+  }
+
+  .tr-nav-button.active {
+    border-color: var(--tr-primary);
+    color: #ffffff;
+    background: var(--tr-primary);
+  }
+
+  .tr-nav-icon {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .tr-mobile-nav {
+    display: none;
+  }
+
+  .tr-mobile-select {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 1px solid var(--tr-border);
+    border-radius: 9px;
+    color: var(--tr-primary-dark);
+    background: #ffffff;
+    font-weight: 800;
+  }
+
+  /* ========================================================
+     Content
+     ======================================================== */
+
+  .tr-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tr-global-loading,
+  .tr-global-message {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+  }
+
+  .tr-global-loading {
+    display: none;
+    color: var(--tr-primary-dark);
+    background: var(--tr-primary-light);
+  }
+
+  .tr-global-message {
+    display: none;
+  }
+
+  .tr-global-message.success {
+    display: block;
+    border: 1px solid #a7e6bd;
+    color: #166534;
+    background: #ecfdf3;
+  }
+
+  .tr-global-message.error {
+    display: block;
+    border: 1px solid #fecdca;
+    color: #b42318;
+    background: #fef3f2;
+  }
+
+  .tr-portal-module {
+    display: none;
+  }
+
+  .tr-portal-module.active {
+    display: block;
+  }
+
+  .tr-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+  }
+
+  .tr-page-title {
+    margin: 0;
+    color: var(--tr-primary-dark);
+    font-size: 25px;
+    line-height: 1.15;
+  }
+
+  .tr-page-description {
+    margin: 5px 0 0;
+    color: var(--tr-muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .tr-financial-year-badge {
+    min-width: 168px;
+    padding: 9px 14px;
+    border: 1px solid #a8d7e8;
+    border-radius: 11px;
+    color: var(--tr-primary-dark);
+    background: var(--tr-primary-light);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .tr-financial-year-label {
+    color: var(--tr-muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .tr-financial-year-value {
+    margin-top: 4px;
+    color: var(--tr-primary-dark);
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  /* ========================================================
+     Dashboard Cards
+     ======================================================== */
+
+  .tr-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .tr-dashboard-card {
+    min-width: 0;
+    min-height: 110px;
+    padding: 15px 16px;
+    border: 1px solid var(--tr-border);
+    border-radius: 12px;
+    background: var(--tr-panel);
+    box-shadow: var(--tr-shadow);
+  }
+
+  .tr-card-label {
+    color: var(--tr-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  .tr-card-value {
+    display: block;
+    margin-top: 8px;
+    color: var(--tr-primary-dark);
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1.05;
+  }
+
+  .tr-card-note {
+    margin-top: 6px;
+    color: var(--tr-muted);
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .tr-membership-summary {
+    display: grid;
+    gap: 5px;
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid var(--tr-border);
+  }
+
+  .tr-membership-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--tr-muted);
+    font-size: 11px;
+  }
+
+  .tr-membership-row strong {
+    color: var(--tr-primary-dark);
+    font-size: 12px;
+  }
+
+  .tr-membership-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .tr-membership-dot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+  }
+
+  .tr-membership-dot.paid {
+    background: #16a34a;
+  }
+
+  .tr-membership-dot.pending {
+    background: #f59e0b;
+  }
+
+  /* ========================================================
+     Panels and Quick Actions
+     ======================================================== */
+
+  .tr-panel {
+    padding: 18px;
+    margin-bottom: 18px;
+    border: 1px solid var(--tr-border);
+    border-radius: 14px;
+    background: var(--tr-panel);
+    box-shadow: var(--tr-shadow);
+  }
+
+  .tr-panel-title {
+    margin: 0 0 5px;
+    color: var(--tr-primary-dark);
+    font-size: 19px;
+  }
+
+  .tr-panel-description {
+    margin: 0;
+    color: var(--tr-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .tr-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .tr-quick-action {
+    min-height: 76px;
+    padding: 13px;
+    border: 1px solid var(--tr-border);
+    border-radius: 11px;
+    color: var(--tr-primary-dark);
+    background: #f8fbfd;
+    text-align: left;
+    font-weight: 800;
+  }
+
+  .tr-quick-action:hover {
+    border-color: var(--tr-primary);
+    background: var(--tr-primary-light);
+  }
+
+  .tr-quick-action-icon {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 20px;
+  }
+
+  .tr-module-placeholder {
+    padding: 38px 20px;
+    text-align: center;
+  }
+
+  .tr-module-placeholder-icon {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 40px;
+  }
+
+  .tr-module-placeholder h2 {
+    margin: 0 0 8px;
+    color: var(--tr-primary-dark);
+  }
+
+  .tr-module-placeholder p {
+    max-width: 620px;
+    margin: 0 auto;
+    color: var(--tr-muted);
+    line-height: 1.6;
+  }
+
+  /* ========================================================
+     Responsive
+     ======================================================== */
+
+  @media (max-width: 1100px) {
+    .tr-dashboard-grid,
+    .tr-quick-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .tr-navigation {
+      position: static;
+      padding: 9px;
+    }
+
+    .tr-desktop-nav {
+      display: none;
+    }
+
+    .tr-mobile-nav {
+      display: block;
+    }
+
+    .tr-page-header {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tr-financial-year-badge {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .tr-dashboard-grid,
+    .tr-quick-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .tr-page-title {
+      font-size: 22px;
+    }
+
+    .tr-dashboard-card {
+      min-height: 0;
+    }
+
+    .tr-panel {
+      padding: 14px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .tr-navigation-label {
+      margin-bottom: 6px;
+    }
+
+    .tr-page-title {
+      font-size: 20px;
+    }
+
+    .tr-card-value {
+      font-size: 23px;
+    }
+  }
+</style>
+
+<div id="kgmisTreasurerModuleHost" class="tr-shell">
+
+  <!-- Compact Treasurer Navigation -->
+  <div class="tr-navigation">
+    <p class="tr-navigation-label">Treasurer Functions</p>
+
+    <nav class="tr-desktop-nav" aria-label="Treasurer navigation">
+      <button class="tr-nav-button active" type="button"
+        data-tr-module="dashboard">
+        <span class="tr-nav-icon">🏠</span>Dashboard
+      </button>
+
+      <button class="tr-nav-button" type="button"
+        data-tr-module="receive-payment">
+        <span class="tr-nav-icon">💰</span>Receive Payment
+      </button>
+
+      <button class="tr-nav-button" type="button"
+        data-tr-module="record-expense">
+        <span class="tr-nav-icon">💳</span>Record Expense
+      </button>
+
+      <button class="tr-nav-button" type="button"
+        data-tr-module="family-search">
+        <span class="tr-nav-icon">👨‍👩‍👧</span>Family Search
+      </button>
+
+      <button class="tr-nav-button" type="button"
+        data-tr-module="receipt-register">
+        <span class="tr-nav-icon">🧾</span>Receipt Register
+      </button>
+
+      <button class="tr-nav-button" type="button"
+        data-tr-module="payment-register">
+        <span class="tr-nav-icon">📄</span>Payment Register
+      </button>
+
+      <button class="tr-nav-button" type="button"
+        data-tr-module="reports">
+        <span class="tr-nav-icon">📊</span>Reports
+      </button>
+    </nav>
+
+    <div class="tr-mobile-nav">
+      <select
+        id="kgmisTreasurerMobileNav"
+        class="tr-mobile-select"
+        aria-label="Select Treasurer function"
+      >
+        <option value="dashboard">🏠 Dashboard</option>
+        <option value="receive-payment">💰 Receive Payment</option>
+        <option value="record-expense">💳 Record Expense</option>
+        <option value="family-search">👨‍👩‍👧 Family Search</option>
+        <option value="receipt-register">🧾 Receipt Register</option>
+        <option value="payment-register">📄 Payment Register</option>
+        <option value="reports">📊 Reports</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="tr-content">
+    <div id="kgmisTreasurerGlobalLoading" class="tr-global-loading">
+      Loading…
+    </div>
+
+    <div id="kgmisTreasurerGlobalMessage" class="tr-global-message"></div>
+
+    <!-- Dashboard -->
+    <section
+      id="kgmisTreasurerDashboardModule"
+      class="tr-portal-module active"
+      data-tr-module-section="dashboard"
+    >
+      <div class="tr-page-header">
+        <div>
+          <h2 class="tr-page-title">Treasurer Dashboard</h2>
+          <p class="tr-page-description">
+            Overview of membership collections, receipts, payments and outstanding dues.
+          </p>
+        </div>
+
+        <div
+          id="kgmisTreasurerFinancialYearBadge"
+          class="tr-financial-year-badge"
+        >
+          Current Financial Year
+        </div>
+      </div>
+
+      <div class="tr-dashboard-grid">
+        <div class="tr-dashboard-card">
+          <span class="tr-card-label">Total Families</span>
+          <span id="kgmisTreasurerDashboardFamilies" class="tr-card-value">—</span>
+
+          <div class="tr-membership-summary">
+            <div class="tr-membership-row">
+              <span class="tr-membership-label">
+                <span class="tr-membership-dot paid"></span>
+                Paid Members
+              </span>
+              <strong id="kgmisTreasurerDashboardPaidMembers">—</strong>
+            </div>
+
+            <div class="tr-membership-row">
+              <span class="tr-membership-label">
+                <span class="tr-membership-dot pending"></span>
+                Not Paid Members
+              </span>
+              <strong id="kgmisTreasurerDashboardPendingMembers">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="tr-dashboard-card">
+          <span class="tr-card-label">Membership Receipts</span>
+          <span id="kgmisTreasurerDashboardReceipts" class="tr-card-value">—</span>
+          <div class="tr-card-note">Current financial year</div>
+        </div>
+
+        <div class="tr-dashboard-card">
+          <span class="tr-card-label">Payments</span>
+          <span id="kgmisTreasurerDashboardPayments" class="tr-card-value">—</span>
+          <div class="tr-card-note">Current financial year</div>
+        </div>
+
+        <div class="tr-dashboard-card">
+          <span class="tr-card-label">Outstanding Membership Dues</span>
+          <span id="kgmisTreasurerDashboardOutstanding" class="tr-card-value">—</span>
+          <div class="tr-card-note">Current financial year</div>
+        </div>
+      </div>
+
+      <section class="tr-panel">
+        <h3 class="tr-panel-title">Quick Actions</h3>
+        <p class="tr-panel-description">
+          Select a frequently used Treasurer function.
+        </p>
+
+        <div class="tr-quick-actions">
+          <button class="tr-quick-action" type="button"
+            data-tr-quick-module="receive-payment">
+            <span class="tr-quick-action-icon">💰</span>
+            Receive Payment
+          </button>
+
+          <button class="tr-quick-action" type="button"
+            data-tr-quick-module="record-expense">
+            <span class="tr-quick-action-icon">💳</span>
+            Record Expense
+          </button>
+
+          <button class="tr-quick-action" type="button"
+            data-tr-quick-module="family-search">
+            <span class="tr-quick-action-icon">👨‍👩‍👧</span>
+            Find a Family
+          </button>
+
+          <button class="tr-quick-action" type="button"
+            data-tr-quick-module="reports">
+            <span class="tr-quick-action-icon">📊</span>
+            View Reports
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <!-- Receive Payment -->
+    <section
+      id="kgmisTreasurerReceivePaymentModule"
+      class="tr-portal-module"
+      data-tr-module-section="receive-payment"
+    >
+      <?!= include('KGMIS_Receive_Payment_Embedded'); ?>
+    </section>
+
+    <!-- Placeholder -->
+    <section
+      id="kgmisTreasurerPlaceholderModule"
+      class="tr-portal-module"
+    >
+      <div class="tr-panel tr-module-placeholder">
+        <span
+          id="kgmisTreasurerPlaceholderIcon"
+          class="tr-module-placeholder-icon"
+        >📌</span>
+
+        <h2 id="kgmisTreasurerPlaceholderTitle">Module</h2>
+
+        <p id="kgmisTreasurerPlaceholderDescription">
+          This module is under development.
+        </p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const MODULES = {
+    dashboard: {
+      title: 'Treasurer Dashboard',
+      description: 'Overview of the Treasurer Module.',
+      icon: '🏠',
+      implemented: true
+    },
+    'receive-payment': {
+      title: 'Receive Payment',
+      description:
+        'Record money received by KEF Global and generate an official receipt.',
+      icon: '💰',
+      implemented: true
+    },
+    'record-expense': {
+      title: 'Record Expense',
+      description:
+        'Record payments made by KEF Global and generate a payment voucher.',
+      icon: '💳',
+      implemented: false
+    },
+    'family-search': {
+      title: 'Family Search',
+      description:
+        'Search family, membership and subscription information.',
+      icon: '👨‍👩‍👧',
+      implemented: false
+    },
+    'receipt-register': {
+      title: 'Receipt Register',
+      description:
+        'Search, filter, view and reprint receipt transactions.',
+      icon: '🧾',
+      implemented: false
+    },
+    'payment-register': {
+      title: 'Payment Register',
+      description:
+        'Search, filter, view and reprint payment transactions.',
+      icon: '📄',
+      implemented: false
+    },
+    reports: {
+      title: 'Reports',
+      description:
+        'View financial, membership and event reports.',
+      icon: '📊',
+      implemented: false
+    }
+  };
+
+  const state = {
+    auth: null,
+    sessionToken: '',
+    initialised: false,
+    activeModule: 'dashboard'
+  };
+
+  const el = {};
+
+  function cacheElements() {
+    [
+      'kgmisTreasurerModuleHost',
+      'kgmisTreasurerMobileNav',
+      'kgmisTreasurerGlobalLoading',
+      'kgmisTreasurerGlobalMessage',
+      'kgmisTreasurerDashboardModule',
+      'kgmisTreasurerReceivePaymentModule',
+      'kgmisTreasurerPlaceholderModule',
+      'kgmisTreasurerFinancialYearBadge',
+      'kgmisTreasurerDashboardFamilies',
+      'kgmisTreasurerDashboardPaidMembers',
+      'kgmisTreasurerDashboardPendingMembers',
+      'kgmisTreasurerDashboardReceipts',
+      'kgmisTreasurerDashboardPayments',
+      'kgmisTreasurerDashboardOutstanding',
+      'kgmisTreasurerPlaceholderIcon',
+      'kgmisTreasurerPlaceholderTitle',
+      'kgmisTreasurerPlaceholderDescription'
+    ].forEach(function (id) {
+      el[id] = document.getElementById(id);
+    });
+  }
+
+  function bindEvents() {
+    if (!el.kgmisTreasurerModuleHost) {
+      return;
+    }
+
+    el.kgmisTreasurerModuleHost.addEventListener(
+      'click',
+      function (event) {
+        const navButton =
+          event.target.closest('[data-tr-module]');
+
+        if (navButton) {
+          openModule(
+            navButton.getAttribute('data-tr-module')
+          );
+          return;
+        }
+
+        const quickButton =
+          event.target.closest('[data-tr-quick-module]');
+
+        if (quickButton) {
+          openModule(
+            quickButton.getAttribute('data-tr-quick-module')
+          );
+        }
+      }
+    );
+
+    if (el.kgmisTreasurerMobileNav) {
+      el.kgmisTreasurerMobileNav.addEventListener(
+        'change',
+        function () {
+          openModule(
+            el.kgmisTreasurerMobileNav.value
+          );
+        }
+      );
+    }
+  }
+
+  function activate(authContext) {
+    const auth = authContext || {};
+    const sessionToken =
+      String(auth.sessionToken || '').trim();
+
+    if (!sessionToken) {
+      showError(
+        'The Treasurer session is missing. Please sign out and sign in again.'
+      );
+      return;
+    }
+
+    state.auth = auth;
+    state.sessionToken = sessionToken;
+
+    if (!state.initialised) {
+      state.initialised = true;
+      openModule('dashboard');
+      return;
+    }
+
+    openModule(state.activeModule || 'dashboard');
+  }
+
+  function openModule(moduleName) {
+    const module = MODULES[moduleName];
+
+    if (!module) {
+      showError(
+        'The selected Treasurer function is not available.'
+      );
+      return;
+    }
+
+    clearMessage();
+    hideAllModules();
+    setActiveNavigation(moduleName);
+
+    state.activeModule = moduleName;
+
+    if (moduleName === 'dashboard') {
+      el.kgmisTreasurerDashboardModule.classList.add('active');
+      loadDashboardSummary();
+      return;
+    }
+
+    if (moduleName === 'receive-payment') {
+      el.kgmisTreasurerReceivePaymentModule.classList.add('active');
+
+      if (
+        window.KGMIS_RECEIVE_PAYMENT_MODULE &&
+        typeof window.KGMIS_RECEIVE_PAYMENT_MODULE.activate ===
+          'function'
+      ) {
+        window.KGMIS_RECEIVE_PAYMENT_MODULE.activate(
+          state.auth
+        );
+      }
+
+      return;
+    }
+
+    renderPlaceholder(module);
+  }
+
+  function hideAllModules() {
+    [
+      el.kgmisTreasurerDashboardModule,
+      el.kgmisTreasurerReceivePaymentModule,
+      el.kgmisTreasurerPlaceholderModule
+    ].forEach(function (section) {
+      if (section) {
+        section.classList.remove('active');
+      }
+    });
+  }
+
+  function setActiveNavigation(moduleName) {
+    if (el.kgmisTreasurerModuleHost) {
+      el.kgmisTreasurerModuleHost
+        .querySelectorAll('[data-tr-module]')
+        .forEach(function (button) {
+          button.classList.toggle(
+            'active',
+            button.getAttribute('data-tr-module') ===
+              moduleName
+          );
+        });
+    }
+
+    if (el.kgmisTreasurerMobileNav) {
+      el.kgmisTreasurerMobileNav.value = moduleName;
+    }
+  }
+
+  function renderPlaceholder(module) {
+    el.kgmisTreasurerPlaceholderIcon.textContent =
+      module.icon;
+    el.kgmisTreasurerPlaceholderTitle.textContent =
+      module.title;
+    el.kgmisTreasurerPlaceholderDescription.textContent =
+      module.description;
+    el.kgmisTreasurerPlaceholderModule.classList.add(
+      'active'
+    );
+  }
+
+  function loadDashboardSummary() {
+    if (!state.sessionToken) {
+      showError(
+        'The Treasurer session is not available.'
+      );
+      return;
+    }
+
+    setLoading(true, 'Loading dashboard…');
+    clearMessage();
+
+    google.script.run
+      .withSuccessHandler(function (summary) {
+        setLoading(false);
+
+        setText(
+          el.kgmisTreasurerDashboardFamilies,
+          formatNumber(summary.totalFamilies)
+        );
+
+        setText(
+          el.kgmisTreasurerDashboardPaidMembers,
+          formatNumber(summary.paidMembershipFamilies)
+        );
+
+        setText(
+          el.kgmisTreasurerDashboardPendingMembers,
+          formatNumber(
+            summary.notPaidMembershipFamilies !== undefined
+              ? summary.notPaidMembershipFamilies
+              : summary.pendingMembershipFamilies
+          )
+        );
+
+        setText(
+          el.kgmisTreasurerDashboardReceipts,
+          formatCurrency(summary.membershipReceipts)
+        );
+
+        setText(
+          el.kgmisTreasurerDashboardPayments,
+          formatCurrency(summary.payments)
+        );
+
+        setText(
+          el.kgmisTreasurerDashboardOutstanding,
+          formatCurrency(
+            summary.outstandingMembershipDues
+          )
+        );
+
+        if (el.kgmisTreasurerFinancialYearBadge) {
+          el.kgmisTreasurerFinancialYearBadge.innerHTML =
+            '<div class="tr-financial-year-label">' +
+              'Current Financial Year' +
+            '</div>' +
+            '<div class="tr-financial-year-value">' +
+              escapeHtml(summary.financialYear || '—') +
+            '</div>';
+        }
+      })
+      .withFailureHandler(function (error) {
+        setLoading(false);
+        showError(error);
+      })
+      .KGMIS_Treasurer_GetDashboardSummary(
+        state.sessionToken
+      );
+  }
+
+  function setText(element, value) {
+    if (element) {
+      element.textContent = value;
+    }
+  }
+
+  function formatNumber(value) {
+    return new Intl.NumberFormat('en-IN').format(
+      Number(value) || 0
+    );
+  }
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat(
+      'en-IN',
+      {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }
+    ).format(Number(value) || 0);
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function setLoading(isLoading, text) {
+    if (!el.kgmisTreasurerGlobalLoading) {
+      return;
+    }
+
+    el.kgmisTreasurerGlobalLoading.textContent =
+      text || 'Loading…';
+
+    el.kgmisTreasurerGlobalLoading.style.display =
+      isLoading ? 'block' : 'none';
+  }
+
+  function clearMessage() {
+    if (!el.kgmisTreasurerGlobalMessage) {
+      return;
+    }
+
+    el.kgmisTreasurerGlobalMessage.className =
+      'tr-global-message';
+    el.kgmisTreasurerGlobalMessage.textContent = '';
+  }
+
+  function showError(error) {
+    if (!el.kgmisTreasurerGlobalMessage) {
+      return;
+    }
+
+    const text =
+      error && error.message
+        ? error.message
+        : String(
+            error ||
+            'An unexpected error occurred.'
+          );
+
+    el.kgmisTreasurerGlobalMessage.className =
+      'tr-global-message error';
+    el.kgmisTreasurerGlobalMessage.textContent = text;
+  }
+
+  function initialise() {
+    cacheElements();
+    bindEvents();
+  }
+
+  window.KGMIS_TREASURER_MODULE = {
+    activate: activate,
+    openModule: openModule
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialise
+    );
+  } else {
+    initialise();
+  }
+})();
+</script>

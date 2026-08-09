@@ -1,0 +1,228 @@
+<!--
+==============================================================================
+KEFG Membership Information System (KGMIS)
+Embedded Module : Family Profile
+File            : KGMIS_Module_Family_SelfService_Profile.html
+Version         : 1.0
+Designed and Developed by: James Joseph Alenchery
+==============================================================================
+-->
+
+<?!= KMIS_UI_Include('FamilyProfile_Styles'); ?>
+
+<div id="kmisApp">
+
+
+    <!-- ===========================
+          LOADING PANEL
+    ============================ -->
+
+    <div
+        id="loadingPanel"
+        class="loadingPanel">
+
+        Loading KEFG Family Profile...
+
+    </div>
+
+
+
+    <!-- ===========================
+          ERROR PANEL
+    ============================ -->
+
+    <div
+        id="errorPanel"
+        class="errorPanel hidden">
+
+    </div>
+
+
+    <!-- ===========================
+          MAIN WIZARD
+    ============================ -->
+
+    <main
+        id="wizardContainer"
+        class="hidden">
+
+
+        <!-- ===================
+             WELCOME CARD
+        ==================== -->
+
+        <section
+            class="welcomeCard">
+
+            <div>
+
+                <div class="sectionCaption">
+
+                    Family Self Service Module
+
+                </div>
+
+                <h2
+                    id="welcomeGreeting">
+
+                    Welcome
+
+                </h2>
+
+                <p>
+
+                    Please review the information already
+                    available in KGMIS and update only
+                    those fields that have changed.
+
+                </p>
+
+            </div>
+
+
+            <div
+                class="completionCard">
+
+                <span>
+
+                    Profile Completion
+
+                </span>
+
+                <strong
+                    id="completionPercentage">
+
+                    0%
+
+                </strong>
+
+                <div
+                    class="progressBar">
+
+                    <div
+                        id="progressFill">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ===================
+             WIZARD NAVIGATION
+        ==================== -->
+
+        <nav
+            class="wizardNavigation">
+
+            <button
+                class="wizardButton active"
+                data-page="overview">
+
+                Overview
+
+            </button>
+
+            <button
+                class="wizardButton"
+                data-page="member">
+
+                Primary Member
+
+            </button>
+
+            <button
+                class="wizardButton"
+                data-page="spouse">
+
+                Spouse
+
+            </button>
+
+            <button
+              class="wizardButton"
+              data-page="photo">
+
+              Family Photo
+
+            </button>
+
+            <button
+              class="wizardButton"
+              data-page="family">
+
+              Family Members
+
+            </button>
+
+            <button
+                class="wizardButton"
+                data-page="communication">
+
+                Communication
+
+            </button>
+
+            <button
+                class="wizardButton"
+                data-page="subscription">
+
+                Subscription
+
+            </button>
+
+            <button
+                class="wizardButton"
+                data-page="review">
+                Review
+            </button>
+        </nav>
+
+        <!-- ===================
+             PAGE CONTAINER
+        ==================== -->
+
+        <section
+            id="pageContainer">
+            <!--
+                JavaScript
+                builds all wizard pages
+                dynamically here.
+            -->
+        </section>
+
+<!-- ===================
+             NAVIGATION
+        ==================== -->
+        <footer
+            class="wizardFooter">
+            <button
+                id="previousButton"
+                class="secondaryButton">
+                ← Previous
+            </button>
+            <button
+                id="nextButton">
+                Next →
+            </button>
+        </footer>
+    </main>
+
+     <!-- ===========================
+              FOOTER
+        ===========================
+    <footer
+        class="portalFooter">
+        KEFG Membership Information System
+        <br>
+        Family Profile Module
+        <br>
+        Version 2.0
+    </footer>
+  ============================ -->
+</div>
+
+<?!= KMIS_UI_Include('FamilyProfile_JavaScript'); ?>

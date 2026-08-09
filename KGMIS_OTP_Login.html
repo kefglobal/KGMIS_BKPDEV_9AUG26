@@ -1,0 +1,1256 @@
+<!--
+  ============================================================
+  KEF Global Membership Information System (KGMIS)
+  Main Portal — Email OTP Login
+  File: KGMIS_OTP_Login.html
+  Developer: James Alenchery
+  ============================================================
+
+  Backend functions required:
+  - KGMIS_OTP_GetLoginConfig()
+  - KGMIS_OTP_Request(emailAddress)
+  - KGMIS_OTP_Verify(emailAddress, challengeId, otpCode)
+  - KGMIS_OTP_GetSessionUser(sessionToken)
+  - KGMIS_OTP_SignOut(sessionToken)
+
+  On successful login, this component dispatches:
+
+    window event:
+      kgmis:authenticated
+
+    event.detail:
+      {
+        sessionToken,
+        expiresAt,
+        user,
+        permissions,
+        modules
+      }
+
+  The session token is stored in localStorage for the configured
+  8-hour session period.
+-->
+
+<section
+  id="kgmisOtpLogin"
+  class="kgmis-otp-login"
+  aria-labelledby="kgmisOtpLoginTitle"
+>
+  <div class="otp-login-shell">
+
+    <div class="otp-login-card">
+
+      <div class="otp-login-header">
+        <p class="otp-login-eyebrow">
+          SECURE LOGIN
+        </p>
+
+        <h1 id="kgmisOtpLoginTitle">
+          Sign in to KEF Global
+        </h1>
+
+        <p id="otpIntroText" class="otp-login-intro">
+          Enter your authorised email address to receive a verification code.
+        </p>
+      </div>
+
+      <div
+        id="otpLoginMessage"
+        class="otp-login-message"
+        role="status"
+        aria-live="polite"
+        hidden
+      ></div>
+
+      <!-- ===================================================
+           Step 1 — Email
+           =================================================== -->
+
+      <form
+        id="otpEmailForm"
+        class="otp-login-form"
+        novalidate
+      >
+        <label class="otp-field">
+          <span>
+            Authorised email address
+          </span>
+
+          <input
+            id="otpEmail"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="name@example.com"
+            required
+          >
+        </label>
+
+        <!-- Honeypot: genuine users should never fill this. -->
+        <label
+          class="otp-honeypot"
+          aria-hidden="true"
+        >
+          <span>
+            Website
+          </span>
+
+          <input
+            id="otpWebsite"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+          >
+        </label>
+
+        <button
+          id="otpRequestButton"
+          class="otp-button otp-button-primary"
+          type="submit"
+        >
+          Send verification code
+        </button>
+      </form>
+
+      <!-- ===================================================
+           Step 2 — OTP
+           =================================================== -->
+
+      <form
+        id="otpCodeForm"
+        class="otp-login-form"
+        novalidate
+        hidden
+      >
+        <div class="otp-code-sent">
+          <span class="otp-code-icon">
+            ✉
+          </span>
+
+          <div>
+            <strong>
+              Verification code sent
+            </strong>
+
+            <p id="otpMaskedEmail">
+              Check your authorised email account.
+            </p>
+          </div>
+        </div>
+
+        <label class="otp-field">
+          <span>
+            Verification code
+          </span>
+
+          <input
+            id="otpCode"
+            class="otp-code-input"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="6"
+            pattern="[0-9]{6}"
+            placeholder="000000"
+            required
+          >
+        </label>
+
+        <div class="otp-code-meta">
+          <span id="otpExpiryText">
+            Code valid for 5 minutes
+          </span>
+
+          <span id="otpAttemptsText">
+            Maximum 5 attempts
+          </span>
+        </div>
+
+        <button
+          id="otpVerifyButton"
+          class="otp-button otp-button-primary"
+          type="submit"
+        >
+          Verify and sign in
+        </button>
+
+        <div class="otp-secondary-actions">
+
+          <button
+            id="otpResendButton"
+            class="otp-text-button"
+            type="button"
+            disabled
+          >
+            Resend code
+          </button>
+
+          <button
+            id="otpChangeEmailButton"
+            class="otp-text-button"
+            type="button"
+          >
+            Change email
+          </button>
+
+        </div>
+      </form>
+
+      <!-- ===================================================
+           Restoring Session
+           =================================================== -->
+
+      <div
+        id="otpSessionCheck"
+        class="otp-session-check"
+        hidden
+      >
+        <div class="otp-spinner"></div>
+
+        <span>
+          Checking your KGMIS session…
+        </span>
+      </div>
+
+      <div class="otp-login-security-note">
+        <span class="otp-lock-icon">
+          🔒
+        </span>
+
+        <span>
+          Your verification code is valid for one login only.
+          Your KGMIS session remains active for up to 8 hours.
+        </span>
+      </div>
+
+    </div>
+
+    <div class="otp-login-footer">
+      Authorised access only · KEF Global
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .kgmis-otp-login {
+    --otp-primary: #176c91;
+    --otp-primary-dark: #0d4e70;
+    --otp-primary-light: #e7f4f9;
+    --otp-success: #16723a;
+    --otp-danger: #b42318;
+    --otp-text: #1f2937;
+    --otp-muted: #64748b;
+    --otp-border: #d5e0e8;
+    --otp-bg: #f3f7fa;
+
+    min-height: 100vh;
+
+    display: grid;
+    place-items: center;
+
+    padding: 28px 18px;
+
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(23, 108, 145, 0.12),
+        transparent 34%
+      ),
+      linear-gradient(
+        180deg,
+        #f8fbfd,
+        var(--otp-bg)
+      );
+
+    color: var(--otp-text);
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif;
+  }
+
+  .kgmis-otp-login * {
+    box-sizing: border-box;
+  }
+
+  .otp-login-shell {
+    width: min(100%, 470px);
+  }
+.otp-login-card {
+    padding: 28px;
+
+    border: 1px solid var(--otp-border);
+    border-radius: 18px;
+
+    background: #ffffff;
+
+    box-shadow:
+      0 15px 40px rgba(13, 78, 112, 0.11);
+  }
+
+  .otp-login-header {
+    margin-bottom: 20px;
+  }
+
+  .otp-login-eyebrow {
+    margin: 0 0 6px;
+
+    color: var(--otp-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+  }
+
+  .otp-login-header h1 {
+    margin: 0;
+
+    color: var(--otp-primary-dark);
+    font-size: 28px;
+    line-height: 1.15;
+  }
+
+  .otp-login-intro {
+    margin: 8px 0 0;
+
+    color: var(--otp-muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .otp-login-form {
+    display: grid;
+    gap: 16px;
+  }
+
+  .otp-field {
+    display: grid;
+    gap: 7px;
+  }
+
+  .otp-field > span {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .otp-field input {
+    width: 100%;
+    height: 46px;
+    padding: 0 13px;
+
+    border: 1px solid #cbd8df;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: var(--otp-text);
+
+    font: inherit;
+  }
+
+  .otp-field input:focus {
+    outline:
+      3px solid rgba(23, 108, 145, 0.14);
+
+    border-color: var(--otp-primary);
+  }
+
+  .otp-code-input {
+    text-align: center;
+    font-size: 25px !important;
+    font-weight: 800;
+    letter-spacing: 0.35em;
+  }
+
+  .otp-button {
+    min-height: 46px;
+    padding: 11px 16px;
+
+    border: 0;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-weight: 800;
+  }
+
+  .otp-button-primary {
+    color: #ffffff;
+    background:
+      linear-gradient(
+        135deg,
+        var(--otp-primary-dark),
+        var(--otp-primary)
+      );
+
+    box-shadow:
+      0 5px 14px rgba(13, 78, 112, 0.18);
+  }
+
+  .otp-button:hover:not(:disabled) {
+    filter: brightness(1.03);
+  }
+
+  .otp-button:disabled,
+  .otp-text-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .otp-secondary-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .otp-text-button {
+    padding: 2px 0;
+
+    border: 0;
+
+    color: var(--otp-primary);
+    background: transparent;
+
+    cursor: pointer;
+
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .otp-code-sent {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+
+    padding: 12px;
+
+    border: 1px solid #b9d7e6;
+    border-radius: 10px;
+
+    background: #eff8fc;
+  }
+
+  .otp-code-icon {
+    flex: 0 0 28px;
+    height: 28px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    color: #ffffff;
+    background: var(--otp-primary);
+  }
+
+  .otp-code-sent strong {
+    color: var(--otp-primary-dark);
+    font-size: 13px;
+  }
+
+  .otp-code-sent p {
+    margin: 3px 0 0;
+
+    color: var(--otp-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .otp-code-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+
+    color: var(--otp-muted);
+    font-size: 11px;
+  }
+
+  .otp-login-message {
+    margin-bottom: 16px;
+    padding: 12px 13px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .otp-login-message.info {
+    border: 1px solid #b9d7e6;
+    background: #eff8fc;
+    color: #155c7b;
+  }
+
+  .otp-login-message.success {
+    border: 1px solid #a7e6bd;
+    background: #ecfdf3;
+    color: #166534;
+  }
+
+  .otp-login-message.error {
+    border: 1px solid #fecdca;
+    background: #fef3f2;
+    color: var(--otp-danger);
+  }
+
+  .otp-session-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    min-height: 100px;
+
+    color: var(--otp-muted);
+    font-size: 13px;
+  }
+
+  .otp-session-check[hidden] {
+    display: none !important;
+  }
+
+  .otp-spinner {
+    width: 20px;
+    height: 20px;
+
+    border: 3px solid #d8e6ec;
+    border-top-color: var(--otp-primary);
+    border-radius: 50%;
+
+    animation:
+      otpSpin 0.8s linear infinite;
+  }
+
+  .otp-login-security-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+
+    margin-top: 20px;
+    padding-top: 16px;
+
+    border-top: 1px solid var(--otp-border);
+
+    color: var(--otp-muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .otp-lock-icon {
+    flex: 0 0 auto;
+  }
+
+  .otp-login-footer {
+    margin-top: 14px;
+
+    color: var(--otp-muted);
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .otp-honeypot {
+    position: absolute !important;
+    left: -10000px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @keyframes otpSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .kgmis-otp-login {
+      padding: 18px 12px;
+    }
+
+    .otp-login-card {
+      padding: 22px 18px;
+      border-radius: 15px;
+    }
+.otp-login-header h1 {
+      font-size: 25px;
+    }
+
+    .otp-secondary-actions,
+    .otp-code-meta {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  const STORAGE_KEY =
+    'KGMIS_SESSION_TOKEN';
+
+  const state = {
+    config: null,
+    email: '',
+    challengeId: '',
+    resendTimer: null,
+    resendRemaining: 0,
+    pageLoadedAt: Date.now(),
+    busy: false
+  };
+
+  const el = {};
+
+  function initialiseOtpLogin() {
+    cacheOtpElements();
+    bindOtpEvents();
+    normaliseOtpInput();
+    checkExistingOtpSession();
+  }
+
+  function cacheOtpElements() {
+    [
+      'kgmisOtpLogin',
+      'otpIntroText',
+      'otpLoginMessage',
+      'otpEmailForm',
+      'otpEmail',
+      'otpWebsite',
+      'otpRequestButton',
+      'otpCodeForm',
+      'otpMaskedEmail',
+      'otpCode',
+      'otpExpiryText',
+      'otpAttemptsText',
+      'otpVerifyButton',
+      'otpResendButton',
+      'otpChangeEmailButton',
+      'otpSessionCheck'
+    ].forEach(function (id) {
+      el[id] =
+        document.getElementById(id);
+    });
+  }
+
+  function bindOtpEvents() {
+    el.otpEmailForm.addEventListener(
+      'submit',
+      requestOtp
+    );
+
+    el.otpCodeForm.addEventListener(
+      'submit',
+      verifyOtp
+    );
+
+    el.otpResendButton.addEventListener(
+      'click',
+      resendOtp
+    );
+
+    el.otpChangeEmailButton.addEventListener(
+      'click',
+      showEmailStep
+    );
+  }
+
+  function normaliseOtpInput() {
+    el.otpCode.addEventListener(
+      'input',
+      function () {
+        const digits =
+          String(
+            el.otpCode.value || ''
+          )
+            .replace(/\D/g, '')
+            .slice(
+              0,
+              state.config
+                ? state.config.otpDigits
+                : 6
+            );
+
+        el.otpCode.value =
+          digits;
+      }
+    );
+
+    el.otpEmail.addEventListener(
+      'input',
+      function () {
+        el.otpEmail.value =
+          String(
+            el.otpEmail.value || ''
+          ).trim();
+      }
+    );
+  }
+
+  function checkExistingOtpSession() {
+    const token =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    showSessionCheck(true);
+    showEmailForm(false);
+    showCodeForm(false);
+    clearOtpMessage();
+
+    google.script.run
+      .withSuccessHandler(
+        function (config) {
+          state.config =
+            config;
+
+          updateOtpConfigText();
+
+          if (!token) {
+            showSessionCheck(false);
+            showEmailStep();
+            return;
+          }
+
+          google.script.run
+            .withSuccessHandler(
+              function (profile) {
+                showSessionCheck(false);
+
+                notifyAuthenticated(
+                  token,
+                  profile
+                );
+              }
+            )
+            .withFailureHandler(
+              function () {
+                localStorage.removeItem(
+                  STORAGE_KEY
+                );
+
+                showSessionCheck(false);
+                showEmailStep();
+              }
+            )
+            .KGMIS_OTP_GetSessionUser(
+              token
+            );
+        }
+      )
+      .withFailureHandler(
+        function (error) {
+          showSessionCheck(false);
+          showEmailStep();
+          handleOtpFailure(error);
+        }
+      )
+      .KGMIS_OTP_GetLoginConfig();
+  }
+
+  function requestOtp(event) {
+    event.preventDefault();
+
+    if (state.busy) {
+      return;
+    }
+
+    if (
+      String(
+        el.otpWebsite.value || ''
+      ).trim()
+    ) {
+      showOtpMessage(
+        'The request could not be completed.',
+        'error'
+      );
+      return;
+    }
+
+    /*
+     * Basic client-side bot friction.
+     * Strong protection remains on the backend.
+     */
+    if (
+      Date.now() -
+      state.pageLoadedAt <
+      1500
+    ) {
+      showOtpMessage(
+        'Please wait a moment and try again.',
+        'error'
+      );
+      return;
+    }
+
+    if (!el.otpEmail.checkValidity()) {
+      el.otpEmail.reportValidity();
+      return;
+    }
+
+    state.email =
+      String(
+        el.otpEmail.value || ''
+      )
+        .trim()
+        .toLowerCase();
+
+    setOtpBusy(
+      true,
+      'Sending verification code…'
+    );
+
+    google.script.run
+      .withSuccessHandler(
+        function (result) {
+          setOtpBusy(false);
+
+          state.challengeId =
+            result.challengeId || '';
+
+          el.otpMaskedEmail.textContent =
+            result.maskedEmail
+              ? 'Code sent to ' +
+                result.maskedEmail
+              : 'If authorised, a code will arrive shortly.';
+
+          showOtpMessage(
+            result.message ||
+            'If the email address is authorised, a verification code will be sent shortly.',
+            'info'
+          );
+
+          showCodeStep();
+
+          startResendCountdown(
+            Number(
+              result.resendAfterSeconds ||
+              (
+                state.config
+                  ? state.config.resendWaitSeconds
+                  : 60
+              )
+            )
+          );
+        }
+      )
+      .withFailureHandler(
+        handleOtpFailure
+      )
+      .KGMIS_OTP_Request(
+        state.email
+      );
+  }
+
+  function verifyOtp(event) {
+    event.preventDefault();
+
+    if (state.busy) {
+      return;
+    }
+
+    if (!el.otpCode.checkValidity()) {
+      el.otpCode.reportValidity();
+      return;
+    }
+
+    if (!state.challengeId) {
+      showOtpMessage(
+        'Request a new verification code before continuing.',
+        'error'
+      );
+      return;
+    }
+
+    setOtpBusy(
+      true,
+      'Verifying code…'
+    );
+
+    google.script.run
+      .withSuccessHandler(
+        function (result) {
+          setOtpBusy(false);
+
+          localStorage.setItem(
+            STORAGE_KEY,
+            result.sessionToken
+          );
+
+          showOtpMessage(
+            result.message ||
+            'Login verified successfully.',
+            'success'
+          );
+
+          notifyAuthenticated(
+            result.sessionToken,
+            result
+          );
+        }
+      )
+      .withFailureHandler(
+        handleOtpFailure
+      )
+      .KGMIS_OTP_Verify(
+        state.email,
+        state.challengeId,
+        el.otpCode.value
+      );
+  }
+
+  function resendOtp() {
+    if (
+      state.busy ||
+      state.resendRemaining > 0
+    ) {
+      return;
+    }
+
+    if (!state.email) {
+      showEmailStep();
+      return;
+    }
+
+    setOtpBusy(
+      true,
+      'Sending a new code…'
+    );
+
+    google.script.run
+      .withSuccessHandler(
+        function (result) {
+          setOtpBusy(false);
+
+          state.challengeId =
+            result.challengeId || '';
+
+          el.otpCode.value =
+            '';
+
+          showOtpMessage(
+            result.message ||
+            'A new verification code has been requested.',
+            'info'
+          );
+
+          startResendCountdown(
+            Number(
+              result.resendAfterSeconds ||
+              60
+            )
+          );
+
+          el.otpCode.focus();
+        }
+      )
+      .withFailureHandler(
+        handleOtpFailure
+      )
+      .KGMIS_OTP_Request(
+        state.email
+      );
+  }
+
+  function showEmailStep() {
+    stopResendCountdown();
+
+    state.email =
+      '';
+
+    state.challengeId =
+      '';
+
+    el.otpCode.value =
+      '';
+
+    clearOtpMessage();
+
+    showSessionCheck(false);
+    showCodeForm(false);
+    showEmailForm(true);
+
+    el.otpRequestButton.disabled =
+      false;
+
+    el.otpVerifyButton.disabled =
+      false;
+
+    el.otpEmail.focus();
+  }
+
+  function showCodeStep() {
+    showSessionCheck(false);
+    showEmailForm(false);
+    showCodeForm(true);
+
+    el.otpCode.focus();
+  }
+
+  function showEmailForm(visible) {
+    el.otpEmailForm.hidden =
+      !visible;
+  }
+
+  function showCodeForm(visible) {
+    el.otpCodeForm.hidden =
+      !visible;
+  }
+
+  function showSessionCheck(visible) {
+    el.otpSessionCheck.hidden =
+      !visible;
+  }
+
+  function updateOtpConfigText() {
+    const config =
+      state.config || {};
+
+    el.otpCode.maxLength =
+      Number(
+        config.otpDigits || 6
+      );
+
+    el.otpExpiryText.textContent =
+      'Code valid for ' +
+      Number(
+        config.otpValidMinutes || 5
+      ) +
+      ' minutes';
+
+    el.otpAttemptsText.textContent =
+      'Maximum ' +
+      Number(
+        config.maximumAttempts || 5
+      ) +
+      ' attempts';
+  }
+
+  function startResendCountdown(seconds) {
+    stopResendCountdown();
+
+    state.resendRemaining =
+      Math.max(
+        0,
+        Number(seconds) || 0
+      );
+
+    updateResendButton();
+
+    state.resendTimer =
+      window.setInterval(
+        function () {
+          state.resendRemaining--;
+
+          if (
+            state.resendRemaining <= 0
+          ) {
+            stopResendCountdown();
+            state.resendRemaining = 0;
+          }
+
+          updateResendButton();
+        },
+        1000
+      );
+  }
+
+  function stopResendCountdown() {
+    if (state.resendTimer) {
+      window.clearInterval(
+        state.resendTimer
+      );
+
+      state.resendTimer =
+        null;
+    }
+  }
+
+  function updateResendButton() {
+    if (state.resendRemaining > 0) {
+      el.otpResendButton.disabled =
+        true;
+
+      el.otpResendButton.textContent =
+        'Resend in ' +
+        state.resendRemaining +
+        's';
+    } else {
+      el.otpResendButton.disabled =
+        false;
+
+      el.otpResendButton.textContent =
+        'Resend code';
+    }
+  }
+
+  function setOtpBusy(isBusy, message) {
+    state.busy =
+      isBusy;
+
+    el.otpRequestButton.disabled =
+      isBusy;
+
+    el.otpVerifyButton.disabled =
+      isBusy;
+
+    el.otpChangeEmailButton.disabled =
+      isBusy;
+
+    if (isBusy) {
+      showOtpMessage(
+        message || 'Please wait…',
+        'info'
+      );
+    }
+  }
+
+  function handleOtpFailure(error) {
+    setOtpBusy(false);
+
+    const message =
+      error && error.message
+        ? error.message
+        : String(
+            error ||
+            'An unexpected error occurred.'
+          );
+
+    showOtpMessage(
+      message,
+      'error'
+    );
+  }
+
+  function showOtpMessage(message, type) {
+    el.otpLoginMessage.textContent =
+      message || '';
+
+    el.otpLoginMessage.className =
+      'otp-login-message ' +
+      (type || 'info');
+
+    el.otpLoginMessage.hidden =
+      false;
+  }
+
+  function clearOtpMessage() {
+    el.otpLoginMessage.hidden =
+      true;
+
+    el.otpLoginMessage.textContent =
+      '';
+
+    el.otpLoginMessage.className =
+      'otp-login-message';
+  }
+
+  function notifyAuthenticated(
+    sessionToken,
+    response
+  ) {
+    const profile =
+      response || {};
+
+    const detail = {
+      sessionToken:
+        sessionToken,
+
+      expiresAt:
+        profile.expiresAt || '',
+
+      user:
+        profile.user || {},
+
+      permissions:
+        profile.permissions || {},
+
+      modules:
+        profile.modules || {}
+    };
+
+    window.KGMIS_AUTH =
+      detail;
+
+    window.dispatchEvent(
+      new CustomEvent(
+        'kgmis:authenticated',
+        {
+          detail:
+            detail
+        }
+      )
+    );
+  }
+
+  window.KGMIS_OTP_LOGIN = {
+    getSessionToken:
+      function () {
+        return localStorage.getItem(
+          STORAGE_KEY
+        ) || '';
+      },
+
+    getStoredSession:
+      function () {
+        return window.KGMIS_AUTH || null;
+      },
+
+    showLogin:
+      function () {
+        showEmailStep();
+      },
+
+    signOut:
+      function () {
+        const token =
+          localStorage.getItem(
+            STORAGE_KEY
+          ) || '';
+
+        localStorage.removeItem(
+          STORAGE_KEY
+        );
+
+        window.KGMIS_AUTH =
+          null;
+
+        if (!token) {
+          showEmailStep();
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(
+            function () {
+              showEmailStep();
+            }
+          )
+          .withFailureHandler(
+            function () {
+              showEmailStep();
+            }
+          )
+          .KGMIS_OTP_SignOut(
+            token
+          );
+      }
+  };
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialiseOtpLogin
+    );
+  } else {
+    initialiseOtpLogin();
+  }
+})();
+</script>

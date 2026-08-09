@@ -1,0 +1,434 @@
+<!--
+  ============================================================
+  KEF Global Membership Information System (KGMIS)
+  Permanent Application Header
+  File: KGMIS_Header.html
+  Developer: JJA Global Systems
+  ============================================================
+
+  Purpose:
+  - Provide one permanent branded header for the KGMIS shell
+  - Display the KEF Global logo and system identity
+  - Display the signed-in user and role after authentication
+  - Provide a system-wide Sign Out button
+  - Remain visible during login and while switching modules
+
+  Expected parent functions:
+  - window.KGMIS_HEADER.setUser(user)
+  - window.KGMIS_HEADER.clearUser()
+  - window.KGMIS_HEADER.setTitle(title, subtitle)
+  - window.KGMIS_HEADER.setSignOutVisible(visible)
+
+  The Sign Out button dispatches:
+  - kgmis:signout-requested
+-->
+
+<header
+  id="kgmisPermanentHeader"
+  class="kgmis-header"
+>
+  <div class="kgmis-header-left">
+
+    <div class="kgmis-header-logo">
+      <?!= include('KGMIS_Logo'); ?>
+    </div>
+
+    <div class="kgmis-header-identity">
+      <h1 id="kgmisHeaderTitle">
+        KEF Global Main Portal
+      </h1>
+
+      <p id="kgmisHeaderSubtitle">
+        KEF Global Membership Information System (KGMIS)
+      </p>
+    </div>
+
+  </div>
+
+  <div class="kgmis-header-right">
+
+    <div
+      id="kgmisHeaderUser"
+      class="kgmis-header-user"
+      hidden
+    >
+      <div
+        id="kgmisHeaderUserName"
+        class="kgmis-header-user-name"
+      >
+        —
+      </div>
+
+      <div
+        id="kgmisHeaderUserRole"
+        class="kgmis-header-user-role"
+      >
+        —
+      </div>
+    </div>
+
+    <button
+      id="kgmisHeaderSignOut"
+      class="kgmis-header-signout"
+      type="button"
+      hidden
+    >
+      Sign Out
+    </button>
+
+  </div>
+</header>
+
+<style>
+  .kgmis-header {
+    --header-primary: #176c91;
+    --header-primary-dark: #0d4e70;
+
+    position: sticky;
+    z-index: 1000;
+    top: 0;
+
+    min-height: 78px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    padding: 10px 22px;
+
+    color: #ffffff;
+
+    background:
+      linear-gradient(
+        135deg,
+        var(--header-primary-dark),
+        var(--header-primary)
+      );
+
+    box-shadow:
+      0 3px 14px rgba(13, 78, 112, 0.2);
+  }
+
+  .kgmis-header * {
+    box-sizing: border-box;
+  }
+
+  .kgmis-header-left {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .kgmis-header-logo {
+    width: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+
+    display: grid;
+    place-items: center;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+    background: #ffffff;
+
+    box-shadow:
+      0 3px 10px rgba(0, 0, 0, 0.16);
+  }
+
+  .kgmis-header-logo img,
+  .kgmis-header-logo svg,
+  .kgmis-header-logo .kefg-logo {
+    width: 54px !important;
+    height: 54px !important;
+    max-width: none !important;
+    max-height: none !important;
+
+    display: block;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    object-fit: contain !important;
+    transform: scale(1.12);
+    transform-origin: center;
+  }
+
+  .kgmis-header-identity {
+    min-width: 0;
+  }
+
+  .kgmis-header-identity h1 {
+    margin: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #ffffff;
+
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .kgmis-header-identity p {
+    margin: 3px 0 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: rgba(255, 255, 255, 0.9);
+
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .kgmis-header-right {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .kgmis-header-user {
+    min-width: 0;
+    text-align: right;
+  }
+
+  .kgmis-header-user-name {
+    max-width: 260px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .kgmis-header-user-role {
+    margin-top: 3px;
+
+    font-size: 11px;
+    opacity: 0.86;
+  }
+
+  .kgmis-header-signout {
+    min-height: 38px;
+    padding: 8px 13px;
+
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 9px;
+
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+
+    cursor: pointer;
+
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .kgmis-header-signout:hover {
+    background: rgba(255, 255, 255, 0.17);
+  }
+
+  .kgmis-header-signout:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .kgmis-header [hidden] {
+    display: none !important;
+  }
+
+  @media (max-width: 720px) {
+    .kgmis-header {
+      align-items: flex-start;
+      flex-direction: column;
+
+      padding: 10px 14px;
+    }
+
+    .kgmis-header-right {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .kgmis-header-user {
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .kgmis-header-logo {
+      width: 52px;
+      height: 52px;
+      flex-basis: 52px;
+    }
+
+    .kgmis-header-logo img,
+    .kgmis-header-logo svg,
+    .kgmis-header-logo .kefg-logo {
+      width: 48px !important;
+      height: 48px !important;
+    }
+
+    .kgmis-header-identity h1 {
+      font-size: 18px;
+    }
+
+    .kgmis-header-identity p {
+      font-size: 10px;
+    }
+
+    .kgmis-header-user-name {
+      max-width: 190px;
+    }
+  }
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+  const elements = {};
+
+  function initialiseHeader() {
+    [
+      'kgmisHeaderTitle',
+      'kgmisHeaderSubtitle',
+      'kgmisHeaderUser',
+      'kgmisHeaderUserName',
+      'kgmisHeaderUserRole',
+      'kgmisHeaderSignOut'
+    ].forEach(function (id) {
+      elements[id] =
+        document.getElementById(id);
+    });
+
+    elements.kgmisHeaderSignOut
+      .addEventListener(
+        'click',
+        function () {
+          window.dispatchEvent(
+            new CustomEvent(
+              'kgmis:signout-requested'
+            )
+          );
+        }
+      );
+  }
+
+  function setUser(user) {
+    const profile =
+      user || {};
+
+    elements.kgmisHeaderUserName.textContent =
+      profile.userName ||
+      profile.email ||
+      'KGMIS User';
+
+    elements.kgmisHeaderUserRole.textContent =
+      formatRole(
+        profile.role
+      );
+
+    elements.kgmisHeaderUser.hidden =
+      false;
+
+    elements.kgmisHeaderSignOut.hidden =
+      false;
+  }
+
+  function clearUser() {
+    elements.kgmisHeaderUserName.textContent =
+      '—';
+
+    elements.kgmisHeaderUserRole.textContent =
+      '—';
+
+    elements.kgmisHeaderUser.hidden =
+      true;
+
+    elements.kgmisHeaderSignOut.hidden =
+      true;
+  }
+
+  function setTitle(
+    title,
+    subtitle
+  ) {
+    elements.kgmisHeaderTitle.textContent =
+      title ||
+      'KEFG Main Portal';
+
+    elements.kgmisHeaderSubtitle.textContent =
+      subtitle ||
+      'KEF Global Membership Information System';
+  }
+
+  function setSignOutVisible(visible) {
+    elements.kgmisHeaderSignOut.hidden =
+      !visible;
+  }
+
+  function setSignOutBusy(isBusy) {
+    elements.kgmisHeaderSignOut.disabled =
+      Boolean(
+        isBusy
+      );
+  }
+
+  function formatRole(role) {
+    return String(
+      role || ''
+    )
+      .toLowerCase()
+      .replace(
+        /_/g,
+        ' '
+      )
+      .replace(
+        /\b\w/g,
+        function (letter) {
+          return letter.toUpperCase();
+        }
+      );
+  }
+
+  window.KGMIS_HEADER = {
+    setUser:
+      setUser,
+
+    clearUser:
+      clearUser,
+
+    setTitle:
+      setTitle,
+
+    setSignOutVisible:
+      setSignOutVisible,
+
+    setSignOutBusy:
+      setSignOutBusy
+  };
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+    document.addEventListener(
+      'DOMContentLoaded',
+      initialiseHeader
+    );
+  } else {
+    initialiseHeader();
+  }
+})();
+</script>

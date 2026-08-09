@@ -1,0 +1,2561 @@
+<!--
+============================================================
+KEF Global Membership Information System (KGMIS)
+Module    : Payment Register
+File Name : 93.00_KGMIS_Module_Payment_Register.html
+Version   : 1.1
+Designed & Developed by: James Joseph Alenchery
+============================================================
+
+PURPOSE
+-------
+Read-only Treasurer interface for reviewing outgoing expenses
+already recorded in KGMIS_PAYMENT_TRANSACTIONS.
+
+USER-FACING TERMINOLOGY
+-----------------------
+This module is named "Payment Register" in the Treasurer Portal,
+but individual outgoing transactions are shown as "Expense"
+records to avoid confusion with the separate Receive Payment
+module.
+
+IMPORTANT
+---------
+This module does NOT:
+• create expense transactions
+• edit expense transactions
+• cancel/delete expense transactions
+• generate PAYMENT_ID values
+• generate voucher numbers
+• write directly to KGMIS_PAYMENT_TRANSACTIONS
+
+Backend expected:
+93.10_KGMIS_Module_Payment_Register.gs
+
+Expected backend functions:
+  KGMIS_PaymentRegister_GetSetup(sessionToken)
+  KGMIS_PaymentRegister_GetRegister(sessionToken, filters)
+  KGMIS_PaymentRegister_ViewVoucher(sessionToken, expenseIdOrVoucherNumber)
+============================================================
+-->
+
+<style>
+
+  /* =========================================================
+     PAYMENT REGISTER — ISOLATED STYLES
+     ========================================================= */
+
+  .pr1-shell {
+    width: 100%;
+  }
+
+  .pr1-topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .pr1-heading {
+    margin: 0;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .pr1-subheading {
+    margin: 5px 0 0;
+    color: var(--tr3-muted, #667085);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .pr1-year-badge {
+    flex: 0 0 auto;
+    min-width: 132px;
+    padding: 8px 12px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 10px;
+    background: #ffffff;
+    text-align: center;
+  }
+
+  .pr1-year-label {
+    display: block;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .pr1-year-value {
+    display: block;
+    margin-top: 3px;
+    color: var(--tr3-primary, #1c5d99);
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .pr1-panel {
+    margin-bottom: 14px;
+    padding: 16px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .pr1-panel-title {
+    margin: 0 0 3px;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .pr1-panel-note,
+  .pr1-meta {
+    margin: 0 0 13px;
+    color: var(--tr3-muted, #667085);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .pr1-message {
+    display: none;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .pr1-message.info {
+    display: block;
+    border: 1px solid #b9d6f2;
+    background: #eef7ff;
+    color: #174b78;
+  }
+
+  .pr1-message.success {
+    display: block;
+    border: 1px solid #a9d9bd;
+    background: #effaf3;
+    color: #166534;
+  }
+
+  .pr1-message.error {
+    display: block;
+    border: 1px solid #f0b5b5;
+    background: #fff2f2;
+    color: #b42318;
+  }
+
+  function applyReportPeriod(reload){
+    const p=clean(el.pr1ReportPeriod.value)||'FULL_FINANCIAL_YEAR',d=new Date(),today=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+    let f='',to='';
+    if(p==='THIS_WEEK'){const x=new Date(today);x.setDate(x.getDate()-((x.getDay()+6)%7));f=formatIsoLocal(x);to=formatIsoLocal(today);}
+    else if(p==='LAST_WEEK'){const x=new Date(today);x.setDate(x.getDate()-((x.getDay()+6)%7));const a=new Date(x),b=new Date(x);a.setDate(a.getDate()-7);b.setDate(b.getDate()-1);f=formatIsoLocal(a);to=formatIsoLocal(b);}
+    else if(p==='THIS_MONTH'){f=formatIsoLocal(new Date(today.getFullYear(),today.getMonth(),1));to=formatIsoLocal(today);}
+    else if(p==='LAST_MONTH'){f=formatIsoLocal(new Date(today.getFullYear(),today.getMonth()-1,1));to=formatIsoLocal(new Date(today.getFullYear(),today.getMonth(),0));}
+    else if(p==='CUSTOM'){if(reload)loadRegister();return;}
+    el.pr1FromDate.value=f;el.pr1ToDate.value=to;if(reload)loadRegister();
+  }
+  function formatIsoLocal(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+  /* =========================================================
+     FILTERS
+     ========================================================= */
+
+  .pr1-filters {
+    display: grid;
+    grid-template-columns:
+      minmax(140px, .65fr)
+      minmax(250px, 1.45fr)
+      minmax(135px, .65fr)
+      minmax(135px, .65fr)
+      minmax(155px, .75fr)
+      minmax(155px, .75fr)
+      minmax(145px, .65fr);
+    gap: 10px;
+    align-items: end;
+  }
+
+  .pr1-field {
+    min-width: 0;
+  }
+
+  .pr1-label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .pr1-input,
+  .pr1-select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 8px;
+    outline: none;
+    background: #ffffff;
+    color: var(--tr3-text, #1f2937);
+    font: inherit;
+    font-size: 12px;
+  }
+
+  .pr1-input:focus,
+  .pr1-select:focus {
+    border-color: var(--tr3-primary, #1c5d99);
+    box-shadow: 0 0 0 3px rgba(28, 93, 153, .09);
+  }
+
+  .pr1-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 13px;
+  }
+
+  .pr1-button {
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .pr1-button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+
+  .pr1-primary {
+    border-color: var(--tr3-primary, #1c5d99);
+    background: var(--tr3-primary, #1c5d99);
+    color: #ffffff;
+  }
+
+  .pr1-secondary {
+    border-color: var(--tr3-border, #dbe3ec);
+    background: #ffffff;
+    color: var(--tr3-primary-dark, #123a63);
+  }
+
+  .pr1-view {
+    min-height: 32px;
+    padding: 6px 10px;
+    border-color: #157347;
+    background: #157347;
+    color: #ffffff;
+    white-space: nowrap;
+  }
+
+  .pr1-report{border-color:#157347;background:#157347;color:#fff}
+  #pr1PrintReport{display:none}
+  @media print{
+    @page{size:A4 landscape;margin:10mm}
+    html,body{height:auto!important;min-height:0!important;overflow:visible!important}
+    body > *{visibility:hidden!important}
+    #pr1Root,#pr1Root *{visibility:visible!important}
+    #pr1Root{position:absolute!important;left:0!important;top:0!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important}
+    #pr1Root > *:not(#pr1PrintReport){display:none!important}
+    #pr1PrintReport{display:block!important;position:static!important;width:100%!important;background:#fff;color:#1f2937;font:8px Arial,Helvetica,sans-serif}
+    #pr1PrintReport .ph{position:relative;height:46px;margin-bottom:7px;padding:0 82px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    #pr1PrintReport .pl{position:absolute;left:0;top:0;width:70px;height:46px;object-fit:contain}
+    #pr1PrintReport .po{color:#0d4e70;font-size:13px;line-height:1.05;font-weight:800}
+    #pr1PrintReport .pt{margin-top:2px;font-size:10.5px;line-height:1.05;font-weight:800}
+    #pr1PrintReport .pm{display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;margin:6px 0 7px;padding:6px 8px;border:1px solid #cbd5e1}
+    #pr1PrintReport .pf{margin-bottom:6px;font-size:7.8px}
+    #pr1PrintReport table{width:100%;border-collapse:collapse}
+    #pr1PrintReport thead{display:table-header-group}
+    #pr1PrintReport tr{break-inside:avoid;page-break-inside:avoid}
+    #pr1PrintReport th,#pr1PrintReport td{padding:3px;border:1px solid #cbd5e1;text-align:left;vertical-align:top;line-height:1.15}
+    #pr1PrintReport th{background:#0d4e70!important;color:#fff;font-size:6.8px;text-transform:uppercase;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #pr1PrintReport .pa{text-align:right;white-space:nowrap;font-weight:700}
+    #pr1PrintReport .ps{display:flex;justify-content:flex-end;gap:20px;margin-top:6px;font-size:9.5px;font-weight:700}
+  }
+
+  /* =========================================================
+     SUMMARY
+     ========================================================= */
+
+  .pr1-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 220px));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .pr1-summary-card {
+    padding: 13px 14px;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 10px;
+    background: #f8fbff;
+  }
+
+  .pr1-summary-value {
+    display: block;
+    color: var(--tr3-primary-dark, #123a63);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .pr1-summary-label {
+    display: block;
+    margin-top: 4px;
+    color: var(--tr3-muted, #667085);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  /* =========================================================
+     TABLE
+     ========================================================= */
+
+  .pr1-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--tr3-border, #dbe3ec);
+    border-radius: 10px;
+  }
+
+  .pr1-table {
+    width: 100%;
+    min-width: 1480px;
+    border-collapse: collapse;
+    background: #ffffff;
+  }
+
+  .pr1-table th,
+  .pr1-table td {
+    padding: 10px;
+    border-right: 1px solid var(--tr3-border, #dbe3ec);
+    border-bottom: 1px solid var(--tr3-border, #dbe3ec);
+    text-align: left;
+    vertical-align: middle;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .pr1-table th:last-child,
+  .pr1-table td:last-child {
+    border-right: 0;
+  }
+
+  .pr1-table th {
+    color: #ffffff;
+    background: var(--tr3-primary-dark, #123a63);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pr1-table tbody tr:nth-child(even) {
+    background: #f8fbfd;
+  }
+
+  .pr1-table tbody tr:hover {
+    background: #eef7fb;
+  }
+
+  .pr1-voucher {
+    color: var(--tr3-primary-dark, #123a63);
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .pr1-payee {
+    max-width: 190px;
+    font-weight: 700;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .pr1-project {
+    max-width: 190px;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .pr1-amount {
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .pr1-status {
+    display: inline-flex;
+    padding: 4px 7px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .pr1-status.paid {
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+  }
+
+  .pr1-status.pending {
+    color: #92400e;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+  }
+
+  .pr1-status.cancelled,
+  .pr1-status.failed,
+  .pr1-status.rejected {
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+  }
+
+  .pr1-status.refunded {
+    color: #6b21a8;
+    background: #f3e8ff;
+    border: 1px solid #d8b4fe;
+  }
+
+  .pr1-empty {
+    padding: 30px 20px !important;
+    color: var(--tr3-muted, #667085);
+    text-align: center !important;
+  }
+
+  /* =========================================================
+     RESPONSIVE
+     ========================================================= */
+
+  @media (max-width: 1300px) {
+    .pr1-filters {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 900px) {
+    .pr1-filters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .pr1-topbar {
+      display: block;
+    }
+
+    .pr1-year-badge {
+      box-sizing: border-box;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .pr1-filters {
+      grid-template-columns: 1fr;
+    }
+
+    .pr1-summary {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .pr1-actions {
+      justify-content: stretch;
+    }
+
+    .pr1-actions .pr1-button {
+      flex: 1 1 100%;
+    }
+  }
+
+  @media (max-width: 460px) {
+    .pr1-summary {
+      grid-template-columns: 1fr;
+    }
+  }
+
+</style>
+
+
+<div
+  id="pr1Root"
+  class="pr1-shell"
+>
+
+  <div id="pr1PrintReport" aria-hidden="true"></div>
+
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
+
+  <div class="pr1-topbar">
+
+    <div>
+
+      <h2 class="pr1-heading">
+        Payment Register
+      </h2>
+
+      <p class="pr1-subheading">
+        Search, review and view outgoing expense records and vouchers.
+      </p>
+
+    </div>
+
+
+    <div class="pr1-year-badge">
+
+      <span class="pr1-year-label">
+        Selected Financial Year
+      </span>
+
+      <span
+        id="pr1SelectedYearDisplay"
+        class="pr1-year-value"
+      >
+        —
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="pr1Message"
+    class="pr1-message"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
+  <!-- =====================================================
+       FILTERS
+       ===================================================== -->
+
+  <section class="pr1-panel">
+
+    <h3 class="pr1-panel-title">
+      Search &amp; Filters
+    </h3>
+
+    <p class="pr1-panel-note">
+      Search by Expense Record ID, voucher number, payee,
+      transaction reference, invoice number, Event Code or project name.
+    </p>
+
+
+    <div class="pr1-filters">
+
+
+      <div class="pr1-field">
+
+        <label
+          class="pr1-label"
+          for="pr1FinancialYear"
+        >
+          Financial Year
+        </label>
+
+        <select
+          id="pr1FinancialYear"
+          class="pr1-select"
+        >
+          <option value="">
+            Loading…
+          </option>
+        </select>
+
+      </div>
+
+
+      <div class="pr1-field">
+        <label class="pr1-label" for="pr1ReportPeriod">Report Period</label>
+        <select id="pr1ReportPeriod" class="pr1-select">
+          <option value="FULL_FINANCIAL_YEAR">Full Financial Year</option>
+          <option value="THIS_WEEK">This Week</option><option value="LAST_WEEK">Last Week</option>
+          <option value="THIS_MONTH">This Month</option><option value="LAST_MONTH">Last Month</option>
+          <option value="CUSTOM">Custom Period</option>
+        </select>
+      </div>
+
+      <div class="pr1-field">
+
+        <label
+          class="pr1-label"
+          for="pr1Search"
+        >
+          Search
+        </label>
+
+        <input
+          id="pr1Search"
+          class="pr1-input"
+          type="search"
+          autocomplete="off"
+          placeholder="Expense ID, voucher no., payee, invoice, event or reference"
+        >
+
+      </div>
+
+
+      <div class="pr1-field">
+
+        <label
+          class="pr1-label"
+          for="pr1FromDate"
+        >
+          From Date
+        </label>
+
+        <input
+          id="pr1FromDate"
+          class="pr1-input"
+          type="date"
+        >
+
+      </div>
+
+
+      <div class="pr1-field">
+
+        <label
+          class="pr1-label"
+          for="pr1ToDate"
+        >
+          To Date
+        </label>
+
+        <input
+          id="pr1ToDate"
+          class="pr1-input"
+          type="date"
+        >
+
+      </div>
+
+
+      <div class="pr1-field">
+
+        <label
+          class="pr1-label"
+          for="pr1Category"
+        >
+          Expense Category
+        </label>
+
+        <select
+          id="pr1Category"
+          class="pr1-select"
+        >
+          <option value="">All Categories</option>
+          <option value="EVENT">EVENT</option>
+          <option value="CHARITY">CHARITY</option>
+          <option value="WELFARE">WELFARE</option>
+          <option value="ADMINISTRATION">ADMINISTRATION</option>
+          <option value="OFFICE">OFFICE</option>
+          <option value="TRAVEL">TRAVEL</option>
+          <option value="PUBLICATION">PUBLICATION</option>
+          <option value="BANK">BANK</option>
+          <option value="VENDOR PAYMENT">VENDOR PAYMENT</option>
+          <option value="REFUND">REFUND</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+
+      </div>
+
+
+      <div class="pr1-field">
+
+        <label
+          class="pr1-label"
+          for="pr1ExpenseMode"
+        >
+          Expense Mode
+        </label>
+
+        <select
+          id="pr1ExpenseMode"
+          class="pr1-select"
+        >
+          <option value="">All Expense Modes</option>
+          <option value="CASH">CASH</option>
+          <option value="UPI">UPI</option>
+          <option value="BANK TRANSFER">BANK TRANSFER</option>
+          <option value="CHEQUE">CHEQUE</option>
+          <option value="CARD">CARD</option>
+          <option value="ONLINE PAYMENT">ONLINE PAYMENT</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+
+      </div>
+
+
+      <div class="pr1-field">
+
+        <label
+          class="pr1-label"
+          for="pr1Status"
+        >
+          Status
+        </label>
+
+        <select
+          id="pr1Status"
+          class="pr1-select"
+        >
+          <option value="">All Statuses</option>
+          <option value="PAID">PAID</option>
+          <option value="PENDING">PENDING</option>
+          <option value="CANCELLED">CANCELLED</option>
+          <option value="FAILED">FAILED</option>
+          <option value="REFUNDED">REFUNDED</option>
+          <option value="REJECTED">REJECTED</option>
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div class="pr1-actions">
+
+      <button
+        id="pr1ClearButton"
+        class="pr1-button pr1-secondary"
+        type="button"
+      >
+        Clear Filters
+      </button>
+
+
+      <button
+        id="pr1RefreshButton"
+        class="pr1-button pr1-secondary"
+        type="button"
+      >
+        ↻ Refresh
+      </button>
+
+
+      <button id="pr1DownloadCsvButton" class="pr1-button pr1-report" type="button">Download CSV</button>
+      <button id="pr1PrintButton" class="pr1-button pr1-report" type="button">Print Report</button>
+
+      <button
+        id="pr1ApplyButton"
+        class="pr1-button pr1-primary"
+        type="button"
+      >
+        Apply Filters
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       SUMMARY
+       ===================================================== -->
+
+  <div class="pr1-summary">
+
+    <div class="pr1-summary-card">
+
+      <span
+        id="pr1SummaryCount"
+        class="pr1-summary-value"
+      >
+        0
+      </span>
+
+      <span class="pr1-summary-label">
+        Expenses Recorded
+      </span>
+
+    </div>
+
+
+    <div class="pr1-summary-card">
+
+      <span
+        id="pr1SummaryAmount"
+        class="pr1-summary-value"
+      >
+        ₹0.00
+      </span>
+
+      <span class="pr1-summary-label">
+        Total Expenses
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       REGISTER
+       ===================================================== -->
+
+  <section class="pr1-panel">
+
+    <h3 class="pr1-panel-title">
+      Payment Register
+    </h3>
+
+
+    <p
+      id="pr1RegisterMeta"
+      class="pr1-meta"
+    >
+      No expense records loaded.
+    </p>
+
+
+    <div class="pr1-table-wrap">
+
+      <table
+        id="pr1Table"
+        class="pr1-table"
+      >
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Expense Date
+            </th>
+
+            <th>
+              Voucher Number
+            </th>
+
+            <th>
+              Expense Record ID
+            </th>
+
+            <th>
+              Payee
+            </th>
+
+            <th>
+              Expense Purpose
+            </th>
+
+            <th>
+              Category
+            </th>
+
+            <th>
+              Event / Project
+            </th>
+
+            <th>
+              Amount
+            </th>
+
+            <th>
+              Expense Mode
+            </th>
+
+            <th>
+              Transaction Reference
+            </th>
+
+            <th>
+              Invoice Number
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Action
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr>
+
+            <td
+              class="pr1-empty"
+              colspan="13"
+            >
+              Open Payment Register to load expense records.
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<script>
+
+(function () {
+
+  'use strict';
+
+
+  /* =========================================================
+     STATE
+     ========================================================= */
+
+  const state = {
+
+    initialised:
+      false,
+
+    sessionToken:
+      '',
+
+    currentFinancialYear:
+      '',
+
+    setupLoaded:
+      false,
+
+    rows:
+      [],
+
+    currentSummary:{expensesRecorded:0,totalExpenses:0},
+    generatedBy:''
+
+  };
+
+
+  const el = {};
+
+
+  /* =========================================================
+     CACHE ELEMENTS
+     ========================================================= */
+
+  function cacheElements() {
+
+    [
+      'pr1SelectedYearDisplay',
+      'pr1Message',
+
+      'pr1FinancialYear',
+      'pr1ReportPeriod',
+      'pr1Search',
+      'pr1FromDate',
+      'pr1ToDate',
+      'pr1Category',
+      'pr1ExpenseMode',
+      'pr1Status',
+
+      'pr1ClearButton',
+      'pr1RefreshButton',
+      'pr1DownloadCsvButton',
+      'pr1PrintButton',
+      'pr1ApplyButton',
+
+      'pr1SummaryCount',
+      'pr1SummaryAmount',
+
+      'pr1RegisterMeta',
+      'pr1Table',
+      'pr1PrintReport'
+
+    ].forEach(
+      function (id) {
+
+        el[id] =
+          document.getElementById(id);
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     BIND EVENTS
+     ========================================================= */
+
+  function bindEvents() {
+
+    el.pr1ApplyButton
+      .addEventListener(
+        'click',
+        loadRegister
+      );
+
+
+    el.pr1RefreshButton
+      .addEventListener(
+        'click',
+        function () {
+
+          loadSetup(
+            true
+          );
+
+        }
+      );
+
+
+    el.pr1ClearButton
+      .addEventListener(
+        'click',
+        clearFilters
+      );
+
+
+    el.pr1DownloadCsvButton.addEventListener('click',downloadCsvReport);
+    el.pr1PrintButton.addEventListener('click',printReport);
+
+    el.pr1Search
+      .addEventListener(
+        'keydown',
+        function (event) {
+
+          if (
+            event.key ===
+            'Enter'
+          ) {
+
+            event.preventDefault();
+
+            loadRegister();
+
+          }
+
+        }
+      );
+
+
+    el.pr1FinancialYear
+      .addEventListener(
+        'change',
+        function () {
+
+          updateSelectedYearDisplay();
+          el.pr1ReportPeriod.value='FULL_FINANCIAL_YEAR';
+          applyReportPeriod(false);
+          loadRegister();
+
+        }
+      );
+
+
+    el.pr1ReportPeriod.addEventListener('change',function(){applyReportPeriod(true);});
+    [el.pr1FromDate,el.pr1ToDate].forEach(function(x){x.addEventListener('change',function(){el.pr1ReportPeriod.value='CUSTOM';});});
+
+    el.pr1Table
+      .querySelector(
+        'tbody'
+      )
+      .addEventListener(
+        'click',
+        function (event) {
+
+          const button =
+            event.target.closest(
+              '[data-pr1-view-voucher]'
+            );
+
+
+          if (!button) {
+
+            return;
+
+          }
+
+
+          viewVoucher(
+            button.getAttribute(
+              'data-expense-id'
+            ),
+            button.getAttribute(
+              'data-voucher-number'
+            )
+          );
+
+        }
+      );
+
+  }
+
+
+  /* =========================================================
+     ACTIVATE
+     ========================================================= */
+
+  function activate(
+    context
+  ) {
+
+    const safeContext =
+      context &&
+      typeof context ===
+        'object'
+        ? context
+        : {};
+
+
+    if (!state.initialised) {
+
+      cacheElements();
+
+      bindEvents();
+
+      state.initialised =
+        true;
+
+    }
+
+
+    state.sessionToken =
+      clean(
+        safeContext.sessionToken
+      );
+
+
+    state.currentFinancialYear =
+      clean(
+        safeContext.financialYear
+      );
+
+    state.generatedBy=clean(safeContext.userName||(safeContext.user&&safeContext.user.userName)||safeContext.email||(safeContext.user&&safeContext.user.email));
+
+
+    if (!state.sessionToken) {
+
+      showMessage(
+        'The Treasurer session is missing. Please sign out and sign in again.',
+        'error'
+      );
+
+
+      setControlsEnabled(
+        false
+      );
+
+
+      return;
+
+    }
+
+
+    if (
+      state.currentFinancialYear
+    ) {
+
+      el.pr1SelectedYearDisplay.textContent =
+        state.currentFinancialYear;
+
+    }
+
+
+    loadSetup(
+      false
+    );
+
+  }
+
+
+  /* =========================================================
+     LOAD SETUP
+     ========================================================= */
+
+  function loadSetup(
+    preserveFilters
+  ) {
+
+    if (!state.sessionToken) {
+
+      return;
+
+    }
+
+
+    setControlsEnabled(
+      false
+    );
+
+
+    showMessage(
+      'Loading Payment Register…',
+      'info'
+    );
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          if (
+            !response ||
+            response.success !==
+              true
+          ) {
+
+            setControlsEnabled(
+              false
+            );
+
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'Payment Register setup could not be loaded.',
+              'error'
+            );
+
+
+            return;
+
+          }
+
+
+          state.setupLoaded =
+            true;
+
+
+          state.currentFinancialYear =
+            clean(
+              response.currentFinancialYear
+            );
+
+
+          const selectedBefore =
+            preserveFilters
+              ? clean(
+                  el.pr1FinancialYear.value
+                )
+              : '';
+
+
+          populateFinancialYears(
+            response.financialYears ||
+            [],
+            selectedBefore ||
+            state.currentFinancialYear
+          );
+
+
+          /*
+           * If the backend later supplies authoritative option
+           * lists, use them. Otherwise retain the built-in
+           * options already present in this HTML.
+           */
+
+          if (
+            Array.isArray(
+              response.categories
+            ) &&
+            response.categories.length
+          ) {
+
+            populateFilterSelect(
+              el.pr1Category,
+              response.categories,
+              'All Categories',
+              selectedBefore
+                ? el.pr1Category.value
+                : ''
+            );
+
+          }
+
+
+          if (
+            Array.isArray(
+              response.expenseModes
+            ) &&
+            response.expenseModes.length
+          ) {
+
+            populateFilterSelect(
+              el.pr1ExpenseMode,
+              response.expenseModes,
+              'All Expense Modes',
+              selectedBefore
+                ? el.pr1ExpenseMode.value
+                : ''
+            );
+
+          }
+
+
+          if (
+            Array.isArray(
+              response.statuses
+            ) &&
+            response.statuses.length
+          ) {
+
+            populateFilterSelect(
+              el.pr1Status,
+              response.statuses,
+              'All Statuses',
+              selectedBefore
+                ? el.pr1Status.value
+                : ''
+            );
+
+          }
+
+
+          if (!preserveFilters) {
+
+            el.pr1Search.value =
+              '';
+
+            el.pr1ReportPeriod.value='FULL_FINANCIAL_YEAR';
+
+            el.pr1FromDate.value =
+              '';
+
+            el.pr1ToDate.value =
+              '';
+
+            el.pr1Category.value =
+              '';
+
+            el.pr1ExpenseMode.value =
+              '';
+
+            el.pr1Status.value =
+              '';
+
+          }
+
+
+          setControlsEnabled(
+            true
+          );
+
+
+          showMessage(
+            '',
+            ''
+          );
+
+
+          updateSelectedYearDisplay();
+
+          loadRegister();
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          setControlsEnabled(
+            false
+          );
+
+
+          showMessage(
+            getErrorMessage(error),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_PaymentRegister_GetSetup(
+        state.sessionToken
+      );
+
+  }
+
+
+  /* =========================================================
+     FINANCIAL YEARS
+     ========================================================= */
+
+  function populateFinancialYears(
+    years,
+    selectedYear
+  ) {
+
+    const safeYears =
+      Array.isArray(years)
+        ? years
+        : [];
+
+
+    el.pr1FinancialYear.innerHTML =
+      '';
+
+
+    safeYears.forEach(
+      function (year) {
+
+        const value =
+          typeof year ===
+          'string'
+            ? clean(
+                year
+              )
+            : clean(
+                year.financialYear
+              );
+
+
+        if (!value) {
+
+          return;
+
+        }
+
+
+        const option =
+          document.createElement(
+            'option'
+          );
+
+
+        option.value =
+          value;
+
+
+        option.textContent =
+          value;
+
+
+        option.selected =
+          value ===
+          selectedYear;
+
+
+        el.pr1FinancialYear
+          .appendChild(
+            option
+          );
+
+      }
+    );
+
+
+    if (
+      !el.pr1FinancialYear
+        .options.length &&
+      selectedYear
+    ) {
+
+      const option =
+        document.createElement(
+          'option'
+        );
+
+
+      option.value =
+        selectedYear;
+
+
+      option.textContent =
+        selectedYear;
+
+
+      el.pr1FinancialYear
+        .appendChild(
+          option
+        );
+
+    }
+
+  }
+
+
+  function populateFilterSelect(
+    select,
+    values,
+    firstLabel,
+    selectedValue
+  ) {
+
+    const current =
+      clean(
+        selectedValue
+      );
+
+
+    select.innerHTML =
+      '';
+
+
+    const first =
+      document.createElement(
+        'option'
+      );
+
+
+    first.value =
+      '';
+
+
+    first.textContent =
+      firstLabel;
+
+
+    select.appendChild(
+      first
+    );
+
+
+    (values || [])
+      .forEach(
+        function (value) {
+
+          const safeValue =
+            clean(
+              value
+            );
+
+
+          if (!safeValue) {
+
+            return;
+
+          }
+
+
+          const option =
+            document.createElement(
+              'option'
+            );
+
+
+          option.value =
+            safeValue;
+
+
+          option.textContent =
+            safeValue;
+
+
+          option.selected =
+            safeValue ===
+            current;
+
+
+          select.appendChild(
+            option
+          );
+
+        }
+      );
+
+  }
+
+
+  function updateSelectedYearDisplay() {
+
+    el.pr1SelectedYearDisplay.textContent =
+      clean(
+        el.pr1FinancialYear.value
+      ) ||
+      state.currentFinancialYear ||
+      '—';
+
+  }
+
+
+  /* =========================================================
+     FILTERS
+     ========================================================= */
+
+  function getFilters() {
+
+    return {
+
+      financialYear:
+        clean(
+          el.pr1FinancialYear.value
+        ),
+
+
+      searchText:
+        clean(
+          el.pr1Search.value
+        ),
+
+
+      fromDate:
+        clean(
+          el.pr1FromDate.value
+        ),
+
+
+      toDate:
+        clean(
+          el.pr1ToDate.value
+        ),
+
+
+      expenseCategory:
+        clean(
+          el.pr1Category.value
+        ).toUpperCase(),
+
+
+      expenseMode:
+        clean(
+          el.pr1ExpenseMode.value
+        ).toUpperCase(),
+
+
+      expenseStatus:
+        clean(
+          el.pr1Status.value
+        ).toUpperCase()
+
+    };
+
+  }
+
+
+  function clearFilters() {
+
+    el.pr1Search.value =
+      '';
+
+    el.pr1ReportPeriod.value='FULL_FINANCIAL_YEAR';
+
+    el.pr1FromDate.value =
+      '';
+
+
+    el.pr1ToDate.value =
+      '';
+
+
+    el.pr1Category.value =
+      '';
+
+
+    el.pr1ExpenseMode.value =
+      '';
+
+
+    el.pr1Status.value =
+      '';
+
+
+    if (
+      state.currentFinancialYear
+    ) {
+
+      el.pr1FinancialYear.value =
+        state.currentFinancialYear;
+
+    }
+
+
+    updateSelectedYearDisplay();
+
+    loadRegister();
+
+  }
+
+
+  /* =========================================================
+     LOAD REGISTER
+     ========================================================= */
+
+  function loadRegister() {
+
+    if (
+      !state.sessionToken ||
+      !state.setupLoaded
+    ) {
+
+      return;
+
+    }
+
+
+    const filters =
+      getFilters();
+
+
+    if (
+      filters.fromDate &&
+      filters.toDate &&
+      filters.fromDate >
+        filters.toDate
+    ) {
+
+      showMessage(
+        'From Date cannot be later than To Date.',
+        'error'
+      );
+
+
+      return;
+
+    }
+
+
+    setRegisterLoading(
+      true
+    );
+
+
+    showMessage(
+      'Loading expense records…',
+      'info'
+    );
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          setRegisterLoading(
+            false
+          );
+
+
+          if (
+            !response ||
+            response.success !==
+              true
+          ) {
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'Expense records could not be loaded.',
+              'error'
+            );
+
+
+            return;
+
+          }
+
+
+          state.rows =
+            Array.isArray(
+              response.rows
+            )
+              ? response.rows
+              : [];
+
+
+          state.currentSummary=response.summary||{expensesRecorded:0,totalExpenses:0};
+          renderSummary(state.currentSummary);
+
+
+          renderRegister(
+            state.rows
+          );
+
+
+          updateSelectedYearDisplay();
+
+
+          showMessage(
+            '',
+            ''
+          );
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          setRegisterLoading(
+            false
+          );
+
+
+          showMessage(
+            getErrorMessage(error),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_PaymentRegister_GetRegister(
+        state.sessionToken,
+        filters
+      );
+
+  }
+
+
+  /* =========================================================
+     SUMMARY
+     ========================================================= */
+
+  function renderSummary(
+    summary
+  ) {
+
+    el.pr1SummaryCount.textContent =
+      Number(
+        summary.expensesRecorded ||
+        0
+      ).toLocaleString(
+        'en-IN'
+      );
+
+
+    el.pr1SummaryAmount.textContent =
+      '₹' +
+      formatAmount(
+        summary.totalExpenses ||
+        0
+      );
+
+  }
+
+
+  /* =========================================================
+     TABLE
+     ========================================================= */
+
+  function renderRegister(
+    rows
+  ) {
+
+    const tbody =
+      el.pr1Table
+        .querySelector(
+          'tbody'
+        );
+
+
+    const safeRows =
+      Array.isArray(rows)
+        ? rows
+        : [];
+
+
+    tbody.innerHTML =
+      '';
+
+
+    el.pr1RegisterMeta.textContent =
+      safeRows.length +
+      ' expense record(s) listed.';
+
+
+    if (!safeRows.length) {
+
+      const tr =
+        document.createElement(
+          'tr'
+        );
+
+
+      const td =
+        document.createElement(
+          'td'
+        );
+
+
+      td.colSpan =
+        13;
+
+
+      td.className =
+        'pr1-empty';
+
+
+      td.textContent =
+        'No expense records match the selected filters.';
+
+
+      tr.appendChild(
+        td
+      );
+
+
+      tbody.appendChild(
+        tr
+      );
+
+
+      return;
+
+    }
+
+
+    safeRows.forEach(
+      function (row) {
+
+        const tr =
+          document.createElement(
+            'tr'
+          );
+
+
+        appendTextCell(
+          tr,
+          row.expenseDateDisplay ||
+          ''
+        );
+
+
+        appendTextCell(
+          tr,
+          row.voucherNumber ||
+          '',
+          'pr1-voucher'
+        );
+
+
+        appendTextCell(
+          tr,
+          row.expenseId ||
+          ''
+        );
+
+
+        appendTextCell(
+          tr,
+          row.payeeName ||
+          '',
+          'pr1-payee'
+        );
+
+
+        appendTextCell(
+          tr,
+          row.expensePurpose ||
+          ''
+        );
+
+
+        appendTextCell(
+          tr,
+          row.expenseCategory ||
+          ''
+        );
+
+
+        appendTextCell(
+          tr,
+          row.eventProject ||
+          row.eventCode ||
+          '',
+          'pr1-project'
+        );
+
+
+        appendTextCell(
+          tr,
+          '₹' +
+          formatAmount(
+            row.amount ||
+            0
+          ),
+          'pr1-amount'
+        );
+
+
+        appendTextCell(
+          tr,
+          row.expenseMode ||
+          ''
+        );
+
+
+        appendTextCell(
+          tr,
+          row.transactionReference ||
+          ''
+        );
+
+
+        appendTextCell(
+          tr,
+          row.invoiceNumber ||
+          ''
+        );
+
+
+        const statusCell =
+          document.createElement(
+            'td'
+          );
+
+
+        const status =
+          clean(
+            row.expenseStatus
+          ).toUpperCase();
+
+
+        const badge =
+          document.createElement(
+            'span'
+          );
+
+
+        badge.className =
+          'pr1-status ' +
+          getStatusClass(
+            status
+          );
+
+
+        badge.textContent =
+          status ||
+          '—';
+
+
+        statusCell.appendChild(
+          badge
+        );
+
+
+        tr.appendChild(
+          statusCell
+        );
+
+
+        const actionCell =
+          document.createElement(
+            'td'
+          );
+
+
+        const viewButton =
+          document.createElement(
+            'button'
+          );
+
+
+        viewButton.type =
+          'button';
+
+
+        viewButton.className =
+          'pr1-button pr1-view';
+
+
+        viewButton.textContent =
+          row.voucherFileUrl
+            ? 'View Voucher'
+            : 'Generate / View';
+
+
+        viewButton.setAttribute(
+          'data-pr1-view-voucher',
+          '1'
+        );
+
+
+        viewButton.setAttribute(
+          'data-expense-id',
+          row.expenseId ||
+          ''
+        );
+
+
+        viewButton.setAttribute(
+          'data-voucher-number',
+          row.voucherNumber ||
+          ''
+        );
+
+
+        /*
+         * Existing voucher service will validate again.
+         * Disable obviously unsuitable rows in the UI.
+         */
+        if (
+          status !==
+            'PAID' ||
+          clean(
+            row.recordStatus
+          ).toUpperCase() !==
+            'ACTIVE'
+        ) {
+
+          viewButton.disabled =
+            true;
+
+        }
+
+
+        actionCell.appendChild(
+          viewButton
+        );
+
+
+        tr.appendChild(
+          actionCell
+        );
+
+
+        tbody.appendChild(
+          tr
+        );
+
+      }
+    );
+
+  }
+
+
+  function appendTextCell(
+    row,
+    value,
+    className
+  ) {
+
+    const td =
+      document.createElement(
+        'td'
+      );
+
+
+    if (className) {
+
+      td.className =
+        className;
+
+    }
+
+
+    td.textContent =
+      value === null ||
+      value === undefined
+        ? ''
+        : String(
+            value
+          );
+
+
+    row.appendChild(
+      td
+    );
+
+  }
+
+
+  function getStatusClass(
+    status
+  ) {
+
+    switch (
+      clean(
+        status
+      ).toUpperCase()
+    ) {
+
+      case 'PAID':
+
+        return 'paid';
+
+
+      case 'PENDING':
+
+        return 'pending';
+
+
+      case 'CANCELLED':
+
+        return 'cancelled';
+
+
+      case 'FAILED':
+
+        return 'failed';
+
+
+      case 'REFUNDED':
+
+        return 'refunded';
+
+
+      case 'REJECTED':
+
+        return 'rejected';
+
+
+      default:
+
+        return '';
+
+    }
+
+  }
+
+
+  function reportPeriodLabel(){return ({FULL_FINANCIAL_YEAR:'Full Financial Year',THIS_WEEK:'This Week',LAST_WEEK:'Last Week',THIS_MONTH:'This Month',LAST_MONTH:'Last Month',CUSTOM:'Custom Period'})[clean(el.pr1ReportPeriod.value)]||'Selected Period';}
+  function reportPeriod(){const f=clean(el.pr1FromDate.value),x=clean(el.pr1ToDate.value);return f&&x?reportDate(f)+' to '+reportDate(x):reportPeriodLabel();}
+  function reportDate(v){const m=clean(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return clean(v)||'—';return m[3]+'-'+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[2]-1]+'-'+m[1];}
+  function generatedOn(){return new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});}
+  function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+  function csvEsc(v){const s=String(v==null?'':v);return /[,"\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+  function logoSrc(){const a=Array.from(document.images||[]),p=a.find(i=>/kef|global|logo/i.test([i.id,i.className,i.alt,i.title].join(' '))&&clean(i.src));return p?p.src:((a.find(i=>clean(i.src)&&i.naturalWidth>0)||{}).src||'');}
+
+  function printReport(){
+    if(!state.rows.length){showMessage('There are no expense records to print for the selected filters.','error');return;}
+    const f=getFilters(),logo=logoSrc(),rh=state.rows.map(r=>'<tr><td>'+esc(r.expenseDateDisplay)+'</td><td>'+esc(r.voucherNumber)+'</td><td>'+esc(r.expenseId)+'</td><td>'+esc(r.payeeName)+'</td><td>'+esc(r.expensePurpose)+'</td><td>'+esc(r.expenseCategory)+'</td><td>'+esc(r.eventProject||r.eventCode)+'</td><td>'+esc(r.expenseMode)+'</td><td>'+esc(r.transactionReference)+'</td><td class="pa">₹'+esc(formatAmount(r.amount))+'</td><td>'+esc(r.expenseStatus)+'</td></tr>').join('');
+    el.pr1PrintReport.innerHTML='<div class="ph">'+(logo?'<img class="pl" src="'+esc(logo)+'">':'')+'<div class="po">KEF GLOBAL</div><div class="pt">Payment Register</div></div><div class="pm"><div><b>Financial Year:</b> '+esc(f.financialYear)+'</div><div><b>Report Period:</b> '+esc(reportPeriod())+'</div><div><b>Generated On:</b> '+esc(generatedOn())+'</div>'+(state.generatedBy?'<div><b>Generated By:</b> '+esc(state.generatedBy)+'</div>':'')+'</div><div class="pf">Category: '+esc(f.expenseCategory||'All')+' | Expense Mode: '+esc(f.expenseMode||'All')+' | Status: '+esc(f.expenseStatus||'All')+'</div><table><thead><tr><th>Date</th><th>Voucher No.</th><th>Expense ID</th><th>Payee</th><th>Purpose</th><th>Category</th><th>Event / Project</th><th>Mode</th><th>Reference</th><th>Amount</th><th>Status</th></tr></thead><tbody>'+rh+'</tbody></table><div class="ps"><span>Expenses Recorded: '+esc(state.currentSummary.expensesRecorded||0)+'</span><span>Total Expenses: ₹'+esc(formatAmount(state.currentSummary.totalExpenses||0))+'</span></div>';
+    window.print();
+  }
+
+  function downloadCsvReport(){
+    if(!state.rows.length){showMessage('There are no expense records to download for the selected filters.','error');return;}
+    const rows=[['EXPENSE_DATE','VOUCHER_NUMBER','EXPENSE_RECORD_ID','PAYEE_NAME','EXPENSE_PURPOSE','EXPENSE_CATEGORY','EVENT_PROJECT','AMOUNT','EXPENSE_MODE','TRANSACTION_REFERENCE','INVOICE_NUMBER','EXPENSE_STATUS']];
+    state.rows.forEach(r=>rows.push([r.expenseDateDisplay||'',r.voucherNumber||'',r.expenseId||'',r.payeeName||'',r.expensePurpose||'',r.expenseCategory||'',r.eventProject||r.eventCode||'',Number(r.amount||0).toFixed(2),r.expenseMode||'',r.transactionReference||'',r.invoiceNumber||'',r.expenseStatus||'']));
+    rows.push([],['FINANCIAL_YEAR',clean(el.pr1FinancialYear.value)||state.currentFinancialYear],['REPORT_PERIOD',reportPeriod()],['EXPENSES_RECORDED',state.currentSummary.expensesRecorded||0],['TOTAL_EXPENSES',Number(state.currentSummary.totalExpenses||0).toFixed(2)],['GENERATED_ON',generatedOn()]);
+    const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(csvEsc).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='KGMIS_Payment_Register_'+(clean(el.pr1FinancialYear.value)||'FY')+'_'+reportPeriodLabel().replace(/\s+/g,'_')+'_'+formatIsoLocal(new Date())+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  }
+
+  /* =========================================================
+     VIEW VOUCHER
+     ========================================================= */
+
+  function viewVoucher(
+    expenseId,
+    voucherNumber
+  ) {
+
+    const lookupValue =
+      clean(
+        expenseId
+      ) ||
+      clean(
+        voucherNumber
+      );
+
+
+    if (!lookupValue) {
+
+      showMessage(
+        'The selected expense does not contain a valid Expense Record ID or Voucher Number.',
+        'error'
+      );
+
+
+      return;
+
+    }
+
+
+    showMessage(
+      'Opening expense voucher…',
+      'info'
+    );
+
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (response) {
+
+          if (
+            !response ||
+            response.success !==
+              true
+          ) {
+
+            showMessage(
+              response &&
+              response.message
+                ? response.message
+                : 'The expense voucher could not be opened.',
+              'error'
+            );
+
+
+            return;
+
+          }
+
+
+          if (!response.fileUrl) {
+
+            showMessage(
+              'The voucher was prepared, but no file URL was returned.',
+              'error'
+            );
+
+
+            return;
+
+          }
+
+
+          showMessage(
+            response.alreadyGenerated ===
+              true
+              ? 'Existing expense voucher opened.'
+              : 'Expense voucher generated successfully.',
+            'success'
+          );
+
+
+          window.open(
+            response.fileUrl,
+            '_blank',
+            'noopener'
+          );
+
+        }
+      )
+
+
+      .withFailureHandler(
+        function (error) {
+
+          showMessage(
+            getErrorMessage(error),
+            'error'
+          );
+
+        }
+      )
+
+
+      .KGMIS_PaymentRegister_ViewVoucher(
+        state.sessionToken,
+        lookupValue
+      );
+
+  }
+
+
+  /* =========================================================
+     CONTROL STATE
+     ========================================================= */
+
+  function setControlsEnabled(
+    enabled
+  ) {
+
+    [
+      el.pr1FinancialYear,
+      el.pr1ReportPeriod,
+      el.pr1Search,
+      el.pr1FromDate,
+      el.pr1ToDate,
+      el.pr1Category,
+      el.pr1ExpenseMode,
+      el.pr1Status,
+      el.pr1ClearButton,
+      el.pr1RefreshButton,
+      el.pr1DownloadCsvButton,
+      el.pr1PrintButton,
+      el.pr1ApplyButton
+
+    ].forEach(
+      function (control) {
+
+        if (control) {
+
+          control.disabled =
+            !enabled;
+
+        }
+
+      }
+    );
+
+  }
+
+
+  function setRegisterLoading(
+    loading
+  ) {
+
+    el.pr1ApplyButton.disabled =
+      Boolean(
+        loading
+      );
+
+
+    el.pr1RefreshButton.disabled = Boolean(loading);
+    el.pr1DownloadCsvButton.disabled = Boolean(loading);
+    el.pr1PrintButton.disabled = Boolean(loading);
+
+
+    el.pr1ApplyButton.textContent =
+      loading
+        ? 'Loading…'
+        : 'Apply Filters';
+
+  }
+
+
+  /* =========================================================
+     MESSAGE
+     ========================================================= */
+
+  function showMessage(
+    message,
+    type
+  ) {
+
+    const text =
+      clean(
+        message
+      );
+
+
+    el.pr1Message.className =
+      'pr1-message';
+
+
+    el.pr1Message.textContent =
+      text;
+
+
+    if (!text) {
+
+      return;
+
+    }
+
+
+    el.pr1Message.classList.add(
+      type ||
+      'info'
+    );
+
+  }
+
+
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+
+  function clean(
+    value
+  ) {
+
+    return String(
+      value === null ||
+      value === undefined
+        ? ''
+        : value
+    ).trim();
+
+  }
+
+
+  function formatAmount(
+    value
+  ) {
+
+    return Number(
+      value ||
+      0
+    ).toLocaleString(
+      'en-IN',
+      {
+        minimumFractionDigits:
+          2,
+
+        maximumFractionDigits:
+          2
+      }
+    );
+
+  }
+
+
+  function getErrorMessage(
+    error
+  ) {
+
+    if (
+      error &&
+      error.message
+    ) {
+
+      return error.message;
+
+    }
+
+
+    return String(
+      error ||
+      'An unexpected Payment Register error occurred.'
+    );
+
+  }
+
+
+  /* =========================================================
+     EXPOSE MODULE
+     ========================================================= */
+
+  window.KGMIS_PaymentRegister = {
+
+    activate:
+      activate,
+
+
+    refresh:
+      function () {
+
+        loadSetup(
+          true
+        );
+
+      },
+
+
+    reload:
+      loadRegister,
+
+    printReport:
+      printReport,
+
+    downloadCsv:
+      downloadCsvReport
+
+  };
+
+
+})();
+
+</script>

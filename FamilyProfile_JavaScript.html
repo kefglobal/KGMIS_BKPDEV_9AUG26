@@ -1,0 +1,4185 @@
+<script>
+  /**********************************************************************
+   *
+   * KEFG Membership Information System
+   * Family Profile Wizard – Client JavaScript
+   * File FamilyProfile_JavaScript.html
+   * Designed & Developed by James Joseph Alenchery
+   **********************************************************************/
+
+  const KMIS_WIZARD_PAGES = [
+    'overview',
+    'member',
+    'spouse',
+    'photo',
+    'family',
+    'communication',
+    'subscription',
+    'review'
+  ];
+
+  let kmisConfiguration = null;
+  let kmisProfile = null;
+  let kmisFormData = {};
+  let kmisOriginalFormData = {};
+  let kmisSelectedPhoto = null;
+  let kmisSelectedPhotoPreview = '';
+  let kmisFamilyMembers = [];
+  let kmisOriginalFamilyMembers = [];
+  let kmisEditingFamilyMemberIndex = -1;
+  let kmisCurrentPageIndex = 0;
+  let kmisSpouseSectionEnabled = false;
+  let kmisSessionToken = '';
+
+
+  function activateFamilySelfServiceProfile(
+  authContext
+) {
+  console.log('Family Profile activated');
+  const auth =
+    authContext || {};
+
+  const sessionToken =
+    String(
+      auth.sessionToken || ''
+    ).trim();
+  kmisSessionToken = sessionToken;
+
+  if (!sessionToken) {
+    showError(
+      'Your KGMIS session is missing. Please sign in again.'
+    );
+
+    return;
+  }
+
+  if (
+    window.KMIS_FAMILY_PROFILE_INITIALISED !== true
+  ) {
+    window.KMIS_FAMILY_PROFILE_INITIALISED = true;
+
+    bindWizardNavigation();
+    bindFooterButtons();
+  }
+
+  initialisePortal(
+    sessionToken
+  );
+}
+
+
+  /**
+   * Loads portal configuration and then opens the
+   * token-linked family profile.
+   */
+  function initialisePortal(sessionToken) {
+    console.log('Initialising portal');
+    clearError();
+
+    google.script.run
+      .withSuccessHandler(function (configuration) {
+        kmisConfiguration = configuration;
+
+        const environmentBadge =
+          document.getElementById('environmentBadge');
+
+        if (
+          environmentBadge &&
+          configuration.application
+        ) {
+          environmentBadge.textContent =
+            configuration.application.environment ||
+            'DEVELOPMENT';
+        }
+
+        loadCurrentProfile(
+          sessionToken
+        );
+      })
+      .withFailureHandler(showError)
+      .KMIS_FP_PORTAL_GetPublicConfiguration();
+  }
+
+  function loadCurrentProfile(sessionToken) {
+        console.log('Loading current profile');
+
+        sessionToken =
+        String(
+        sessionToken || ''
+        ).trim();
+
+  if (!sessionToken) {
+    hideLoading();
+
+    showError(
+      'Your KGMIS session is missing. Please return to the Main Portal and sign in again.'
+    );
+
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function (result) {
+
+      kmisProfile = result.profile;
+
+      initialiseFormData(kmisProfile);
+
+      renderPortal();
+
+    })
+    .withFailureHandler(function (error) {
+
+      hideLoading();
+
+      showError(error);
+
+    })
+    .KMIS_FP_PORTAL_LoadCurrentProfile(
+      sessionToken
+    );
+}
+
+  /**
+   * Loads the profile using the secure token supplied
+   * through the personalised web-app URL.
+   */
+  function loadProfileFromToken() {
+    const token =
+      String(
+        typeof KMIS_INITIAL_TOKEN !== 'undefined'
+          ? KMIS_INITIAL_TOKEN
+          : ''
+      ).trim();
+
+    if (!token) {
+      hideLoading();
+
+      showError(
+        'This KEFG Family Profile link is incomplete. ' +
+        'Please open the personalised link sent to you by KEFG.'
+      );
+
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        kmisProfile = result.profile;
+
+        initialiseFormData(kmisProfile);
+        renderPortal();
+      })
+      .withFailureHandler(function (error) {
+        hideLoading();
+        showError(error);
+      })
+      .KMIS_FP_PORTAL_LoadByToken(token);
+  }
+
+
+  /**
+   * Converts the server profile into one editable client object.
+   */
+  function initialiseFormData(profile) {
+    const member =
+      profile.member || {};
+
+    const spouse =
+      profile.spouse || {};
+
+    const family =
+      profile.family || {};
+
+    const familyMembers =
+      Array.isArray(
+        profile.familyMembers
+      )
+        ? profile.familyMembers
+      : [];
+
+    const communication =
+      profile.communication || {};
+
+    const subscription =
+      profile.subscription || {};
+
+    kmisSpouseSectionEnabled =
+      Boolean(
+        spouse.exists ||
+        (
+          profile.spouseSection &&
+          profile.spouseSection.spouseExists
+        )
+      );
+
+    kmisFormData = {
+      MEMBER_NAME:
+        safeValue(member.fullName),
+
+      GENDER:
+        safeValue(
+          member.personal &&
+          member.personal.gender
+        ),
+
+      BLOOD_GROUP:
+        safeValue(
+          member.personal &&
+          member.personal.bloodGroup
+        ),
+
+      MEMBER_DOB_FULL:
+        safeValue(
+          member.personal &&
+          member.personal.dateOfBirthIso
+        ),
+
+      ALUMNI_ASSOCIATION:
+        normalizeAlumniAssociation(
+          member.alumni &&
+          member.alumni.association
+        ),
+
+      BRANCH:
+        safeValue(
+          member.alumni &&
+          member.alumni.branch
+        ),
+
+      YEAR_BATCH:
+        safeValue(
+          member.alumni &&
+          member.alumni.batchYear
+        ),
+
+      MEMBER_MOBILE:
+        safeValue(
+          member.contact &&
+          member.contact.mobile
+        ),
+
+      MEMBER_WHATSAPP:
+        safeValue(
+          member.contact &&
+          member.contact.whatsapp
+        ),
+
+      MEMBER_EMAIL:
+        safeValue(
+          member.contact &&
+          member.contact.email
+        ),
+
+      WHATSAPP_GROUP_MEMBER:
+        safeValue(
+          member.contact &&
+          member.contact.whatsappGroupMember
+        ),
+
+      CURRENT_LOCATION_COUNTRY:
+        safeValue(
+          member.location &&
+          member.location.country
+        ),
+
+      CURRENT_LOCATION_STATE:
+        safeValue(
+          member.location &&
+          member.location.state
+        ),
+
+      CURRENT_LOCATION_CITY_DISTRICT:
+        safeValue(
+          member.location &&
+          member.location.cityDistrict
+        ),
+
+      LATEST_ADDRESS:
+        safeValue(
+          member.location &&
+          member.location.address
+        ),
+
+      HOME_LOCATION_GOOGLE_MAP:
+        safeValue(
+          member.location &&
+          member.location.googleMapLink
+        ),
+
+      MEMBER_PRESENT_ACTIVITIES:
+        safeValue(
+          member.professional &&
+          member.professional.presentActivities
+        ),
+
+      MEMBER_PROFESSION_SKILLS:
+        safeValue(
+          member.professional &&
+          member.professional.professionSkills
+        ),
+
+      KEF_KEFGLOBAL_CONTRIBUTIONS:
+        safeValue(
+          member.professional &&
+          member.professional.contributions
+        ),
+
+      MEMBER_WILLING_TO_VOLUNTEER:
+        safeValue(
+          member.professional &&
+          member.professional.willingToVolunteer
+        ),
+
+
+      SPOUSE_NAME:
+        safeValue(spouse.fullName),
+
+      SPOUSE_GENDER:
+        safeValue(
+          spouse.personal &&
+          spouse.personal.gender
+        ),
+
+      SPOUSE_DOB_FULL:
+        safeValue(
+          spouse.personal &&
+          spouse.personal.dateOfBirthIso
+        ),
+
+      SPOUSE_MOBILE:
+        safeValue(
+          spouse.contact &&
+          spouse.contact.mobile
+        ),
+
+      SPOUSE_WHATSAPP:
+        safeValue(
+          spouse.contact &&
+          spouse.contact.whatsapp
+        ),
+
+      SPOUSE_EMAIL:
+        safeValue(
+          spouse.contact &&
+          spouse.contact.email
+        ),
+
+      SPOUSE_ALUMNI_ASSOCIATION:
+        normalizeAlumniAssociation(
+          spouse.alumni &&
+          spouse.alumni.association
+        ),
+
+      SPOUSE_BRANCH:
+        safeValue(
+          spouse.alumni &&
+          spouse.alumni.branch
+        ),
+
+      SPOUSE_BATCH_YEAR:
+        safeValue(
+          spouse.alumni &&
+          spouse.alumni.batchYear
+        ),
+
+      SPOUSE_CURRENT_CITY_DISTRICT:
+        safeValue(
+          spouse.location &&
+          spouse.location.cityDistrict
+        ),
+
+      SPOUSE_ACTIVITIES:
+        safeValue(
+          spouse.professional &&
+          spouse.professional.presentActivities
+        ),
+
+      SPOUSE_PROFESSION_SKILLS:
+        safeValue(
+          spouse.professional &&
+          spouse.professional.professionSkills
+        ),
+
+      SPOUSE_KEF_KEFGLOBAL_CONTRIBUTIONS:
+        safeValue(
+          spouse.professional &&
+          spouse.professional.contributions
+        ),
+
+      SPOUSE_WILLING_TO_VOLUNTEER:
+        safeValue(
+          spouse.professional &&
+          spouse.professional.willingToVolunteer
+        ),
+
+
+      WEDDING_DATE_FULL:
+        safeValue(
+          family.weddingDate &&
+          family.weddingDate.iso
+        ),
+
+      CHILD_1_NAME_AND_PROFESSION:
+        getChildValue(family.children, 0),
+
+      CHILD_2_NAME_AND_PROFESSION:
+        getChildValue(family.children, 1),
+
+      CHILD_3_NAME_AND_PROFESSION:
+        getChildValue(family.children, 2),
+
+      FAMILY_PHOTO:
+        safeValue(
+          family.photo &&
+          family.photo.existingValue
+        ),
+
+
+      PREFERRED_FAMILY_CONTACT:
+        safeValue(
+          communication.preferredFamilyContact
+        ),
+
+      WILLING_TO_JOIN:
+        safeValue(
+          communication.willingToJoin
+        ),
+
+      DATA_CONSENT:
+        normalizeConsentValue(
+          communication.dataConsent
+        ),
+
+      REMARKS:
+        safeValue(
+          communication.remarks
+        ),
+
+
+      SUBSCRIPTION_STATUS:
+        safeValue(
+          subscription.status
+        ) || 'NOT PAID',
+
+      SUBSCRIPTION_PAYMENT_DATE:
+        safeValue(
+          subscription.paymentDateDisplay
+        )
+    };
+
+      kmisFamilyMembers =
+        JSON.parse(
+          JSON.stringify(
+          familyMembers
+          )
+        );
+
+      kmisOriginalFamilyMembers =
+        JSON.parse(
+          JSON.stringify(
+          familyMembers
+          )
+        );
+
+      kmisOriginalFormData =
+        JSON.parse(
+          JSON.stringify(kmisFormData)
+        );
+  }
+
+
+  function renderPortal() {
+    hideLoading();
+    clearError();
+
+    document
+      .getElementById('wizardContainer')
+      .classList.remove('hidden');
+
+    document
+      .getElementById('welcomeGreeting')
+      .textContent =
+        kmisProfile.greeting || 'Welcome!';
+
+    updateProfileCompletion();
+
+    kmisCurrentPageIndex = 0;
+    renderCurrentPage();
+  }
+
+
+  /**
+   * Renders whichever wizard page is currently active.
+   */
+  function renderCurrentPage() {
+    const pageName =
+      KMIS_WIZARD_PAGES[kmisCurrentPageIndex];
+
+    document
+      .querySelectorAll('.wizardButton')
+      .forEach(function (button) {
+        button.classList.toggle(
+          'active',
+          button.dataset.page === pageName
+        );
+      });
+
+    switch (pageName) {
+      case 'overview':
+        renderOverviewPage();
+        break;
+
+      case 'member':
+        renderMemberPage();
+        break;
+
+      case 'spouse':
+        renderSpousePage();
+        break;
+
+      case 'photo':
+        renderPhotoPage();
+        break;
+
+      case 'family':
+        renderFamilyPage();
+        break;
+
+      case 'communication':
+        renderCommunicationPage();
+        break;
+
+      case 'subscription':
+        renderSubscriptionPage();
+        break;
+
+      case 'review':
+        renderReviewPage();
+        break;
+
+      default:
+        renderOverviewPage();
+    }
+
+    updateFooterButtons();
+
+    window.scrollTo({
+      top:
+        document
+          .getElementById('wizardContainer')
+          .offsetTop - 10,
+
+      behavior: 'smooth'
+    });
+  }
+
+
+  /**
+   * OVERVIEW
+   */
+  function renderOverviewPage() {
+    const memberStatus =
+      getSectionStatus('member');
+
+    const spouseStatus =
+      getSectionStatus('spouse');
+
+    const familyStatus =
+      getSectionStatus('family');
+
+    const communicationStatus =
+      getSectionStatus('communication');
+
+    const subscriptionStatus =
+      kmisFormData.SUBSCRIPTION_STATUS;
+
+    setPageContent(`
+      <div class="wizardPage">
+
+        ${createPageHeader(
+          'Profile Overview',
+          'Review your existing KEFG Family Profile and update only information that has changed.',
+          'Overview'
+        )}
+
+        <div class="overviewGrid">
+
+          ${createOverviewCard(
+            'Primary Member',
+            kmisFormData.MEMBER_NAME ||
+              'Primary Member information',
+            memberStatus,
+            'member'
+          )}
+
+          ${createOverviewCard(
+            'Spouse',
+            kmisSpouseSectionEnabled
+              ? (
+                  kmisFormData.SPOUSE_NAME ||
+                  'Spouse information'
+                )
+              : 'No spouse information is currently recorded',
+            spouseStatus,
+            'spouse'
+          )}
+
+          ${createOverviewCard(
+            'Family',
+            'Couple photo, wedding date and children',
+            familyStatus,
+            'family'
+          )}
+
+          ${createOverviewCard(
+            'Communication & Consent',
+            'Preferred contact, consent and remarks',
+            communicationStatus,
+            'communication'
+          )}
+
+          ${createOverviewCard(
+            'Subscription',
+            subscriptionStatus,
+            'complete',
+            'subscription'
+          )}
+
+          ${createOverviewCard(
+            'Review & Submit',
+            'Review all information before submission',
+            'review',
+            'review'
+          )}
+
+        </div>
+
+        <div class="informationNote">
+          Internal KMIS identifiers are not displayed.
+          Your personalised secure link identifies the correct family profile.
+        </div>
+
+      </div>
+    `);
+
+    bindOverviewButtons();
+  }
+
+
+  /**
+   * PRIMARY MEMBER
+   */
+  function renderMemberPage() {
+    setPageContent(`
+      <div class="wizardPage">
+
+        ${createPageHeader(
+          'Primary Member',
+          'Please review the Primary Member’s personal, alumni, contact, location and professional information.',
+          getSectionStatus('member')
+        )}
+
+        <div class="sectionBlock">
+          <h3>Personal Information</h3>
+
+          <div class="formGrid">
+            ${createInputField(
+              'MEMBER_NAME',
+              'Full Name',
+              'text',
+              true
+            )}
+
+            ${createSelectField(
+              'GENDER',
+              'Gender',
+              [
+                'MALE',
+                'FEMALE',
+                'PREFER NOT TO SAY'
+              ]
+            )}
+
+            ${createSelectField(
+              'BLOOD_GROUP',
+              'Blood Group',
+              [
+                'A+',
+                'A-',
+                'B+',
+                'B-',
+                'AB+',
+                'AB-',
+                'O+',
+                'O-',
+                'NOT KNOWN'
+              ]
+            )}
+
+            ${createInputField(
+              'MEMBER_DOB_FULL',
+              'Date of Birth',
+              'date'
+            )}
+          </div>
+        </div>
+
+
+        <div class="sectionBlock">
+          <h3>Alumni Information</h3>
+
+          <div class="formGrid">
+            ${createAlumniSelectField(
+              'ALUMNI_ASSOCIATION',
+              'Alumni Association',
+              'member'
+            )}
+
+            <div
+              id="memberBranchGroup"
+              class="fieldGroup"
+            >
+              ${createInputFieldContent(
+                'BRANCH',
+                'Branch',
+                'text'
+              )}
+            </div>
+
+            <div
+              id="memberBatchGroup"
+              class="fieldGroup"
+            >
+              ${createInputFieldContent(
+                'YEAR_BATCH',
+                'Batch / Year',
+                'text'
+              )}
+            </div>
+          </div>
+        </div>
+
+
+        <div class="sectionBlock">
+          <h3>Contact Information</h3>
+
+          <div class="formGrid">
+            ${createInputField(
+              'MEMBER_MOBILE',
+              'Mobile Number',
+              'tel',
+              true,
+              false,
+              'Please include the country code.'
+            )}
+
+            ${createInputField(
+              'MEMBER_WHATSAPP',
+              'WhatsApp Number',
+              'tel',
+              true,
+              false,
+              'Please include the country code.'
+            )}
+
+            ${createInputField(
+              'MEMBER_EMAIL',
+              'Email Address',
+              'email'
+            )}
+
+            ${createSelectField(
+              'WHATSAPP_GROUP_MEMBER',
+              'Member of a KEFG WhatsApp Group?',
+              [
+                'YES',
+                'NO',
+                'NOT SURE'
+              ]
+            )}
+          </div>
+        </div>
+
+
+        <div class="sectionBlock">
+          <h3>Current Location</h3>
+
+          <div class="formGrid">
+            ${createInputField(
+              'CURRENT_LOCATION_COUNTRY',
+              'Country of Residence',
+              'text',
+              true
+            )}
+
+            ${createInputField(
+              'CURRENT_LOCATION_STATE',
+              'State / Province / Emirate',
+              'text'
+            )}
+
+            ${createInputField(
+              'CURRENT_LOCATION_CITY_DISTRICT',
+              'City / District',
+              'text',
+              true
+            )}
+
+            ${createTextareaField(
+              'LATEST_ADDRESS',
+              'Current Postal Address',
+              false,
+              true
+            )}
+
+            ${createInputField(
+              'HOME_LOCATION_GOOGLE_MAP',
+              'Home Location Google Maps Link',
+              'url',
+              false,
+              true
+            )}
+          </div>
+        </div>
+
+
+        <div class="sectionBlock">
+          <h3>Profession and KEFG</h3>
+
+          <div class="formGrid">
+            ${createTextareaField(
+              'MEMBER_PRESENT_ACTIVITIES',
+              'Present Activities',
+              false,
+              true
+            )}
+
+            ${createTextareaField(
+              'MEMBER_PROFESSION_SKILLS',
+              'Profession, Qualifications and Skills',
+              false,
+              true
+            )}
+
+            ${createTextareaField(
+              'KEF_KEFGLOBAL_CONTRIBUTIONS',
+              'Contributions to KEF / KEFG Global',
+              false,
+              true
+            )}
+
+            ${createSelectField(
+              'MEMBER_WILLING_TO_VOLUNTEER',
+              'Would you be willing to volunteer?',
+              getVolunteerOptions(),
+              false,
+              true
+            )}
+          </div>
+        </div>
+
+      </div>
+    `);
+
+    bindEditableFields();
+    updateAlumniDependentFields('member');
+  }
+
+
+  /**
+   * SPOUSE
+   */
+  function renderSpousePage() {
+    if (!kmisSpouseSectionEnabled) {
+      setPageContent(`
+        <div class="wizardPage">
+
+          ${createPageHeader(
+            'Spouse Information',
+            'No spouse information is currently recorded in KMIS.',
+            'Needs Review'
+          )}
+
+          <div class="decisionPanel">
+            <p>
+              Would you like to add or update your spouse's details
+              in your KEFG Family Profile?
+            </p>
+
+            <div class="decisionActions">
+              <button
+                type="button"
+                id="enableSpouseButton"
+              >
+                Yes, add spouse details
+              </button>
+
+              <button
+                type="button"
+                id="skipSpouseButton"
+                class="secondaryButton"
+              >
+                No
+              </button>
+            </div>
+          </div>
+
+        </div>
+      `);
+
+      document
+        .getElementById('enableSpouseButton')
+        .addEventListener(
+          'click',
+          function () {
+            kmisSpouseSectionEnabled = true;
+            renderSpousePage();
+          }
+        );
+
+      document
+        .getElementById('skipSpouseButton')
+        .addEventListener(
+          'click',
+          function () {
+            goToPage('family');
+          }
+        );
+
+      return;
+    }
+
+    setPageContent(`
+      <div class="wizardPage">
+
+        ${createPageHeader(
+          'Spouse',
+          'Please review the spouse’s personal, contact, alumni and professional information.',
+          getSectionStatus('spouse')
+        )}
+
+        <div class="sectionBlock">
+          <h3>Personal and Contact Information</h3>
+
+          <div class="formGrid">
+            ${createInputField(
+              'SPOUSE_NAME',
+              'Spouse Full Name',
+              'text',
+              true
+            )}
+
+            ${createSelectField(
+              'SPOUSE_GENDER',
+              'Spouse Gender',
+              [
+                'MALE',
+                'FEMALE',
+                'PREFER NOT TO SAY'
+              ]
+            )}
+
+            ${createInputField(
+              'SPOUSE_DOB_FULL',
+              'Spouse Date of Birth',
+              'date'
+            )}
+
+            ${createInputField(
+              'SPOUSE_MOBILE',
+              'Spouse Mobile Number',
+              'tel',
+              false,
+              false,
+              'Please include the country code.'
+            )}
+
+            ${createInputField(
+              'SPOUSE_WHATSAPP',
+              'Spouse WhatsApp Number',
+              'tel',
+              false,
+              false,
+              'Please include the country code.'
+            )}
+
+            ${createInputField(
+              'SPOUSE_EMAIL',
+              'Spouse Email Address',
+              'email'
+            )}
+          </div>
+        </div>
+
+
+        <div class="sectionBlock">
+          <h3>Alumni Information</h3>
+
+          <div class="formGrid">
+            ${createAlumniSelectField(
+              'SPOUSE_ALUMNI_ASSOCIATION',
+              'Spouse Alumni Association',
+              'spouse'
+            )}
+
+            <div
+              id="spouseBranchGroup"
+              class="fieldGroup"
+            >
+              ${createInputFieldContent(
+                'SPOUSE_BRANCH',
+                'Spouse Branch',
+                'text'
+              )}
+            </div>
+
+            <div
+              id="spouseBatchGroup"
+              class="fieldGroup"
+            >
+              ${createInputFieldContent(
+                'SPOUSE_BATCH_YEAR',
+                'Spouse Batch / Year',
+                'text'
+              )}
+            </div>
+          </div>
+        </div>
+
+
+        <div class="sectionBlock">
+          <h3>Location, Profession and KEFG</h3>
+
+          <div class="formGrid">
+            ${createInputField(
+              'SPOUSE_CURRENT_CITY_DISTRICT',
+              'Spouse Current City / District',
+              'text'
+            )}
+
+            ${createTextareaField(
+              'SPOUSE_ACTIVITIES',
+              'Spouse Present Activities',
+              false,
+              true
+            )}
+
+            ${createTextareaField(
+              'SPOUSE_PROFESSION_SKILLS',
+              'Spouse Profession, Qualifications and Skills',
+              false,
+              true
+            )}
+
+            ${createTextareaField(
+              'SPOUSE_KEF_KEFGLOBAL_CONTRIBUTIONS',
+              'Spouse Contributions to KEF / KEFG Global',
+              false,
+              true
+            )}
+
+            ${createSelectField(
+              'SPOUSE_WILLING_TO_VOLUNTEER',
+              'Would your spouse be willing to volunteer?',
+              getVolunteerOptions(),
+              false,
+              true
+            )}
+          </div>
+        </div>
+
+      </div>
+    `);
+
+    bindEditableFields();
+    updateAlumniDependentFields('spouse');
+  }
+
+
+  /**
+   * FAMILY PHOTO
+   */
+function renderPhotoPage() {
+  const currentPhoto =
+    kmisSelectedPhotoPreview ||
+    getExistingPhotoUrl();
+
+  setPageContent(`
+    <div class="wizardPage">
+
+      ${createPageHeader(
+        'Couple / Family Photo',
+        'Review the wedding date and upload or replace the family photograph.',
+        getSectionStatus('family')
+      )}
+
+      <div class="sectionBlock">
+        <h3>Wedding Date</h3>
+
+        <div class="formGrid">
+
+          ${createInputField(
+            'WEDDING_DATE_FULL',
+            'Wedding Date',
+            'date'
+          )}
+
+        </div>
+      </div>
+
+
+      <div class="sectionBlock">
+        <h3>Family Photograph</h3>
+
+        <div class="photoLayout">
+
+          <div class="photoFrame">
+
+            ${
+              currentPhoto
+                ? `
+                  <img
+                    id="familyPhotoPreview"
+                    src="${escapeAttribute(currentPhoto)}"
+                    alt="Family photo preview"
+                  >
+                `
+                : `
+                  <div
+                    id="familyPhotoPlaceholder"
+                    class="photoPlaceholder"
+                  >
+                    Couple / family photo preview<br>
+                    4:3 landscape format
+                  </div>
+                `
+            }
+
+          </div>
+
+
+          <div class="photoControls">
+
+            <h3>Upload or Replace Photo</h3>
+
+            <ul class="photoRules">
+              <li>JPG, JPEG or PNG only</li>
+              <li>Maximum file size: 1 MB</li>
+              <li>Minimum dimensions: 800 × 600 pixels</li>
+              <li>Preferred dimensions: 1200 × 900 pixels</li>
+              <li>Landscape aspect ratio: 4:3</li>
+              <li>
+                Both the Primary Member and spouse should be
+                clearly visible where applicable
+              </li>
+            </ul>
+
+            <input
+              id="familyPhotoInput"
+              class="photoInput"
+              type="file"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+            >
+
+            <div
+              id="photoValidationMessage"
+              class="photoMessage hidden"
+            ></div>
+
+            <div class="fieldHelp">
+              The existing photo will remain unchanged when no
+              replacement photo is selected.
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  `);
+
+  bindEditableFields();
+
+  document
+    .getElementById('familyPhotoInput')
+    .addEventListener(
+      'change',
+      validateAndPreviewPhoto
+    );
+  }
+
+
+/**
+ * FAMILY MEMBERS
+ */
+
+function renderFamilyPage() {
+
+  setPageContent(`
+    <div class="wizardPage">
+
+      ${createPageHeader(
+        'Family Members',
+        'Review the family members listed below. You may add, edit or delete family-member information.',
+        'Family Members'
+      )}
+
+<!-- =====================================================
+     FAMILY MEMBERS LIST
+     ===================================================== -->
+
+      <div class="sectionBlock">
+
+        <div
+          id="familyMembersTableContainer"
+          class="familyMembersTableContainer">
+        </div>
+
+      </div>
+
+<!-- =====================================================
+     FAMILY MEMBER EDITOR
+     ===================================================== -->
+
+      <div class="sectionBlock">
+
+        <h3>Family Member Details</h3>
+
+        <div class="fieldHelp">
+          Enter the details of a new family member.
+          The same form will be used for editing an existing
+          family member in the next step.
+        </div>
+
+
+        <div class="formGrid">
+
+          ${createInputField(
+            'FM_FULL_NAME',
+            'Full Name',
+            'text',
+            true
+          )}
+
+          ${createSelectField(
+            'FM_FAMILY_RELATION',
+            'Relationship',
+            [
+              'DAUGHTER',
+              'SON',
+              'PARENT',
+              'FATHER-IN-LAW',
+              'MOTHER-IN-LAW',
+              'OTHER'
+            ],
+            true
+          )}
+
+          ${createSelectField(
+            'FM_BLOOD_GROUP',
+            'Blood Group',
+           [
+              'A+',
+              'A-',
+              'B+',
+              'B-',
+              'AB+',
+              'AB-',
+              'O+',
+              'O-',
+              'NOT KNOWN'
+            ]
+          )}          
+
+          ${createSelectField(
+            'FM_GENDER',
+            'Gender',
+            [
+              'MALE',
+              'FEMALE',
+            ],
+            true
+          )}
+
+          ${createInputField(
+            'FM_DATE_OF_BIRTH',
+            'Date of Birth',
+            'date'
+          )}
+
+          ${createInputField(
+            'FM_MOBILE',
+            'Mobile Number',
+            'tel',
+            false,
+            false,
+            'Please include the country code where applicable.'
+          )}
+
+          ${createInputField(
+            'FM_EMAIL',
+            'Email Address',
+            'email'
+          )}
+
+          ${createTextareaField(
+            'FM_PROFESSION_SKILLS',
+            'Profession, Course or Skills',
+            false,
+            true
+          )}
+
+          ${createTextareaField(
+            'FM_ACTIVITIES',
+            'Present Activities',
+            false,
+            true
+          )}
+
+          ${createSelectField(
+            'FM_WILLING_TO_VOLUNTEER',
+            'Willing to Volunteer?',
+            getVolunteerOptions(),
+            false,
+            true
+          )}
+
+          ${createTextareaField(
+            'FM_REMARKS',
+            'Remarks',
+            false,
+            true
+          )}
+
+        </div>
+
+
+        <div class="familyMemberFormActions">
+
+          <button
+            type="button"
+            id="addFamilyMemberButton">
+
+            Submit
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  `);
+
+
+  bindEditableFields();
+
+  bindFamilyMemberEntryForm();
+
+  renderFamilyMembersTable();
+}
+
+
+function bindFamilyMemberEntryForm() {
+
+  const addButton =
+    document.getElementById(
+      'addFamilyMemberButton'
+    );
+
+  if (!addButton) {
+    return;
+  }
+
+  addButton.addEventListener(
+    'click',
+    addFamilyMemberFromForm
+  );
+}
+
+
+function addFamilyMemberFromForm() {
+
+  const fullName =
+    getFamilyMemberFieldValue(
+      'FM_FULL_NAME'
+    );
+
+  const relationship =
+    getFamilyMemberFieldValue(
+      'FM_FAMILY_RELATION'
+    );
+
+  const gender =
+    getFamilyMemberFieldValue(
+      'FM_GENDER'
+    );
+
+
+  if (!fullName) {
+
+    alert(
+      'Please enter the family member’s full name.'
+    );
+
+    document
+      .getElementById(
+        'FM_FULL_NAME'
+      )
+      .focus();
+
+    return;
+  }
+
+
+  if (!relationship) {
+
+    alert(
+      'Please select the relationship.'
+    );
+
+    document
+      .getElementById(
+        'FM_FAMILY_RELATION'
+      )
+      .focus();
+
+    return;
+  }
+
+
+  if (!gender) {
+
+    alert(
+      'Please select the gender.'
+    );
+
+    document
+      .getElementById(
+        'FM_GENDER'
+      )
+      .focus();
+
+    return;
+  }
+
+
+  const editedValues = {
+
+    FULL_NAME:
+      fullName,
+
+    FAMILY_RELATION:
+      relationship,
+
+    GENDER:
+      gender,
+
+    BLOOD_GROUP:
+      getFamilyMemberFieldValue(
+        'FM_BLOOD_GROUP'
+      ),
+
+    DATE_OF_BIRTH:
+      getFamilyMemberFieldValue(
+        'FM_DATE_OF_BIRTH'
+      ),
+
+    MOBILE:
+      getFamilyMemberFieldValue(
+        'FM_MOBILE'
+      ),
+
+    EMAIL:
+      getFamilyMemberFieldValue(
+        'FM_EMAIL'
+      ),
+
+    FAMILY_PROFESSION_SKILLS:
+      getFamilyMemberFieldValue(
+        'FM_PROFESSION_SKILLS'
+      ),
+
+    FAMILY_ACTIVITIES:
+      getFamilyMemberFieldValue(
+        'FM_ACTIVITIES'
+      ),
+
+    FAMILY_WILLING_TO_VOLUNTEER:
+      getFamilyMemberFieldValue(
+        'FM_WILLING_TO_VOLUNTEER'
+      ),
+
+    REMARKS:
+      getFamilyMemberFieldValue(
+        'FM_REMARKS'
+      )
+  };
+
+
+  /*
+   * EDIT EXISTING FAMILY MEMBER
+   */
+  if (
+    kmisEditingFamilyMemberIndex >= 0 &&
+    kmisEditingFamilyMemberIndex <
+      kmisFamilyMembers.length
+  ) {
+
+    const existingMember =
+      kmisFamilyMembers[
+        kmisEditingFamilyMemberIndex
+      ];
+
+
+    Object.keys(
+      editedValues
+    ).forEach(function (fieldName) {
+
+      existingMember[fieldName] =
+        editedValues[fieldName];
+
+    });
+
+
+    if (
+      existingMember.operation !== 'ADD'
+    ) {
+      existingMember.operation = 'EDIT';
+    }
+
+
+    alert(
+      'Family member changes have been added to the Review page.'
+    );
+
+  } else {
+
+    /*
+     * ADD NEW FAMILY MEMBER
+     */
+    kmisFamilyMembers.push({
+
+      operation: 'ADD',
+
+      PERSON_ID: '',
+      DEPENDANT_ID: '',
+      FAMILY_ID:
+        safeValue(
+          kmisProfile &&
+          kmisProfile.overview &&
+          kmisProfile.overview.familyId
+        ),
+
+      RELATED_KEFG_ID: '',
+
+      FULL_NAME:
+        editedValues.FULL_NAME,
+
+      FAMILY_RELATION:
+        editedValues.FAMILY_RELATION,
+
+      GENDER:
+        editedValues.GENDER,
+
+      BLOOD_GROUP:
+        editedValues.BLOOD_GROUP,
+
+      DATE_OF_BIRTH:
+        editedValues.DATE_OF_BIRTH,
+
+      AGE: '',
+      RELATION_SEQUENCE: '',
+      CARD_ELIGIBLE: '',
+
+      MOBILE:
+        editedValues.MOBILE,
+
+      EMAIL:
+        editedValues.EMAIL,
+
+      PHOTO_FILE_ID: '',
+      PHOTO_URL: '',
+
+      DEPENDENCY_STATUS: '',
+      ELIGIBILITY_STATUS: '',
+      RECORD_STATUS: '',
+
+      FAMILY_PROFESSION_SKILLS:
+        editedValues
+          .FAMILY_PROFESSION_SKILLS,
+
+      FAMILY_ACTIVITIES:
+        editedValues
+          .FAMILY_ACTIVITIES,
+
+      FAMILY_WILLING_TO_VOLUNTEER:
+        editedValues
+          .FAMILY_WILLING_TO_VOLUNTEER,
+
+      REMARKS:
+        editedValues.REMARKS
+    });
+
+
+    alert(
+      'New family member has been added to the Review page.'
+    );
+  }
+
+
+  clearFamilyMemberEntryForm();
+
+  renderFamilyMembersTable();
+}
+
+function getFamilyMemberFieldValue(
+  fieldId
+) {
+
+  const element =
+    document.getElementById(
+      fieldId
+    );
+
+  if (!element) {
+    return '';
+  }
+
+  return safeValue(
+    element.value
+  );
+}
+
+function clearFamilyMemberEntryForm() {
+
+  const fieldIds = [
+    'FM_FULL_NAME',
+    'FM_FAMILY_RELATION',
+    'FM_GENDER',
+    'FM_BLOOD_GROUP',
+    'FM_DATE_OF_BIRTH',
+    'FM_MOBILE',
+    'FM_EMAIL',
+    'FM_PROFESSION_SKILLS',
+    'FM_ACTIVITIES',
+    'FM_WILLING_TO_VOLUNTEER',
+    'FM_REMARKS'
+  ];
+
+
+  fieldIds.forEach(
+    function (fieldId) {
+
+      const element =
+        document.getElementById(
+          fieldId
+        );
+
+      if (element) {
+        element.value = '';
+      }
+
+      kmisFormData[fieldId] = '';
+    }
+  );
+
+
+  kmisEditingFamilyMemberIndex = -1;
+
+
+  const actionButton =
+    document.getElementById(
+      'addFamilyMemberButton'
+    );
+
+  if (actionButton) {
+    actionButton.textContent =
+      'Submit';
+  }
+}
+
+function renderFamilyMembersTable() {
+
+  const container =
+    document.getElementById(
+      'familyMembersTableContainer'
+    );
+
+  if (!container) {
+    return;
+  }
+
+  if (!kmisFamilyMembers.length) {
+
+    container.innerHTML = `
+      <div class="familyMembersEmptyState">
+        No family members have been added yet.
+      </div>
+    `;
+
+    return;
+  }
+
+  const rowsHtml =
+    kmisFamilyMembers
+      .map(
+        function (
+          familyMember,
+          index
+        ) {
+
+          return `
+            <tr>
+
+              <td>
+                ${index + 1}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  familyMember.FULL_NAME
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  familyMember.FAMILY_RELATION
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  familyMember.GENDER
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  familyMember.DATE_OF_BIRTH ||
+                  '—'
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  familyMember.MOBILE ||
+                  '—'
+                )}
+              </td>
+
+              <td>
+
+                <button
+                  type="button"
+                  class="familyMemberEditButton"
+                  data-family-member-index="${index}">
+
+                  Edit
+
+                </button>
+
+                <button
+                  type="button"
+                  class="familyMemberRemoveButton"
+                  data-family-member-index="${index}">
+
+                  Delete
+
+                </button>
+
+              </td>
+
+            </tr>
+          `;
+        }
+      )
+      .join('');
+
+  container.innerHTML = `
+    <div class="familyMembersTableScroll">
+
+      <table class="familyMembersTable">
+
+        <thead>
+
+          <tr>
+            <th>No.</th>
+            <th>Full Name</th>
+            <th>Relationship</th>
+            <th>Gender</th>
+            <th>Date of Birth</th>
+            <th>Mobile</th>
+            <th>Action</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+
+  container
+  .querySelectorAll(
+    '.familyMemberEditButton'
+  )
+  .forEach(function (button) {
+
+    button.addEventListener(
+      'click',
+      function () {
+
+        editFamilyMember(
+          Number(
+            button.dataset.familyMemberIndex
+          )
+        );
+
+      }
+    );
+
+  });
+
+  container
+    .querySelectorAll(
+      '.familyMemberRemoveButton'
+    )
+    .forEach(
+      function (button) {
+
+        button.addEventListener(
+          'click',
+          function () {
+
+            const index =
+              Number(
+                button.dataset
+                  .familyMemberIndex
+              );
+
+            removeFamilyMember(
+              index
+            );
+          }
+        );
+      }
+    );
+}
+
+
+function removeFamilyMember(index) {
+
+  if (
+    index < 0 ||
+    index >= kmisFamilyMembers.length
+  ) {
+    return;
+  }
+
+  const confirmed =
+    window.confirm(
+      'Remove this family member from the list?'
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  kmisFamilyMembers.splice(
+    index,
+    1
+  );
+
+  renderFamilyMembersTable();
+}
+
+function editFamilyMember(index) {
+
+  if (
+    index < 0 ||
+    index >= kmisFamilyMembers.length
+  ) {
+    return;
+  }
+
+  kmisEditingFamilyMemberIndex = index;
+
+  const member =
+    kmisFamilyMembers[index];
+
+  document.getElementById('FM_FULL_NAME').value =
+    member.FULL_NAME || '';
+
+  document.getElementById('FM_FAMILY_RELATION').value =
+    member.FAMILY_RELATION || '';
+
+  document.getElementById('FM_GENDER').value =
+    member.GENDER || '';
+
+  document.getElementById('FM_BLOOD_GROUP').value =
+    member.BLOOD_GROUP || '';
+
+  document.getElementById('FM_DATE_OF_BIRTH').value =
+    member.DATE_OF_BIRTH || '';
+
+  document.getElementById('FM_MOBILE').value =
+    member.MOBILE || '';
+
+  document.getElementById('FM_EMAIL').value =
+    member.EMAIL || '';
+
+  document.getElementById('FM_PROFESSION_SKILLS').value =
+    member.FAMILY_PROFESSION_SKILLS ||
+    member.PROFESSION_SKILLS ||
+    '';
+
+  document.getElementById('FM_ACTIVITIES').value =
+    member.FAMILY_ACTIVITIES ||
+    member.ACTIVITIES ||
+    '';
+
+  document.getElementById('FM_WILLING_TO_VOLUNTEER').value =
+    member.FAMILY_WILLING_TO_VOLUNTEER ||
+    member.WILLING_TO_VOLUNTEER ||
+    '';
+
+  document.getElementById('FM_REMARKS').value =
+    member.REMARKS || '';
+
+  document
+    .getElementById(
+      'addFamilyMemberButton'
+    )
+    .textContent =
+    'Save Changes';
+
+  window.scrollTo({
+    top:
+      document
+        .getElementById('FM_FULL_NAME')
+        .offsetTop - 100,
+    behavior: 'smooth'
+  });
+
+}
+
+  /**
+   * COMMUNICATION AND CONSENT
+   */
+  function renderCommunicationPage() {
+    const paidMember =
+      isPaidMember();
+
+    setPageContent(`
+      <div class="wizardPage">
+
+        ${createPageHeader(
+          'Communication and Consent',
+          'Review your family communication preferences, consent and remarks.',
+          getSectionStatus('communication')
+        )}
+
+        <div class="sectionBlock">
+          <h3>Communication Preferences</h3>
+
+          <div class="formGrid">
+
+            ${createSelectField(
+              'PREFERRED_FAMILY_CONTACT',
+              'Preferred Family Contact',
+              getPreferredContactOptions(),
+              true
+            )}
+
+            ${
+              paidMember
+                ? ''
+                : createSelectField(
+                    'WILLING_TO_JOIN',
+                    'Willing to Join KEFG?',
+                    [
+                      'YES',
+                      'NO',
+                      'ALREADY A MEMBER',
+                      'PLEASE CONTACT ME'
+                    ]
+                  )
+            }
+
+            ${createTextareaField(
+              'REMARKS',
+              'Additional Information or Corrections',
+              false,
+              true,
+              'You may also report any subscription-status discrepancy here.'
+            )}
+
+          </div>
+        </div>
+
+
+        <div class="sectionBlock">
+          <h3>Data Consent</h3>
+
+          <div class="consentBox">
+
+            <p>
+              KEFG may retain and use the information provided
+              for membership administration, authorised communication,
+              member-directory services and approved KEFG activities.
+              Access will be limited according to KMIS roles and permissions.
+            </p>
+
+            <div class="radioGroup">
+
+              ${createConsentRadio(
+                'I AGREE'
+              )}
+
+              ${createConsentRadio(
+                'I DO NOT AGREE'
+              )}
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    `);
+
+    bindEditableFields();
+    bindConsentFields();
+  }
+
+
+  /**
+   * SUBSCRIPTION
+   */
+  function renderSubscriptionPage() {
+    const status =
+      kmisFormData.SUBSCRIPTION_STATUS ||
+      'NOT PAID';
+
+    const statusClass =
+      getSubscriptionBadgeClass(status);
+
+    setPageContent(`
+      <div class="wizardPage">
+
+        ${createPageHeader(
+          'Subscription Status',
+          'Subscription information is maintained by the KEFG Treasurer.',
+          'Display Only'
+        )}
+
+        <div class="subscriptionPanel">
+
+          <div>
+            <span class="subscriptionLabel">
+              Subscription Status 2026–27
+            </span>
+
+            <span
+              class="subscriptionBadge ${statusClass}"
+            >
+              ${escapeHtml(status)}
+            </span>
+          </div>
+
+
+          <div>
+            <span class="subscriptionLabel">
+              Payment Date
+            </span>
+
+            <strong>
+              ${
+                escapeHtml(
+                  kmisFormData
+                    .SUBSCRIPTION_PAYMENT_DATE ||
+                  '—'
+                )
+              }
+            </strong>
+          </div>
+
+        </div>
+
+        <div class="informationNote">
+          This information cannot be edited through the Family Profile Portal.
+          Please report any discrepancy in the Remarks field under
+          Communication and Consent.
+        </div>
+
+      </div>
+    `);
+  }
+
+
+  /**
+   * REVIEW
+   */
+  function renderReviewPage() {
+
+  setPageContent(`
+    <div class="wizardPage">
+
+      ${createPageHeader(
+        'Review Your Profile',
+        'Please review the information below before submitting your KEFG Family Profile update.',
+        'Final Review'
+      )}
+
+      <div class="reviewGrid">
+
+        ${createReviewSection(
+          'Primary Member',
+          [
+            [
+              'Full Name',
+              kmisFormData.MEMBER_NAME
+            ],
+            [
+              'Gender',
+              kmisFormData.GENDER
+            ],
+            [
+              'Blood Group',
+              kmisFormData.BLOOD_GROUP
+            ],
+            [
+              'Date of Birth',
+              kmisFormData.MEMBER_DOB_FULL
+            ],
+            [
+              'Alumni Association',
+              kmisFormData.ALUMNI_ASSOCIATION
+            ],
+            [
+              'Branch',
+              kmisFormData.BRANCH
+            ],
+            [
+              'Batch / Year',
+              kmisFormData.YEAR_BATCH
+            ],
+            [
+              'Mobile',
+              kmisFormData.MEMBER_MOBILE
+            ],
+            [
+              'WhatsApp',
+              kmisFormData.MEMBER_WHATSAPP
+            ],
+            [
+              'Email',
+              kmisFormData.MEMBER_EMAIL
+            ],
+            [
+              'Country',
+              kmisFormData
+                .CURRENT_LOCATION_COUNTRY
+            ],
+            [
+              'City / District',
+              kmisFormData
+                .CURRENT_LOCATION_CITY_DISTRICT
+            ]
+          ]
+        )}
+
+        ${
+          kmisSpouseSectionEnabled
+            ? createReviewSection(
+                'Spouse',
+                [
+                  [
+                    'Full Name',
+                    kmisFormData.SPOUSE_NAME
+                  ],
+                  [
+                    'Gender',
+                    kmisFormData.SPOUSE_GENDER
+                  ],
+                  [
+                    'Date of Birth',
+                    kmisFormData
+                      .SPOUSE_DOB_FULL
+                  ],
+                  [
+                    'Mobile',
+                    kmisFormData.SPOUSE_MOBILE
+                  ],
+                  [
+                    'WhatsApp',
+                    kmisFormData
+                      .SPOUSE_WHATSAPP
+                  ],
+                  [
+                    'Email',
+                    kmisFormData.SPOUSE_EMAIL
+                  ],
+                  [
+                    'Alumni Association',
+                    kmisFormData
+                      .SPOUSE_ALUMNI_ASSOCIATION
+                  ],
+                  [
+                    'Branch',
+                    kmisFormData.SPOUSE_BRANCH
+                  ],
+                  [
+                    'Batch / Year',
+                    kmisFormData
+                      .SPOUSE_BATCH_YEAR
+                  ]
+                ]
+              )
+            : ''
+        }
+
+        ${createReviewSection(
+          'Family Photo',
+          [
+            [
+              'Wedding Date',
+              kmisFormData.WEDDING_DATE_FULL
+            ],
+            [
+              'Replacement Photo',
+              kmisSelectedPhoto
+                ? kmisSelectedPhoto.name
+                : 'No replacement selected'
+            ]
+          ]
+        )}
+
+        ${createFamilyMembersReviewSection()}
+
+        ${createReviewSection(
+          'Communication and Consent',
+          [
+            [
+              'Preferred Family Contact',
+              kmisFormData
+                .PREFERRED_FAMILY_CONTACT
+            ],
+            [
+              'Willing to Join KEFG',
+              isPaidMember()
+                ? 'Already a paid member'
+                : kmisFormData.WILLING_TO_JOIN
+            ],
+            [
+              'Data Consent',
+              kmisFormData.DATA_CONSENT
+            ],
+            [
+              'Remarks',
+              kmisFormData.REMARKS
+            ]
+          ]
+        )}
+
+        ${createReviewSection(
+          'Subscription',
+          [
+            [
+              'Subscription Status',
+              kmisFormData
+                .SUBSCRIPTION_STATUS
+            ],
+            [
+              'Payment Date',
+              kmisFormData
+                .SUBSCRIPTION_PAYMENT_DATE
+            ]
+          ]
+        )}
+
+      </div>
+
+    </div>
+  `);
+}
+
+
+  /**
+   * Field creation helpers
+   */
+  function createInputField(
+    fieldName,
+    label,
+    type,
+    required,
+    fullWidth,
+    helpText
+  ) {
+    return `
+      <div class="fieldGroup ${
+        fullWidth ? 'fullWidth' : ''
+      }">
+        ${createInputFieldContent(
+          fieldName,
+          label,
+          type,
+          required,
+          helpText
+        )}
+      </div>
+    `;
+  }
+
+
+  function createInputFieldContent(
+    fieldName,
+    label,
+    type,
+    required,
+    helpText
+  ) {
+    return `
+      <label
+        class="fieldLabel"
+        for="${escapeAttribute(fieldName)}"
+      >
+        ${escapeHtml(label)}
+        ${
+          required
+            ? '<span class="requiredMark">*</span>'
+            : ''
+        }
+      </label>
+
+      <input
+        id="${escapeAttribute(fieldName)}"
+        name="${escapeAttribute(fieldName)}"
+        data-kmis-field="${escapeAttribute(fieldName)}"
+        type="${escapeAttribute(type || 'text')}"
+        value="${escapeAttribute(
+          kmisFormData[fieldName] || ''
+        )}"
+        ${required ? 'required' : ''}
+      >
+
+      ${
+        helpText
+          ? `
+            <div class="fieldHelp">
+              ${escapeHtml(helpText)}
+            </div>
+          `
+          : ''
+      }
+    `;
+  }
+
+
+  function createTextareaField(
+    fieldName,
+    label,
+    required,
+    fullWidth,
+    helpText
+  ) {
+    return `
+      <div class="fieldGroup ${
+        fullWidth ? 'fullWidth' : ''
+      }">
+        <label
+          class="fieldLabel"
+          for="${escapeAttribute(fieldName)}"
+        >
+          ${escapeHtml(label)}
+          ${
+            required
+              ? '<span class="requiredMark">*</span>'
+              : ''
+          }
+        </label>
+
+        <textarea
+          id="${escapeAttribute(fieldName)}"
+          name="${escapeAttribute(fieldName)}"
+          data-kmis-field="${escapeAttribute(fieldName)}"
+          ${required ? 'required' : ''}
+        >${escapeHtml(
+          kmisFormData[fieldName] || ''
+        )}</textarea>
+
+        ${
+          helpText
+            ? `
+              <div class="fieldHelp">
+                ${escapeHtml(helpText)}
+              </div>
+            `
+            : ''
+        }
+      </div>
+    `;
+  }
+
+
+  function createSelectField(
+    fieldName,
+    label,
+    options,
+    required,
+    fullWidth
+  ) {
+    const currentValue =
+      safeValue(kmisFormData[fieldName]);
+
+    const optionHtml =
+      ['']
+        .concat(options || [])
+        .map(function (option) {
+          const selected =
+            String(option) === currentValue
+              ? 'selected'
+              : '';
+
+          return `
+            <option
+              value="${escapeAttribute(option)}"
+              ${selected}
+            >
+              ${
+                option
+                  ? escapeHtml(option)
+                  : '— Select —'
+              }
+            </option>
+          `;
+        })
+        .join('');
+
+    return `
+      <div class="fieldGroup ${
+        fullWidth ? 'fullWidth' : ''
+      }">
+        <label
+          class="fieldLabel"
+          for="${escapeAttribute(fieldName)}"
+        >
+          ${escapeHtml(label)}
+          ${
+            required
+              ? '<span class="requiredMark">*</span>'
+              : ''
+          }
+        </label>
+
+        <select
+          id="${escapeAttribute(fieldName)}"
+          name="${escapeAttribute(fieldName)}"
+          data-kmis-field="${escapeAttribute(fieldName)}"
+          ${required ? 'required' : ''}
+        >
+          ${optionHtml}
+        </select>
+      </div>
+    `;
+  }
+
+
+  function createAlumniSelectField(
+    fieldName,
+    label,
+    personType
+  ) {
+    return createSelectField(
+      fieldName,
+      label,
+      getAlumniOptions(),
+      true,
+      false
+    ).replace(
+      'data-kmis-field="' + fieldName + '"',
+      'data-kmis-field="' +
+        fieldName +
+        '" data-alumni-person="' +
+        personType +
+        '"'
+    );
+  }
+
+
+  function createConsentRadio(option) {
+    const checked =
+      kmisFormData.DATA_CONSENT === option
+        ? 'checked'
+        : '';
+
+    return `
+      <label class="radioOption">
+        <input
+          type="radio"
+          name="DATA_CONSENT"
+          value="${escapeAttribute(option)}"
+          ${checked}
+        >
+
+        <span>${escapeHtml(option)}</span>
+      </label>
+    `;
+  }
+
+
+  /**
+   * Field binding
+   */
+  function bindEditableFields() {
+    document
+      .querySelectorAll('[data-kmis-field]')
+      .forEach(function (element) {
+        element.addEventListener(
+          'input',
+          handleFieldChange
+        );
+
+        element.addEventListener(
+          'change',
+          handleFieldChange
+        );
+      });
+
+    document
+      .querySelectorAll('[data-alumni-person]')
+      .forEach(function (element) {
+        element.addEventListener(
+          'change',
+          function () {
+            updateAlumniDependentFields(
+              element.dataset.alumniPerson
+            );
+          }
+        );
+      });
+  }
+
+
+  function handleFieldChange(event) {
+    const fieldName =
+      event.target.dataset.kmisField;
+
+    if (!fieldName) {
+      return;
+    }
+
+    kmisFormData[fieldName] =
+      event.target.value;
+
+    updateProfileCompletion();
+  }
+
+
+  function bindConsentFields() {
+    document
+      .querySelectorAll(
+        'input[name="DATA_CONSENT"]'
+      )
+      .forEach(function (radio) {
+        radio.addEventListener(
+          'change',
+          function () {
+            kmisFormData.DATA_CONSENT =
+              radio.value;
+
+            updateProfileCompletion();
+          }
+        );
+      });
+  }
+
+
+  /**
+   * Alumni rules
+   */
+  function updateAlumniDependentFields(personType) {
+    const isMember =
+      personType === 'member';
+
+    const associationField =
+      isMember
+        ? 'ALUMNI_ASSOCIATION'
+        : 'SPOUSE_ALUMNI_ASSOCIATION';
+
+    const branchField =
+      isMember
+        ? 'BRANCH'
+        : 'SPOUSE_BRANCH';
+
+    const batchField =
+      isMember
+        ? 'YEAR_BATCH'
+        : 'SPOUSE_BATCH_YEAR';
+
+    const branchGroup =
+      document.getElementById(
+        isMember
+          ? 'memberBranchGroup'
+          : 'spouseBranchGroup'
+      );
+
+    const batchGroup =
+      document.getElementById(
+        isMember
+          ? 'memberBatchGroup'
+          : 'spouseBatchGroup'
+      );
+
+    const notApplicable =
+      kmisFormData[associationField] ===
+      'NOT APPLICABLE';
+
+    if (branchGroup) {
+      branchGroup.classList.toggle(
+        'hidden',
+        notApplicable
+      );
+    }
+
+    if (batchGroup) {
+      batchGroup.classList.toggle(
+        'hidden',
+        notApplicable
+      );
+    }
+
+    if (notApplicable) {
+      kmisFormData[branchField] = '';
+      kmisFormData[batchField] = '';
+
+      const branchInput =
+        document.getElementById(branchField);
+
+      const batchInput =
+        document.getElementById(batchField);
+
+      if (branchInput) {
+        branchInput.value = '';
+      }
+
+      if (batchInput) {
+        batchInput.value = '';
+      }
+    }
+  }
+
+
+  /**
+   * Photo validation and preview
+   */
+  function validateAndPreviewPhoto(event) {
+    const file =
+      event.target.files &&
+      event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    const rules =
+      kmisConfiguration.photoRules || {};
+
+    const allowedMimeTypes =
+      rules.allowedMimeTypes || [
+        'image/jpeg',
+        'image/png'
+      ];
+
+    if (
+      !allowedMimeTypes.includes(file.type)
+    ) {
+      rejectPhoto(
+        'Only JPG, JPEG or PNG files are allowed.'
+      );
+
+      return;
+    }
+
+    if (
+      file.size >
+      Number(rules.maximumBytes || 2097152)
+    ) {
+      rejectPhoto(
+        'The selected photo is larger than 2 MB.'
+      );
+
+      return;
+    }
+
+    const reader =
+      new FileReader();
+
+    reader.onload = function (readerEvent) {
+      const image =
+        new Image();
+
+      image.onload = function () {
+        const minimumWidth =
+          Number(rules.minimumWidth || 800);
+
+        const minimumHeight =
+          Number(rules.minimumHeight || 600);
+
+        if (
+          image.width < minimumWidth ||
+          image.height < minimumHeight
+        ) {
+          rejectPhoto(
+            'The photo must be at least ' +
+            minimumWidth +
+            ' × ' +
+            minimumHeight +
+            ' pixels.'
+          );
+
+          return;
+        }
+
+        const actualRatio =
+          image.width / image.height;
+
+        const expectedRatio =
+          4 / 3;
+
+        const ratioDifference =
+          Math.abs(
+            actualRatio - expectedRatio
+          );
+
+        if (ratioDifference > 0.12) {
+          rejectPhoto(
+            'Please use a landscape photo close to the 4:3 aspect ratio.'
+          );
+
+          return;
+        }
+
+        kmisSelectedPhoto = file;
+        kmisSelectedPhotoPreview =
+          readerEvent.target.result;
+
+        showPhotoMessage(
+          'Photo accepted: ' +
+          file.name +
+          ' (' +
+          image.width +
+          ' × ' +
+          image.height +
+          ' pixels).',
+          'success'
+        );
+
+        displayPhotoPreview(
+          kmisSelectedPhotoPreview
+        );
+      };
+
+      image.onerror = function () {
+        rejectPhoto(
+          'The selected image could not be read.'
+        );
+      };
+
+      image.src =
+        readerEvent.target.result;
+    };
+
+    reader.onerror = function () {
+      rejectPhoto(
+        'The selected image could not be read.'
+      );
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+
+  function rejectPhoto(message) {
+    kmisSelectedPhoto = null;
+    kmisSelectedPhotoPreview = '';
+
+    const fileInput =
+      document.getElementById(
+        'familyPhotoInput'
+      );
+
+    if (fileInput) {
+      fileInput.value = '';
+    }
+
+    showPhotoMessage(
+      message,
+      'error'
+    );
+  }
+
+
+  function showPhotoMessage(
+    message,
+    type
+  ) {
+    const panel =
+      document.getElementById(
+        'photoValidationMessage'
+      );
+
+    if (!panel) {
+      return;
+    }
+
+    panel.textContent = message;
+
+    panel.className =
+      'photoMessage ' + type;
+  }
+
+
+  function displayPhotoPreview(url) {
+    const frame =
+      document.querySelector('.photoFrame');
+
+    if (!frame) {
+      return;
+    }
+
+    frame.innerHTML = `
+      <img
+        id="familyPhotoPreview"
+        src="${escapeAttribute(url)}"
+        alt="Family photo preview"
+      >
+    `;
+  }
+
+
+/**
+ * Returns only the fields that actually changed.
+ */
+function getChangedFields() {
+
+  const changedFields = {};
+
+  Object.keys(kmisFormData).forEach(function(fieldName) {
+
+    const oldValue =
+      String(
+        kmisOriginalFormData[fieldName] || ''
+      );
+
+    const newValue =
+      String(
+        kmisFormData[fieldName] || ''
+      );
+
+    if (oldValue !== newValue) {
+
+      changedFields[fieldName] = {
+        old: oldValue,
+        new: newValue
+      };
+
+    }
+
+  });
+
+  if (kmisSelectedPhoto) {
+
+    changedFields.FAMILY_PHOTO = {
+
+      old:
+        kmisOriginalFormData.FAMILY_PHOTO || '',
+
+      new:
+        '[NEW PHOTO SELECTED]'
+
+    };
+
+  }
+
+  return changedFields;
+
+}
+
+
+/**
+ * Returns the list of sections that actually changed.
+ */
+function determineChangedSections() {
+
+  const sections = [];
+
+  const sectionFields = {
+
+    MEMBER: [
+      'MEMBER_NAME',
+      'GENDER',
+      'BLOOD_GROUP',
+      'MEMBER_DOB_FULL',
+      'ALUMNI_ASSOCIATION',
+      'BRANCH',
+      'YEAR_BATCH',
+      'MEMBER_MOBILE',
+      'MEMBER_WHATSAPP',
+      'MEMBER_EMAIL',
+      'WHATSAPP_GROUP_MEMBER',
+      'CURRENT_LOCATION_COUNTRY',
+      'CURRENT_LOCATION_STATE',
+      'CURRENT_LOCATION_CITY_DISTRICT',
+      'LATEST_ADDRESS',
+      'HOME_LOCATION_GOOGLE_MAP',
+      'MEMBER_PRESENT_ACTIVITIES',
+      'MEMBER_PROFESSION_SKILLS',
+      'KEF_KEFGLOBAL_CONTRIBUTIONS',
+      'MEMBER_WILLING_TO_VOLUNTEER'
+    ],
+
+    SPOUSE: [
+      'SPOUSE_NAME',
+      'SPOUSE_GENDER',
+      'SPOUSE_DOB_FULL',
+      'SPOUSE_MOBILE',
+      'SPOUSE_WHATSAPP',
+      'SPOUSE_EMAIL',
+      'SPOUSE_ALUMNI_ASSOCIATION',
+      'SPOUSE_BRANCH',
+      'SPOUSE_BATCH_YEAR',
+      'SPOUSE_CURRENT_CITY_DISTRICT',
+      'SPOUSE_ACTIVITIES',
+      'SPOUSE_PROFESSION_SKILLS',
+      'SPOUSE_KEF_KEFGLOBAL_CONTRIBUTIONS',
+      'SPOUSE_WILLING_TO_VOLUNTEER'
+    ],
+
+    FAMILY: [
+      'WEDDING_DATE_FULL',
+      'CHILD_1_NAME_AND_PROFESSION',
+      'CHILD_2_NAME_AND_PROFESSION',
+      'CHILD_3_NAME_AND_PROFESSION'
+    ],
+
+    COMMUNICATION: [
+      'PREFERRED_FAMILY_CONTACT',
+      'WILLING_TO_JOIN',
+      'DATA_CONSENT',
+      'REMARKS'
+    ]
+
+  };
+
+  Object.keys(sectionFields).forEach(function(sectionName) {
+
+    const changed =
+      sectionFields[sectionName].some(function(field) {
+
+        return (
+          String(kmisFormData[field] || '') !==
+          String(kmisOriginalFormData[field] || '')
+        );
+
+      });
+
+    if (changed) {
+      sections.push(sectionName);
+    }
+
+  });
+
+  if (kmisSelectedPhoto) {
+    if (!sections.includes('FAMILY')) {
+      sections.push('FAMILY');
+    }
+  }
+
+  return sections;
+
+}
+
+
+/**
+ * ============================================================
+ * Builds the Family Member submission package.
+ *
+ * Returns only new or edited Family Members.
+ * Unchanged Family Members are ignored.
+ * ============================================================
+ */
+function buildFamilyMemberSubmissionData() {
+
+  return kmisFamilyMembers
+    .filter(function (familyMember) {
+
+      const operation =
+        String(
+          familyMember.operation || ''
+        ).trim().toUpperCase();
+
+      return (
+        operation === 'ADD' ||
+        operation === 'EDIT'
+      );
+
+    })
+    .map(function (familyMember) {
+
+      return {
+
+        OPERATION:
+          String(
+            familyMember.operation || ''
+          ).trim().toUpperCase(),
+
+        PERSON_ID:
+          safeValue(
+            familyMember.PERSON_ID
+          ),
+
+        DEPENDANT_ID:
+          safeValue(
+            familyMember.DEPENDANT_ID
+          ),
+
+        FULL_NAME:
+          safeValue(
+            familyMember.FULL_NAME
+          ),
+
+        FAMILY_RELATION:
+          safeValue(
+            familyMember.FAMILY_RELATION
+          ),
+
+        GENDER:
+          safeValue(
+            familyMember.GENDER
+          ),
+
+        BLOOD_GROUP:
+          safeValue(
+            familyMember.BLOOD_GROUP
+          ),
+
+        DATE_OF_BIRTH:
+          safeValue(
+            familyMember.DATE_OF_BIRTH
+          ),
+
+        MOBILE:
+          safeValue(
+            familyMember.MOBILE
+          ),
+
+        EMAIL:
+          safeValue(
+            familyMember.EMAIL
+          ),
+
+        PROFESSION_SKILLS:
+          safeValue(
+            familyMember.FAMILY_PROFESSION_SKILLS ||
+            familyMember.PROFESSION_SKILLS
+          ),
+
+        ACTIVITIES:
+          safeValue(
+            familyMember.FAMILY_ACTIVITIES ||
+            familyMember.ACTIVITIES
+          ),
+
+        WILLING_TO_VOLUNTEER:
+          safeValue(
+            familyMember.FAMILY_WILLING_TO_VOLUNTEER ||
+            familyMember.WILLING_TO_VOLUNTEER
+          ),
+
+        REMARKS:
+          safeValue(
+            familyMember.REMARKS
+          )
+      };
+
+    });
+
+}
+
+
+/**
+ * Creates one common SUBMISSION_ID for the complete portal submission.
+ * The same ID is used for Profile and Family Member requests.
+ */
+function createCommonSubmissionId() {
+  const now = new Date();
+
+  const pad = function (value) {
+    return String(value).padStart(2, '0');
+  };
+
+  const timestamp =
+    now.getFullYear() +
+    pad(now.getMonth() + 1) +
+    pad(now.getDate()) + '-' +
+    pad(now.getHours()) +
+    pad(now.getMinutes()) +
+    pad(now.getSeconds());
+
+  const randomPart =
+    Math.random()
+      .toString(36)
+      .substring(2, 10)
+      .toUpperCase();
+
+  return 'SUB-' + timestamp + '-' + randomPart;
+}
+
+
+/**
+ * ============================================================
+ * Submit Family Profile
+ * ============================================================
+ */
+
+function submitProfileUpdate() {
+
+  if (!kmisSessionToken) {
+    showError(
+      'Your KGMIS session has expired. Please sign in again.'
+    );
+
+    return;
+  }
+
+
+  const changedFields =
+    getChangedFields();
+
+  const changedSections =
+    determineChangedSections();
+
+  const familyMembersSubmissionData =
+    buildFamilyMemberSubmissionData();
+
+  const hasProfileChanges =
+    Object.keys(
+      changedFields
+    ).length > 0;
+
+  const hasFamilyMemberChanges =
+    familyMembersSubmissionData.length > 0;
+
+  const commonSubmissionId =
+    createCommonSubmissionId();
+
+
+  if (
+    !hasProfileChanges &&
+    !hasFamilyMemberChanges
+  ) {
+    showError(
+      'No profile changes or Family Member changes were found for submission.'
+    );
+
+    return;
+  }
+
+
+  const profileSubmissionData = {
+
+    formData:
+      changedFields,
+
+    changedSections:
+      changedSections,
+
+    spouseSectionEnabled:
+      kmisSpouseSectionEnabled,
+
+    photo: {
+
+      fileName:
+        kmisSelectedPhoto
+          ? kmisSelectedPhoto.name
+          : '',
+
+      mimeType:
+        kmisSelectedPhoto
+          ? kmisSelectedPhoto.type
+          : '',
+
+      fileReference:
+        ''
+    }
+  };
+
+
+  /*
+   * Case 1:
+   * Both Profile and Family Members changed.
+   */
+  if (
+    hasProfileChanges &&
+    hasFamilyMemberChanges
+  ) {
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (profileResult) {
+
+          google.script.run
+
+            .withSuccessHandler(
+              function (familyResult) {
+
+                alert(
+                  'Your updates have been submitted successfully.' +
+                  '\n\nProfile Submission ID: ' +
+                  profileResult.submissionId +
+                  '\nProfile Request ID: ' +
+                  profileResult.requestId +
+                  '\nFamily Member Submission ID: ' +
+                  familyResult.submissionId +
+                  '\nFamily Member Request ID: ' +
+                  familyResult.requestId +
+                  '\nFamily Members Submitted: ' +
+                  familyResult.familyMemberCount
+                );
+
+              }
+            )
+
+            .withFailureHandler(
+              function (error) {
+
+                showError(
+                  'The Profile update was submitted, but the Family Member submission failed. ' +
+                  (
+                    error && error.message
+                      ? error.message
+                      : safeValue(error)
+                  )
+                );
+
+              }
+            )
+
+            .KMIS_FP_PORTAL_SaveFamilyMemberUpdates(
+              kmisSessionToken,
+              familyMembersSubmissionData,
+              commonSubmissionId
+            );
+
+        }
+      )
+
+      .withFailureHandler(
+        showError
+      )
+
+      .KMIS_FP_PORTAL_SubmitProfileUpdate(
+        kmisSessionToken,
+        profileSubmissionData,
+        commonSubmissionId
+      );
+
+    return;
+  }
+
+
+  /*
+   * Case 2:
+   * Only Profile information changed.
+   */
+  if (hasProfileChanges) {
+
+    google.script.run
+
+      .withSuccessHandler(
+        function (profileResult) {
+
+          alert(
+            profileResult.message +
+            '\n\nRequest ID: ' +
+            profileResult.requestId
+          );
+
+        }
+      )
+
+      .withFailureHandler(
+        showError
+      )
+
+      .KMIS_FP_PORTAL_SubmitProfileUpdate(
+        kmisSessionToken,
+        profileSubmissionData,
+        commonSubmissionId
+      );
+
+    return;
+  }
+
+
+  /*
+   * Case 3:
+   * Only Family Members changed.
+   */
+  google.script.run
+
+    .withSuccessHandler(
+      function (familyResult) {
+
+        alert(
+          familyResult.message +
+          '\n\nSubmission ID: ' +
+          familyResult.submissionId +
+          '\nRequest ID: ' +
+          familyResult.requestId
+        );
+
+      }
+    )
+
+    .withFailureHandler(
+      showError
+    )
+
+    .KMIS_FP_PORTAL_SaveFamilyMemberUpdates(
+      kmisSessionToken,
+      familyMembersSubmissionData,
+      commonSubmissionId
+    );
+
+}
+
+
+  /**
+   * Wizard navigation
+   */
+  function bindWizardNavigation() {
+    document
+      .querySelectorAll('.wizardButton')
+      .forEach(function (button) {
+        button.addEventListener(
+          'click',
+          function () {
+            goToPage(
+              button.dataset.page
+            );
+          }
+        );
+      });
+  }
+
+
+  function bindOverviewButtons() {
+    document
+      .querySelectorAll('[data-open-page]')
+      .forEach(function (button) {
+        button.addEventListener(
+          'click',
+          function () {
+            goToPage(
+              button.dataset.openPage
+            );
+          }
+        );
+      });
+  }
+
+
+  function bindFooterButtons() {
+    document
+      .getElementById('previousButton')
+      .addEventListener(
+        'click',
+        function () {
+          if (kmisCurrentPageIndex > 0) {
+            kmisCurrentPageIndex--;
+            renderCurrentPage();
+          }
+        }
+      );
+
+    document
+      .getElementById('nextButton')
+      .addEventListener(
+        'click',
+        function () {
+          if (
+            kmisCurrentPageIndex <
+            KMIS_WIZARD_PAGES.length - 1
+          ) {
+            kmisCurrentPageIndex++;
+            renderCurrentPage();
+          } else {
+            submitProfileUpdate();
+          }
+        }
+      );
+  }
+
+
+  function goToPage(pageName) {
+    const newIndex =
+      KMIS_WIZARD_PAGES.indexOf(
+        pageName
+      );
+
+    if (newIndex === -1) {
+      return;
+    }
+
+    kmisCurrentPageIndex =
+      newIndex;
+
+    renderCurrentPage();
+  }
+
+
+  function updateFooterButtons() {
+    const previousButton =
+      document.getElementById(
+        'previousButton'
+      );
+
+    const nextButton =
+      document.getElementById(
+        'nextButton'
+      );
+
+    previousButton.disabled =
+      kmisCurrentPageIndex === 0;
+
+    if (
+      kmisCurrentPageIndex ===
+      KMIS_WIZARD_PAGES.length - 1
+    ) {
+      nextButton.textContent =
+        'Submit Profile';
+    } else {
+      nextButton.textContent =
+        'Next →';
+    }
+  }
+
+
+  /**
+   * Completion calculations
+   */
+  function updateProfileCompletion() {
+    const checks = [
+      kmisFormData.MEMBER_NAME,
+      kmisFormData.MEMBER_MOBILE,
+      kmisFormData.MEMBER_WHATSAPP,
+      kmisFormData.CURRENT_LOCATION_COUNTRY,
+      kmisFormData.CURRENT_LOCATION_CITY_DISTRICT,
+      kmisFormData.PREFERRED_FAMILY_CONTACT,
+      kmisFormData.DATA_CONSENT
+    ];
+
+    if (kmisSpouseSectionEnabled) {
+      checks.push(
+        kmisFormData.SPOUSE_NAME
+      );
+    }
+
+    const completeCount =
+      checks.filter(
+        function (value) {
+          return Boolean(
+            safeValue(value)
+          );
+        }
+      ).length;
+
+    const percentage =
+      checks.length
+        ? Math.round(
+            completeCount /
+            checks.length *
+            100
+          )
+        : 0;
+
+    const percentageElement =
+      document.getElementById(
+        'completionPercentage'
+      );
+
+    const progressElement =
+      document.getElementById(
+        'progressFill'
+      );
+
+    if (percentageElement) {
+      percentageElement.textContent =
+        percentage + '%';
+    }
+
+    if (progressElement) {
+
+  progressElement.style.width =
+    percentage + '%';
+
+  if (percentage < 50) {
+
+    progressElement.style.backgroundColor =
+      '#dc2626';
+
+  } else if (percentage < 80) {
+
+    progressElement.style.backgroundColor =
+      '#f59e0b';
+
+  } else {
+
+    progressElement.style.backgroundColor =
+      '#16a34a';
+
+  }
+}
+}
+
+  function getSectionStatus(sectionName) {
+    let complete = false;
+
+    switch (sectionName) {
+      case 'member':
+        complete =
+          Boolean(
+            safeValue(
+              kmisFormData.MEMBER_NAME
+            )
+          ) &&
+          Boolean(
+            safeValue(
+              kmisFormData.MEMBER_MOBILE
+            )
+          ) &&
+          Boolean(
+            safeValue(
+              kmisFormData
+                .CURRENT_LOCATION_COUNTRY
+            )
+          );
+        break;
+
+      case 'spouse':
+        complete =
+          !kmisSpouseSectionEnabled ||
+          Boolean(
+            safeValue(
+              kmisFormData.SPOUSE_NAME
+            )
+          );
+        break;
+
+      case 'family':
+        complete =
+          Boolean(
+            safeValue(
+              kmisFormData.WEDDING_DATE_FULL
+            )
+          ) ||
+          Boolean(
+            safeValue(
+              kmisFormData.FAMILY_PHOTO
+            )
+          ) ||
+          Boolean(kmisSelectedPhoto);
+        break;
+
+      case 'communication':
+        complete =
+          Boolean(
+            safeValue(
+              kmisFormData
+                .PREFERRED_FAMILY_CONTACT
+            )
+          ) &&
+          Boolean(
+            safeValue(
+              kmisFormData.DATA_CONSENT
+            )
+          );
+        break;
+
+      default:
+        complete = false;
+    }
+
+    return complete
+      ? 'complete'
+      : 'needs-review';
+  }
+
+
+  /**
+   * General HTML helpers
+   */
+  function setPageContent(html) {
+    document
+      .getElementById('pageContainer')
+      .innerHTML = html;
+  }
+
+
+  function createPageHeader(
+    title,
+    description,
+    status
+  ) {
+    const complete =
+      status === 'complete';
+
+    const statusLabel =
+      complete
+        ? 'Complete'
+        : (
+            status === 'Display Only'
+              ? 'Display Only'
+              : (
+                  status === 'Final Review'
+                    ? 'Final Review'
+                    : (
+                        status === 'Overview'
+                          ? 'Overview'
+                          : 'Needs Review'
+                      )
+                )
+          );
+
+    return `
+      <div class="pageHeader">
+        <div>
+          <div class="sectionCaption">
+            KEFG Family Profile
+          </div>
+
+          <h2>${escapeHtml(title)}</h2>
+
+          <p>${escapeHtml(description)}</p>
+        </div>
+
+        <span
+          class="pageStatus ${
+            complete ? 'complete' : ''
+          }"
+        >
+          ${escapeHtml(statusLabel)}
+        </span>
+      </div>
+    `;
+  }
+
+
+  function createOverviewCard(
+    title,
+    description,
+    status,
+    pageName
+  ) {
+    const complete =
+      status === 'complete';
+
+    const statusText =
+      complete
+        ? 'Complete'
+        : (
+            status === 'review'
+              ? 'Review'
+              : 'Needs Review'
+          );
+
+    return `
+      <div class="overviewCard">
+        <h3>${escapeHtml(title)}</h3>
+
+        <p>${escapeHtml(description)}</p>
+
+        <div
+          class="pageStatus ${
+            complete ? 'complete' : ''
+          }"
+          style="display:inline-block;margin-top:12px;"
+        >
+          ${escapeHtml(statusText)}
+        </div>
+
+        <br>
+
+        <button
+          type="button"
+          data-open-page="${escapeAttribute(pageName)}"
+        >
+          Open
+        </button>
+      </div>
+    `;
+  }
+
+
+  function createReviewSection(
+    title,
+    rows
+  ) {
+    const rowsHtml =
+      rows
+        .map(function (row) {
+          return `
+            <div class="reviewRow">
+              <span>${escapeHtml(row[0])}</span>
+              <span>
+                ${
+                  escapeHtml(
+                    safeValue(row[1]) ||
+                    '—'
+                  )
+                }
+              </span>
+            </div>
+          `;
+        })
+        .join('');
+
+    return `
+      <div class="reviewSection">
+        <h3>${escapeHtml(title)}</h3>
+        ${rowsHtml}
+      </div>
+    `;
+  }
+
+function createFamilyMembersReviewSection() {
+
+  if (!kmisFamilyMembers.length) {
+
+    return `
+      <div class="reviewSection">
+
+        <h3>Family Members</h3>
+
+        <div class="reviewRow">
+
+          <span>Family Members</span>
+
+          <span>
+            No family members have been added.
+          </span>
+
+        </div>
+
+      </div>
+    `;
+  }
+
+
+  const membersHtml =
+    kmisFamilyMembers
+      .map(
+        function (
+          familyMember,
+          index
+        ) {
+
+          return `
+            <div class="familyMemberReviewCard">
+
+              <h4>
+                Family Member ${index + 1}
+              </h4>
+
+              <div class="reviewRow">
+                <span>Full Name</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.FULL_NAME || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Relationship</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.FAMILY_RELATION || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Gender</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.GENDER || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Blood Group</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.BLOOD_GROUP || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Date of Birth</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.DATE_OF_BIRTH || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Mobile</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.MOBILE || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Email</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.EMAIL || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Profession / Skills</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.FAMILY_PROFESSION_SKILLS || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Present Activities</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.FAMILY_ACTIVITIES || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Willing to Volunteer</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.FAMILY_WILLING_TO_VOLUNTEER || '—'
+                  )}
+                </span>
+              </div>
+
+              <div class="reviewRow">
+                <span>Remarks</span>
+                <span>
+                  ${escapeHtml(
+                    familyMember.REMARKS || '—'
+                  )}
+                </span>
+              </div>
+
+            </div>
+          `;
+        }
+      )
+      .join('');
+
+
+  return `
+    <div class="reviewSection">
+
+      <h3>Family Members</h3>
+
+      <div class="familyMembersReviewList">
+        ${membersHtml}
+      </div>
+
+    </div>
+  `;
+}
+
+
+  function getAlumniOptions() {
+    return (
+      kmisConfiguration &&
+      kmisConfiguration.alumniOptions
+        ? kmisConfiguration.alumniOptions
+        : [
+            'CETA',
+            'KEA',
+            'MACE',
+            'NIT',
+            'NSS',
+            'TEC',
+            'TKMCE',
+            'AECK',
+            'NOT APPLICABLE'
+          ]
+    );
+  }
+
+
+  function getVolunteerOptions() {
+    return (
+      kmisConfiguration &&
+      kmisConfiguration.volunteerOptions
+        ? kmisConfiguration.volunteerOptions
+        : [
+            'YES',
+            'NO',
+            'MAYBE',
+            'PLEASE CONTACT ME'
+          ]
+    );
+  }
+
+
+  function getPreferredContactOptions() {
+    return (
+      kmisConfiguration &&
+      kmisConfiguration
+        .preferredContactOptions
+        ? kmisConfiguration
+            .preferredContactOptions
+        : [
+            'PRIMARY MEMBER',
+            'SPOUSE',
+            'EITHER',
+            'BOTH'
+          ]
+    );
+  }
+
+
+  function isPaidMember() {
+    return (
+      String(
+        kmisFormData.SUBSCRIPTION_STATUS ||
+        ''
+      )
+        .trim()
+        .toUpperCase() === 'PAID'
+    );
+  }
+
+
+  function getSubscriptionBadgeClass(
+    status
+  ) {
+    switch (
+      String(status || '')
+        .trim()
+        .toUpperCase()
+    ) {
+      case 'PAID':
+        return 'paid';
+
+      case 'PENDING':
+        return 'pending';
+
+      case 'EXEMPTED':
+        return 'exempted';
+
+      case 'NOT PAID':
+      default:
+        return 'notPaid';
+    }
+  }
+
+
+  function getExistingPhotoUrl() {
+    const value =
+      safeValue(
+        kmisFormData.FAMILY_PHOTO
+      );
+
+    if (
+      value.startsWith('http://') ||
+      value.startsWith('https://') ||
+      value.startsWith('data:image/')
+    ) {
+      return value;
+    }
+
+    return '';
+  }
+
+
+  function getChildValue(
+    children,
+    index
+  ) {
+    if (
+      !Array.isArray(children) ||
+      !children[index]
+    ) {
+      return '';
+    }
+
+    return safeValue(
+      children[index]
+        .nameAndProfession
+    );
+  }
+
+
+  function normalizeAlumniAssociation(
+    value
+  ) {
+    const normalized =
+      safeValue(value).toUpperCase();
+
+    if (!normalized) {
+      return '';
+    }
+
+    const mapping = {
+      CET: 'CETA',
+      CETA: 'CETA',
+      KEA: 'KEA',
+      MACE: 'MACE',
+      NIT: 'NIT',
+      NSS: 'NSS',
+      TEC: 'TEC',
+      TKMCE: 'TKMCE',
+      AECK: 'AECK',
+      'NOT APPLICABLE':
+        'NOT APPLICABLE'
+    };
+
+    return mapping[normalized] || '';
+  }
+
+
+  function normalizeConsentValue(
+    value
+  ) {
+    const normalized =
+      safeValue(value).toUpperCase();
+
+    if (
+      normalized === 'YES' ||
+      normalized === 'AGREE' ||
+      normalized === 'I AGREE' ||
+      normalized === 'GIVEN'
+    ) {
+      return 'I AGREE';
+    }
+
+    if (
+      normalized === 'NO' ||
+      normalized ===
+        'I DO NOT AGREE' ||
+      normalized === 'NOT GIVEN'
+    ) {
+      return 'I DO NOT AGREE';
+    }
+
+    return '';
+  }
+
+
+  function safeValue(value) {
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return '';
+    }
+
+    return String(value).trim();
+  }
+
+
+  function escapeHtml(value) {
+    return safeValue(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+
+  function escapeAttribute(value) {
+    return escapeHtml(value);
+  }
+
+
+  function hideLoading() {
+    const panel =
+      document.getElementById(
+        'loadingPanel'
+      );
+
+    if (panel) {
+      panel.classList.add('hidden');
+    }
+  }
+
+
+  function clearError() {
+    const panel =
+      document.getElementById(
+        'errorPanel'
+      );
+
+    if (!panel) {
+      return;
+    }
+
+    panel.textContent = '';
+    panel.classList.add('hidden');
+  }
+
+
+  function showError(error) {
+    hideLoading();
+
+    const message =
+      error && error.message
+        ? error.message
+        : safeValue(error) ||
+          'An unexpected error occurred.';
+
+    const panel =
+      document.getElementById(
+        'errorPanel'
+      );
+
+    panel.textContent = message;
+    panel.classList.remove('hidden');
+
+    panel.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+  }
+
+window.KGMIS_FAMILY_SELF_SERVICE_PROFILE_MODULE = {
+  activate: activateFamilySelfServiceProfile
+};
+
+</script>
